@@ -1,0 +1,40 @@
+# Ignorer les dossiers et fichiers spécifiques à Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignorer les dossiers bin et obj
+bin/
+obj/
+
+# Ignorer les fichiers de build
+*.dll
+*.exe
+*.pdb
+*.cache
+*.csproj.user
+*.log
+
+# Ignorer les fichiers de configuration locaux
+*.config
+*.sqlite
+*.db
+*.json
+!App.config
+
+# Ignorer les dossiers temporaires et caches
+**/TempPE/
+**/Debug/
+**/Release/
+
+# Ignorer les fichiers liés aux packages
+packages/
+*.nupkg
+*.nuspec
+
+# Garder le fichier solution et les fichiers nécessaires au projet
+!*.cs
+!*.csproj
+!*.sln
