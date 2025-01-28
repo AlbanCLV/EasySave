@@ -16,6 +16,11 @@ obj/
 *.cache
 *.csproj.user
 *.log
+*.ilk
+
+# Ignorer les fichiers générés par les tests
+TestResults/
+*.trx
 
 # Ignorer les fichiers de configuration locaux
 *.config
@@ -24,15 +29,30 @@ obj/
 *.json
 !App.config
 
+# Ignorer les fichiers de design générés par Visual Studio
+*.Designer.cs
+
 # Ignorer les dossiers temporaires et caches
 **/TempPE/
 **/Debug/
 **/Release/
+.publish/
+publish/
 
 # Ignorer les fichiers liés aux packages
 packages/
+.nuget/
 *.nupkg
 *.nuspec
+.nuget.props
+
+# Ignorer les fichiers système et caches d'IDE tiers
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+_ReSharper.Caches/
 
 # Garder le fichier solution et les fichiers nécessaires au projet
 !*.cs

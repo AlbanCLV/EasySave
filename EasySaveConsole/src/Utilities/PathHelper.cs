@@ -1,7 +1,9 @@
+// Valide les chemins des fichiers et répertoires (locaux, externes, réseaux).
+
 using System;
 using System.IO;
 
-namespace EasySave
+namespace EasySave.Utilities
 {
     public class PathHelper
     {

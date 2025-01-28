@@ -1,6 +1,8 @@
-﻿using System;
+﻿//Représente un travail de sauvegarde (nom, source, destination, type de sauvegarde, état, etc.).
 
-namespace EasySave
+using System;
+
+namespace EasySave.Models
 {
     public enum BackupType
     {
@@ -8,14 +10,14 @@ namespace EasySave
         Differential
     }
 
-    public class BackupTask
+    public class BackupJob_Models
     {
         public string Name { get; set; }
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }
         public BackupType Type { get; set; }
 
-        public BackupTask(string name, string source, string target, BackupType type)
+        public BackupJob_Models(string name, string source, string target, BackupType type)
         {
             Name = name;
             SourceDirectory = source;

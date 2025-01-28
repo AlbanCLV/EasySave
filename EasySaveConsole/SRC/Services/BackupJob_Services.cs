@@ -1,26 +1,25 @@
-﻿using System;
+﻿// Gère l'exécution des travaux de sauvegarde (lecture des fichiers, copie vers le répertoire cible, etc.).
+using System;
+using EasySave.Models;  // Pour utiliser BackupJob et autres modèles si nécessaire
+using EasySave.Utilities;  // Si tu utilises des utilitaires comme JsonHelper ou PathValidator
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace EasySave
+
+namespace EasySave.Services
+
 {
-    public class BackupManager
+    public class BackupJob_Services
     {
         // List to store all the backup tasks
-        private readonly List<BackupTask> tasks = new List<BackupTask>();
+        private readonly List<BackupJob_Models> tasks = new List<BackupJob_Models>();
 
         // File path for saving and loading tasks
         private const string SaveFilePath = "tasks.json";
 
-        // Logger instance to log backup actions
-        private readonly Logger logger = new Logger();
-
-        // StateManager instance to update real-time backup states
-        private readonly StateManager stateManager = new StateManager();
-
         // Constructor that loads tasks from the JSON file when the application starts
-        public BackupManager()
+        public BackupJob_Services()
         {
             LoadTasks(); // Load previously saved tasks
         }
@@ -54,7 +53,7 @@ namespace EasySave
                     string json = File.ReadAllText(SaveFilePath);
 
                     // Deserialize the JSON data back into a list of tasks
-                    var loadedTasks = JsonConvert.DeserializeObject<List<BackupTask>>(json);
+                    var loadedTasks = JsonConvert.DeserializeObject<List<BackupJob_Models>>(json);
 
                     if (loadedTasks != null)
                     {
@@ -94,7 +93,7 @@ namespace EasySave
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
             // Add the new task to the list
-            tasks.Add(new BackupTask(name, source, target, type));
+            tasks.Add(new BackupJob_Models(name, source, target, type));
             Console.WriteLine($"Backup task '{name}' created successfully.");
 
             // Save the updated task list
@@ -177,7 +176,7 @@ namespace EasySave
         }
 
         // Private method to execute a single backup task
-        private void ExecuteBackup(BackupTask task)
+        private void ExecuteBackup(BackupJob_Models task)
         {
             Console.WriteLine($"Executing backup: {task.Name}");
 
@@ -217,9 +216,6 @@ namespace EasySave
                 transferredSize += new FileInfo(file).Length;
                 remainingFiles--;
 
-                // Log the action and update the state
-                logger.LogAction(task, file, targetPath);
-                stateManager.UpdateState(task, remainingFiles, totalSize - transferredSize, file, targetPath);
             }
 
             Console.WriteLine($"Backup '{task.Name}' completed successfully.");

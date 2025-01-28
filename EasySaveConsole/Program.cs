@@ -1,4 +1,10 @@
 ﻿using System;
+using EasySave.Services;
+using EasySave.Models;
+using EasySave.Utilities;
+using EasySave.Controllers;
+using EasySave.Views;
+
 
 namespace EasySave
 {
@@ -7,7 +13,7 @@ namespace EasySave
         static void Main(string[] args)
         {
             // Initialize the backup manager
-            BackupManager backupManager = new BackupManager();
+            BackupJob_Services backupManager = new BackupJob_Services();
 
             while (true)
             {
