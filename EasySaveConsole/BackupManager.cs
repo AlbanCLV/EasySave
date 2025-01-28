@@ -1,17 +1,85 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace EasySave
 {
     public class BackupManager
     {
+        // List to store all the backup tasks
         private readonly List<BackupTask> tasks = new List<BackupTask>();
+
+        // File path for saving and loading tasks
+        private const string SaveFilePath = "tasks.json";
+
+        // Logger instance to log backup actions
         private readonly Logger logger = new Logger();
+
+        // StateManager instance to update real-time backup states
         private readonly StateManager stateManager = new StateManager();
 
+        // Constructor that loads tasks from the JSON file when the application starts
+        public BackupManager()
+        {
+            LoadTasks(); // Load previously saved tasks
+        }
+
+        // Method to save tasks to a JSON file
+        public void SaveTasks()
+        {
+            try
+            {
+                // Convert tasks list to a JSON-formatted string
+                string json = JsonConvert.SerializeObject(tasks, Formatting.Indented);
+
+                // Write the JSON string to the file
+                File.WriteAllText(SaveFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving tasks: {ex.Message}");
+            }
+        }
+
+        // Method to load tasks from a JSON file
+        public void LoadTasks()
+        {
+            try
+            {
+                // Check if the save file exists
+                if (File.Exists(SaveFilePath))
+                {
+                    // Read the JSON data from the file
+                    string json = File.ReadAllText(SaveFilePath);
+
+                    // Deserialize the JSON data back into a list of tasks
+                    var loadedTasks = JsonConvert.DeserializeObject<List<BackupTask>>(json);
+
+                    if (loadedTasks != null)
+                    {
+                        // Add the loaded tasks to the current task list
+                        tasks.AddRange(loadedTasks);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading tasks: {ex.Message}");
+            }
+        }
+
+        // Method to create a new backup task
         public void CreateBackupTask()
         {
+            // Check if the maximum limit of 5 tasks is reached
+            if (tasks.Count >= 5)
+            {
+                Console.WriteLine("You cannot create more than 5 backup tasks.");
+                return; // Exit the method if the limit is reached
+            }
+
+            // Prompt the user for task details
             Console.Write("Enter task name: ");
             string name = Console.ReadLine();
 
@@ -25,44 +93,106 @@ namespace EasySave
             int typeInput = int.Parse(Console.ReadLine() ?? "1");
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
+            // Add the new task to the list
             tasks.Add(new BackupTask(name, source, target, type));
             Console.WriteLine($"Backup task '{name}' created successfully.");
+
+            // Save the updated task list
+            SaveTasks();
         }
 
-        public void ExecuteSpecificTask()
+        // Method to display all existing backup tasks
+        public void ViewTasks()
         {
-            Console.Write("Enter task number to execute (1, 2, ...): ");
-            int taskNumber = int.Parse(Console.ReadLine() ?? "1");
-
-            if (taskNumber < 1 || taskNumber > tasks.Count)
+            if (tasks.Count == 0)
             {
-                Console.WriteLine("Invalid task number.");
+                Console.WriteLine("No backup tasks created yet.");
                 return;
             }
 
-            ExecuteBackup(tasks[taskNumber - 1]);
+            // Display details of each task
+            Console.WriteLine("Existing Backup Tasks:");
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. Name: {tasks[i].Name}, Source: {tasks[i].SourceDirectory}, Target: {tasks[i].TargetDirectory}, Type: {tasks[i].Type}");
+            }
         }
 
+        // Method to delete a specific task
+        public void DeleteTask()
+        {
+            ViewTasks(); // Display all tasks
+
+            if (tasks.Count == 0) return;
+
+            // Prompt the user for the task number to delete
+            Console.Write("Enter the number of the task to delete: ");
+            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
+            {
+                // Delete the selected task
+                Console.WriteLine($"Deleting task '{tasks[taskNumber - 1].Name}'...");
+                tasks.RemoveAt(taskNumber - 1);
+                Console.WriteLine("Task deleted successfully.");
+
+                // Save the updated task list
+                SaveTasks();
+            }
+            else
+            {
+                Console.WriteLine("Invalid task number.");
+            }
+        }
+
+        // Method to execute a specific task
+        public void ExecuteSpecificTask()
+        {
+            ViewTasks(); // Display all tasks
+
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks available to execute.");
+                return;
+            }
+
+            // Prompt the user for the task number to execute
+            Console.Write("Enter the number of the task to execute: ");
+            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
+            {
+                // Execute the selected task
+                ExecuteBackup(tasks[taskNumber - 1]);
+            }
+            else
+            {
+                Console.WriteLine("Invalid task number.");
+            }
+        }
+
+        // Method to execute all tasks sequentially
         public void ExecuteAllTasks()
         {
             foreach (var task in tasks)
             {
-                ExecuteBackup(task);
+                ExecuteBackup(task); // Execute each task
             }
         }
 
+        // Private method to execute a single backup task
         private void ExecuteBackup(BackupTask task)
         {
             Console.WriteLine($"Executing backup: {task.Name}");
 
+            // Check if the source directory exists
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
                 return;
             }
 
+            // Get all files in the source directory, including subdirectories
             var files = Directory.GetFiles(task.SourceDirectory, "*", SearchOption.AllDirectories);
             long totalSize = 0;
+
+            // Calculate the total size of files to be backed up
             foreach (var file in files)
             {
                 totalSize += new FileInfo(file).Length;
@@ -73,16 +203,21 @@ namespace EasySave
 
             foreach (var file in files)
             {
-                // Utilisation de la méthode personnalisée pour obtenir le chemin relatif
+                // Calculate the relative path for the target directory
                 string relativePath = PathHelper.GetRelativePath(task.SourceDirectory, file);
                 string targetPath = Path.Combine(task.TargetDirectory, relativePath);
 
+                // Create necessary directories in the target path
                 Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+
+                // Copy the file to the target path
                 File.Copy(file, targetPath, true);
 
+                // Update the progress
                 transferredSize += new FileInfo(file).Length;
                 remainingFiles--;
 
+                // Log the action and update the state
                 logger.LogAction(task, file, targetPath);
                 stateManager.UpdateState(task, remainingFiles, totalSize - transferredSize, file, targetPath);
             }
