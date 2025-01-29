@@ -5,8 +5,8 @@ using EasySave.Models;  // Pour utiliser StateEntry ou autres modèles si nécessa
 
 namespace EasySave.Services
 {
-    public class StateService
+    public class State_Services
     {
-        // Logique de la classe StateService
+        // Logique de la classe State_Services
     }
 }

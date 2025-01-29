@@ -6,8 +6,8 @@ using EasySave.Models;  // Pour utiliser LogEntry ou autres modèles si nécessair
 
 namespace EasySave.Services
 {
-    public class LogService
+    public class Log_Services
     {
-        // Logique de la classe LogService
+        // Logique de la classe Log_Services
     }
 }

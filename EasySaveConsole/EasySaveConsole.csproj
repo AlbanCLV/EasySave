@@ -69,8 +69,9 @@
 		<Compile Include="src\BackupController.cs" />
 
 		<!-- Views -->
-		<Compile Include="src\Views\ConsoleMenu.cs" />
-		<Compile Include="src\Views\LanguageManager.cs" />
+		<Compile Include="src\Views\BackupJob_View.cs" />
+		<Compile Include="src\Views\Log_View.cs" />
+		<Compile Include="src\Views\State_View.cs" />
 
 		<!-- Program -->
 		<Compile Include="Program.cs" />

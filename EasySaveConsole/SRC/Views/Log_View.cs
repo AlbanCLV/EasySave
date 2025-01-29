@@ -6,7 +6,7 @@ using System;
 
 namespace EasySave.Views
 {
-    public class LanguageManager
+    public class Log_View
     {
         // Logique pour la gestion des langues
     }
