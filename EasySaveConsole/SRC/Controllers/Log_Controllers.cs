@@ -2,12 +2,29 @@
 
 using System;
 using EasySave.Models;  // Pour utiliser LogEntry ou autres modèles si nécessaire
+using System.IO;
+using Newtonsoft.Json;
+using EasySave.Utilities;
 
 
-namespace EasySave.Services
+namespace EasySave.Controllers
 {
-    public class Log_Services
+    public class LogController
     {
-        // Logique de la classe Log_Services
+        private const string LogPath = "Logs/logs.json";
+
+        public void LogAction(BackupJobModel task, string sourceFile, string targetFile)
+        {
+            var logEntry = new
+            {
+                Timestamp = DateTime.Now,
+                TaskName = task.Name,
+                SourceFile = sourceFile,
+                TargetFile = targetFile,
+                FileSize = new FileInfo(sourceFile).Length
+            };
+
+            JsonHelper.SaveToJson(LogPath, logEntry);
+        }
     }
 }

@@ -10,14 +10,14 @@ namespace EasySave.Models
         Differential
     }
 
-    public class BackupJob_Models
+    public class BackupJobModel
     {
-        public string Name { get; set; }
-        public string SourceDirectory { get; set; }
-        public string TargetDirectory { get; set; }
-        public BackupType Type { get; set; }
+        public string Name { get; private set; }
+        public string SourceDirectory { get; private set; }
+        public string TargetDirectory { get; private set; }
+        public BackupType Type { get; private set; }
 
-        public BackupJob_Models(string name, string source, string target, BackupType type)
+        public BackupJobModel(string name, string source, string target, BackupType type)
         {
             Name = name;
             SourceDirectory = source;

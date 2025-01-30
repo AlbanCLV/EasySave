@@ -1,12 +1,27 @@
 // Met à jour et enregistre les informations en temps réel sur l'état des sauvegardes.
 using System;
 using EasySave.Models;  // Pour utiliser StateEntry ou autres modèles si nécessaire
+using EasySave.Utilities;
+using Newtonsoft.Json;
 
-
-namespace EasySave.Services
+namespace EasySave.Controllers
 {
-    public class State_Services
+    public class StateController
     {
-        // Logique de la classe State_Services
+        private const string StatePath = "States/state.json";
+
+        public void UpdateState(BackupJobModel task, int remainingFiles, long remainingSize)
+        {
+            var stateEntry = new
+            {
+                TaskName = task.Name,
+                Timestamp = DateTime.Now,
+                Status = remainingFiles > 0 ? "Active" : "Completed",
+                RemainingFiles = remainingFiles,
+                RemainingSize = remainingSize
+            };
+
+            JsonHelper.SaveToJson(StatePath, stateEntry);
+        }
     }
 }

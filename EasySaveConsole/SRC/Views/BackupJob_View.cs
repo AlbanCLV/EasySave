@@ -14,6 +14,7 @@ namespace EasySave.Views
         public void DisplayMainMenu()
         {
             Console.Clear();
+            Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               \r\n| $$_____/                               /$$__  $$                              \r\n| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ \r\n| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$\r\n| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$\r\n| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/\r\n| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$\r\n|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/\r\n                               /$$  | $$                                        \r\n                              |  $$$$$$/                                        \r\n                               \\______/                                         \r\n");
             Console.WriteLine("Welcome to EasySave!");
             Console.WriteLine("1. Create a backup task");
             Console.WriteLine("2. Execute a backup task");
@@ -24,7 +25,7 @@ namespace EasySave.Views
             Console.Write("\nSelect an option: ");
         }
 
-        public BackupJob_Models GetBackupDetails()
+        public BackupJobModel GetBackupDetails()
         {
             Console.Clear(); // Clear the console before execution
             Console.Write("Enter task name: ");
@@ -40,7 +41,13 @@ namespace EasySave.Views
             int typeInput = int.Parse(Console.ReadLine() ?? "1");
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
-            return new BackupJob_Models(name, source, target, type);
+            return new BackupJobModel(name, source, target, type);
+        }
+
+        public string GetTaskName()
+        {
+            Console.Write("Enter the name of the task: ");
+            return Console.ReadLine();
         }
 
         public void DisplayMessage(string message)

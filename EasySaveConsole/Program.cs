@@ -1,10 +1,8 @@
 ﻿using System;
-using EasySave.Services;
 using EasySave.Models;
 using EasySave.Utilities;
 using EasySave.Controllers;
 using EasySave.Views;
-
 
 namespace EasySave
 {
@@ -12,62 +10,81 @@ namespace EasySave
     {
         static void Main(string[] args)
         {
-            // Initialize the backup manager
-            BackupJob_Services backupManager = new BackupJob_Services();
-            BackupJob_View BackupView = new BackupJob_View();
+            // Initialisation des contrôleurs et des vues
+            BackupJobController backupController = new BackupJobController();
+            BackupJob_View backupView = new BackupJob_View();
 
             while (true)
             {
-                BackupView.DisplayMainMenu();
+                // Afficher le menu principal
+                backupView.DisplayMainMenu();
                 string input = Console.ReadLine();
 
                 switch (input)
                 {
-                    case "1": // Option to create a backup task
-                        var task = BackupView.GetBackupDetails();
-                        backupManager.CreateBackupTask(task);
-                        BackupView.DisplayMessage("Backup task created successfully.");
-                        PauseAndReturn(); // Pause before returning to the menu
-                        break;
-                    case "2": // Option to execute a specific backup task
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.ViewTasks();
-                        backupManager.ExecuteSpecificTask();
+                    case "1": // Créer une nouvelle tâche de sauvegarde
+                        var task = backupView.GetBackupDetails();
+                        try
+                        {
+                            backupController.CreateBackupTask(task.Name, task.SourceDirectory, task.TargetDirectory, task.Type);
+                            backupView.DisplayMessage("Backup task created successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            backupView.DisplayMessage($"Error: {ex.Message}");
+                        }
                         PauseAndReturn();
                         break;
-                    case "3": // Option to execute all tasks sequentially
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.ExecuteAllTasks();
+
+                    case "2": // Exécuter une tâche de sauvegarde spécifique
+                        Console.Clear();
+                        backupController.ViewTasks(); // Affiche les tâches disponibles
+                        string taskName = backupView.GetTaskName();
+                        backupController.ExecuteBackup(taskName);
                         PauseAndReturn();
                         break;
-                    case "4": // Option to display all backup tasks
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.ViewTasks();
+
+                    case "3": // Exécuter toutes les tâches de sauvegarde
+                        Console.Clear();
+                        backupController.ExecuteAllTasks();
                         PauseAndReturn();
                         break;
-                    case "5": // Option to delete a backup task
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.DeleteTask();
+
+                    case "4": // Afficher toutes les tâches de sauvegarde
+                        Console.Clear();
+                        backupController.ViewTasks();
                         PauseAndReturn();
                         break;
-                    case "6": // Option to exit the application
-                        Console.Clear(); // Clear the console before exiting
+
+                    case "5": // Supprimer une tâche de sauvegarde
+                        Console.Clear();
+                        backupController.ViewTasks();
+                        string taskToDelete = backupView.GetTaskName();
+                        backupController.DeleteTask(taskToDelete);
+                        backupView.DisplayMessage("Backup task deleted successfully.");
+                        PauseAndReturn();
+                        break;
+
+                    case "6": // Quitter l'application
+                        Console.Clear();
                         Console.WriteLine("Exiting EasySave...");
-                        return; // Exit the program
-                    default: // Invalid option entered by the user
-                        Console.Clear(); // Clear the console before displaying the error
-                        Console.WriteLine("Invalid option. Please try again."); // Inform the user about the invalid input
-                        PauseAndReturn(); // Pause before returning to the menu
+                        return;
+
+                    default: // Option invalide
+                        Console.Clear();
+                        backupView.DisplayMessage("Invalid option. Please try again.");
+                        PauseAndReturn();
                         break;
                 }
             }
         }
 
-        // Method to display a message and wait for the user to press a key before returning to the menu
+        // Méthode pour afficher un message et attendre que l'utilisateur appuie sur une touche
         static void PauseAndReturn()
         {
             Console.WriteLine("\nPress any key to return to the menu...");
-            Console.ReadKey(); // Wait for the user to press a key
+            Console.ReadKey();
         }
     }
 }
+

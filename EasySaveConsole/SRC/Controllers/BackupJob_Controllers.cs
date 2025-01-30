@@ -7,68 +7,50 @@ using System.IO;
 using Newtonsoft.Json;
 
 
-namespace EasySave.Services
+namespace EasySave.Controllers
 
 {
-    public class BackupJob_Services
+    public class BackupJobController
     {
-        private readonly List<BackupJob_Models> tasks = new List<BackupJob_Models>();
+        private readonly List<BackupJobModel> tasks = new List<BackupJobModel>();
         private const string SaveFilePath = "tasks.json";
 
-        public BackupJob_Services()
+        private readonly LogController logger = new LogController();
+        private readonly StateController stateManager = new StateController();
+
+        public BackupJobController()
         {
             LoadTasks();
         }
 
         public void SaveTasks()
         {
-            try
-            {
-                string json = JsonConvert.SerializeObject(tasks, Formatting.Indented);
-                File.WriteAllText(SaveFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving tasks: {ex.Message}");
-            }
+            JsonHelper.SaveToJson(SaveFilePath, tasks);
         }
 
         public void LoadTasks()
         {
-            try
+            var loadedTasks = JsonHelper.LoadFromJson<List<BackupJobModel>>(SaveFilePath);
+            if (loadedTasks != null)
             {
-                if (File.Exists(SaveFilePath))
-                {
-                    string json = File.ReadAllText(SaveFilePath);
-                    var loadedTasks = JsonConvert.DeserializeObject<List<BackupJob_Models>>(json);
-                    if (loadedTasks != null)
-                    {
-                        tasks.AddRange(loadedTasks);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading tasks: {ex.Message}");
+                tasks.AddRange(loadedTasks);
             }
         }
 
-        public void CreateBackupTask(BackupJob_Models task)
+        public void CreateBackupTask(string name, string source, string destination, BackupType type)
         {
-            Console.Clear();
-            Console.WriteLine("Create a Backup Task\n");
             if (tasks.Count >= 5)
             {
-                Console.WriteLine("You cannot create more than 5 backup tasks.");
-                return;
+                throw new Exception("You cannot create more than 5 backup tasks.");
             }
+
+            var task = new BackupJobModel(name, source, destination, type);
             tasks.Add(task);
             SaveTasks();
         }
 
         public void ViewTasks()
         {
-            Console.Clear();
             if (tasks.Count == 0)
             {
                 Console.WriteLine("No backup tasks created yet.");
@@ -76,91 +58,125 @@ namespace EasySave.Services
             }
 
             Console.WriteLine("Existing Backup Tasks:");
-            for (int i = 0; i < tasks.Count; i++)
+            foreach (var task in tasks)
             {
-                Console.WriteLine($"{i + 1}. Name: {tasks[i].Name}, Source: {tasks[i].SourceDirectory}, Target: {tasks[i].TargetDirectory}, Type: {tasks[i].Type}");
+                Console.WriteLine($"- {task.Name} ({task.Type}) | Source: {task.SourceDirectory} -> Target: {task.TargetDirectory}");
             }
         }
 
-        public void DeleteTask()
+        public void ExecuteBackup(string taskName)
         {
-            ViewTasks();
-            if (tasks.Count == 0) return;
-
-            Console.Write("Enter the number of the task to delete: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
+            var task = tasks.Find(t => t.Name == taskName);
+            if (task == null)
             {
-                Console.WriteLine($"Deleting task '{tasks[taskNumber - 1].Name}'...");
-                tasks.RemoveAt(taskNumber - 1);
-                Console.WriteLine("Task deleted successfully.");
-                SaveTasks();
+                Console.WriteLine("Task not found.");
+                return;
+            }
+
+            if (task.Type == BackupType.Full)
+            {
+                PerformFullBackup(task);
             }
             else
             {
-                Console.WriteLine("Invalid task number.");
+                ExecuteDifferentialBackup(task);
             }
         }
 
-        public void ExecuteSpecificTask()
+        public void ExecuteAllTasks()
         {
-            Console.WriteLine("Execute a Backup Task\n");
             if (tasks.Count == 0)
             {
                 Console.WriteLine("No tasks available to execute.");
                 return;
             }
 
-            Console.Write("Enter the number of the task to execute: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
-            {
-                ExecuteBackup(tasks[taskNumber - 1]);
-            }
-            else
-            {
-                Console.WriteLine("Invalid task number.");
-            }
-        }
-
-        public void ExecuteAllTasks()
-        {
             foreach (var task in tasks)
             {
-                ExecuteBackup(task);
+                ExecuteBackup(task.Name);
             }
         }
 
-        private void ExecuteBackup(BackupJob_Models task)
+        public void DeleteTask(string taskName)
         {
-            Console.WriteLine($"Executing backup: {task.Name}");
-
-            if (!Directory.Exists(task.SourceDirectory))
+            var task = tasks.Find(t => t.Name == taskName);
+            if (task == null)
             {
-                Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
+                Console.WriteLine("Task not found.");
                 return;
             }
 
-            var files = Directory.GetFiles(task.SourceDirectory, "*", SearchOption.AllDirectories);
-            long totalSize = 0;
+            tasks.Remove(task);
+            SaveTasks();
+            Console.WriteLine($"Backup task '{taskName}' deleted successfully.");
+        }
 
-            foreach (var file in files)
+        private void PerformFullBackup(BackupJobModel task)
+        {
+            Console.WriteLine($"Executing full backup: {task.Name}");
+
+            string targetPath = PathHelper.GetUniqueDirectoryName(task.TargetDirectory, task.SourceDirectory);
+            Directory.CreateDirectory(targetPath);
+
+            CopyDirectoryContent(task.SourceDirectory, targetPath);
+        }
+
+        private void ExecuteDifferentialBackup(BackupJobModel task)
+        {
+            Console.WriteLine($"Executing differential backup: {task.Name}");
+
+            string targetPath = Path.Combine(task.TargetDirectory, Path.GetFileName(task.SourceDirectory));
+
+            if (!Directory.Exists(targetPath))
             {
-                totalSize += new FileInfo(file).Length;
+                Console.WriteLine($"No previous backup found for '{task.SourceDirectory}'. Performing full backup.");
+                PerformFullBackup(task);
+                return;
             }
 
-            long transferredSize = 0;
-            int remainingFiles = files.Length;
+            RemoveDeletedFilesAndFolders(task.SourceDirectory, targetPath);
+            CopyModifiedFiles(task.SourceDirectory, targetPath);
+        }
 
-            foreach (var file in files)
+        private void CopyModifiedFiles(string sourceDir, string destDir)
+        {
+            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
-                string relativePath = PathHelper.GetRelativePath(task.SourceDirectory, file);
-                string targetPath = Path.Combine(task.TargetDirectory, relativePath);
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                File.Copy(file, targetPath, true);
-                transferredSize += new FileInfo(file).Length;
-                remainingFiles--;
-            }
+                string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
+                string destFile = Path.Combine(destDir, relativePath);
 
-            Console.WriteLine($"Backup '{task.Name}' completed successfully.");
+                if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+                    File.Copy(sourceFile, destFile, true);
+                }
+            }
+        }
+
+        private void RemoveDeletedFilesAndFolders(string sourceDir, string destDir)
+        {
+            foreach (string destFile in Directory.GetFiles(destDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = PathHelper.GetRelativePath(destDir, destFile);
+                string sourceFile = Path.Combine(sourceDir, relativePath);
+
+                if (!File.Exists(sourceFile))
+                {
+                    File.Delete(destFile);
+                }
+            }
+        }
+
+        private void CopyDirectoryContent(string sourceDir, string targetDir)
+        {
+            foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = PathHelper.GetRelativePath(sourceDir, file);
+                string destinationFile = Path.Combine(targetDir, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
+                File.Copy(file, destinationFile, true);
+            }
         }
     }
 }
