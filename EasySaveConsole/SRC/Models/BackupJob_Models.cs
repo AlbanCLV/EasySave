@@ -1,5 +1,4 @@
-﻿//Représente un travail de sauvegarde (nom, source, destination, type de sauvegarde, état, etc.).
-
+﻿
 using System;
 
 namespace EasySave.Models
