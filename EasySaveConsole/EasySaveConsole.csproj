@@ -56,10 +56,10 @@
 		<Compile Include="src\Models\Log_Models.cs" />
 		<Compile Include="src\Models\State_Models.cs" />
 
-		<!-- Services -->
-		<Compile Include="src\Services\BackupJob_Services.cs" />
-		<Compile Include="src\Services\Log_Services.cs" />
-		<Compile Include="src\Services\State_Services.cs" />
+		<!-- Controllers -->
+		<Compile Include="src\Controllers\BackupJob_Controllers.cs" />
+		<Compile Include="src\Controllers\Log_Controllers.cs" />
+		<Compile Include="src\Controllers\State_Controllers.cs" />
 
 		<!-- Utilities -->
 		<Compile Include="src\Utilities\JsonHelper.cs" />
