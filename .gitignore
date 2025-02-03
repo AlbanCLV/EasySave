@@ -62,3 +62,6 @@ _ReSharper.Caches/
 !*.cs
 !*.csproj
 !*.sln
+
+# Ignore doc folder
+doc/
