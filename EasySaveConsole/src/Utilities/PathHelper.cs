@@ -1,31 +1,23 @@
-// Valide les chemins des fichiers et répertoires (locaux, externes, réseaux).
-
 using System;
 using System.IO;
 
-namespace EasySave.Utilities
+namespace EasySave
 {
     public class PathHelper
     {
         public static string GetRelativePath(string basePath, string fullPath)
         {
-            Uri baseUri = new Uri(basePath);
-            Uri fullUri = new Uri(fullPath);
-            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fullUri).ToString().Replace('/', Path.DirectorySeparatorChar));
-        }
-        public static string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryPath)
-        {
-            string sourceDirectoryName = Path.GetFileName(sourceDirectoryPath.TrimEnd(Path.DirectorySeparatorChar));
-            string uniqueName = sourceDirectoryName;
-            int counter = 1;
-
-            while (Directory.Exists(Path.Combine(destinationPath, uniqueName)))
+            // Ajoute une barre de séparation finale si nécessaire
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
-                uniqueName = $"{sourceDirectoryName} ({counter})";
-                counter++;
+                basePath += Path.DirectorySeparatorChar;
             }
 
-            return Path.Combine(destinationPath, uniqueName);
+            Uri baseUri = new Uri(basePath, UriKind.Absolute);
+            Uri fullUri = new Uri(fullPath, UriKind.Absolute);
+
+            // Calcule le chemin relatif
+            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fullUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
     }
 }

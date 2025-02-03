@@ -1,11 +1,28 @@
-// Représente l'état en temps réel des travaux de sauvegarde (progression, fichiers restants, etc.).
-
 using System;
+using System.IO;
+using EasySave.Models;
+using Newtonsoft.Json;
 
-namespace EasySave.Models
+namespace EasySave
 {
     public class State_Models
     {
-        // Définition de la classe State_ModelsEntry
+        public void UpdateState(BackupJob_Models task, int remainingFiles, long remainingSize, string currentSource, string currentTarget)
+        {
+            var stateEntry = new
+            {
+                TaskName = task.Name,
+                Timestamp = DateTime.Now,
+                Status = remainingFiles > 0 ? "Active" : "Completed",
+                RemainingFiles = remainingFiles,
+                RemainingSize = remainingSize,
+                CurrentSource = currentSource,
+                CurrentTarget = currentTarget
+            };
+
+            string statePath = Path.Combine("States", "state.json");
+            Directory.CreateDirectory("States");
+            File.WriteAllText(statePath, JsonConvert.SerializeObject(stateEntry, Formatting.Indented));
+        }
     }
 }

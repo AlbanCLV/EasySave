@@ -1,20 +1,15 @@
-// Gère l'affichage des menus pour interagir avec l'utilisateur via la console.
-
-// Ce dossier contient les éléments d'affichage ou d'interface utilisateur. Dans la version 1.0, il s'agit d'une application console.
-
 using System;
-using System.Threading.Tasks;
-using EasySave.Controllers;  // Si tu fais des appels aux contrôleurs depuis la vue
-using EasySave.Models;  // Si tu fais des appels aux contrôleurs depuis la vue
+using EasySave.Models;
+using Terminal.Gui;
 
 namespace EasySave.Views
 {
     public class BackupJob_View
     {
+        // Affiche le menu principal
         public void DisplayMainMenu()
         {
             Console.Clear();
-            Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               \r\n| $$_____/                               /$$__  $$                              \r\n| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ \r\n| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$\r\n| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$\r\n| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/\r\n| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$\r\n|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/\r\n                               /$$  | $$                                        \r\n                              |  $$$$$$/                                        \r\n                               \\______/                                         \r\n");
             Console.WriteLine("Welcome to EasySave!");
             Console.WriteLine("1. Create a backup task");
             Console.WriteLine("2. Execute a backup task");
@@ -25,34 +20,72 @@ namespace EasySave.Views
             Console.Write("\nSelect an option: ");
         }
 
-        public BackupJobModel GetBackupDetails()
+        // Récupère les détails d'une tâche de sauvegarde depuis l'utilisateur
+        public BackupJob_Models GetBackupDetails()
         {
             Console.Clear(); // Clear the console before execution
+            Console.WriteLine("=== Create a Backup Task ===");
             Console.Write("Enter task name: ");
             string name = Console.ReadLine();
+            while (string.IsNullOrEmpty(name))
+            {
+                Console.WriteLine("Task name cannot be empty. Returning to menu...");
+                
+            }
 
-            Console.Write("Enter source directory: ");
-            string source = Console.ReadLine();
+            // Étape 2 : Sélectionner le répertoire source
+            Console.WriteLine("\nSelect the source directory:");
+            string source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
+           while (string.IsNullOrEmpty(source))
+            {
+                Console.Write("Source directory cannot be empty. Please enter a valid source directory: ");
+                source = Console.ReadLine();
+            }
 
             Console.Write("Enter target directory: ");
-            string target = Console.ReadLine();
+            string target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
+            while (string.IsNullOrEmpty(target))
+            {
+                Console.Write("Target directory cannot be empty. Please enter a valid target directory: ");
+                target = Console.ReadLine();
+            }
 
             Console.Write("Enter type (1 = Full, 2 = Differential): ");
-            int typeInput = int.Parse(Console.ReadLine() ?? "1");
+            int typeInput;
+            while (!int.TryParse(Console.ReadLine(), out typeInput) || (typeInput != 1 && typeInput != 2))
+            {
+                Console.Write("Invalid input. Please enter 1 for Full or 2 for Differential: ");
+            }
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
-            return new BackupJobModel(name, source, target, type);
+            return new BackupJob_Models(name, source, target, type);
         }
 
-        public string GetTaskName()
-        {
-            Console.Write("Enter the name of the task: ");
-            return Console.ReadLine();
-        }
-
+        // Affiche un message
         public void DisplayMessage(string message)
         {
             Console.WriteLine(message);
+        }
+        public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
+        {
+            Application.Init();
+
+            var dialog = new OpenDialog("Select Path", "Choose a file or directory")
+            {
+                CanChooseFiles = canChooseFiles,
+                CanChooseDirectories = canChooseDirectories
+            };
+
+            Application.Run(dialog);
+
+            if (!string.IsNullOrEmpty(dialog.FilePath.ToString()))
+            {
+                Application.Shutdown();
+                return dialog.FilePath.ToString();
+            }
+
+            Application.Shutdown();
+            return null; // Aucun chemin sélectionné
         }
     }
 }
