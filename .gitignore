@@ -8,6 +8,8 @@
 # Ignorer les dossiers bin et obj
 bin/
 obj/
+Source/
+Destination/
 
 # Ignorer les fichiers de build
 *.dll
@@ -21,6 +23,7 @@ obj/
 # Ignorer les fichiers générés par les tests
 TestResults/
 *.trx
+*.txt
 
 # Ignorer les fichiers de configuration locaux
 *.config

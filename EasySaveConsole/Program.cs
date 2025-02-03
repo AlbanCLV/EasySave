@@ -1,10 +1,7 @@
 ﻿using System;
-using EasySave.Services;
 using EasySave.Models;
-using EasySave.Utilities;
-using EasySave.Controllers;
 using EasySave.Views;
-
+using EasySave.Controllers;
 
 namespace EasySave
 {
@@ -12,58 +9,50 @@ namespace EasySave
     {
         static void Main(string[] args)
         {
-            // Initialize the backup manager
-            BackupJob_Services backupManager = new BackupJob_Services();
-            BackupJob_View BackupView = new BackupJob_View();
+            // Créer les objets
+            BackupJob_View view = new BackupJob_View();
+            BackupJob_Models model = new BackupJob_Models("", "", "", BackupType.Full);  // On peut initialiser un modèle vide ici
+            model.LoadTasks();  // Charger les tâches existantes à partir du fichier
+            BackupJob_Controller controller = new BackupJob_Controller(view, model);
 
+            // Boucle principale
             while (true)
             {
-                BackupView.DisplayMainMenu();
+                view.DisplayMainMenu();
                 string input = Console.ReadLine();
 
                 switch (input)
                 {
-                    case "1": // Option to create a backup task
-                        var task = BackupView.GetBackupDetails();
-                        backupManager.CreateBackupTask(task);
-                        BackupView.DisplayMessage("Backup task created successfully.");
-                        PauseAndReturn(); // Pause before returning to the menu
+                    case "1": // Créer une tâche de sauvegarde
+                        controller.CreateBackupTask();
+                        PauseAndReturn();
                         break;
                     case "2": // Option to execute a specific backup task
                         Console.Clear(); // Clear the console before execution
-                        backupManager.ViewTasks();
-                        backupManager.ExecuteSpecificTask();
+                        Console.WriteLine("Execute a Backup Task\n");
+                        controller.ExecuteSpecificTask(); // Call the method to execute a specific task
                         PauseAndReturn();
                         break;
-                    case "3": // Option to execute all tasks sequentially
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.ExecuteAllTasks();
+                    case "3": // Exécuter toutes les tâches
+                        controller.ExecuteAllTasks();
                         PauseAndReturn();
                         break;
-                    case "4": // Option to display all backup tasks
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.ViewTasks();
+                    case "4": // Voir toutes les tâches
+                        controller.ViewTasks();
                         PauseAndReturn();
                         break;
-                    case "5": // Option to delete a backup task
-                        Console.Clear(); // Clear the console before execution
-                        backupManager.DeleteTask();
-                        PauseAndReturn();
+                    case "5": // Supprimer une tâche
+                        Console.Write("Delete a backup task \n");
+                        controller.DeleteTask();
                         break;
-                    case "6": // Option to exit the application
-                        Console.Clear(); // Clear the console before exiting
-                        Console.WriteLine("Exiting EasySave...");
-                        return; // Exit the program
-                    default: // Invalid option entered by the user
-                        Console.Clear(); // Clear the console before displaying the error
-                        Console.WriteLine("Invalid option. Please try again."); // Inform the user about the invalid input
-                        PauseAndReturn(); // Pause before returning to the menu
+                    case "6": // Quitter
+                        return;
+                    default:
+                        view.DisplayMessage("Invalid option. Please try again.");
                         break;
                 }
             }
         }
-
-        // Method to display a message and wait for the user to press a key before returning to the menu
         static void PauseAndReturn()
         {
             Console.WriteLine("\nPress any key to return to the menu...");
