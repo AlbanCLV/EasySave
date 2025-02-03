@@ -7,8 +7,17 @@ using Newtonsoft.Json;
 
 namespace EasySave
 {
+    /// <summary>
+    /// Model for logs
+    /// </summary>
     public class Log_Models
     {
+        /// <summary>
+        /// Create a new log entry from task infos, source and destination
+        /// </summary>
+        /// <param name="task">BackupJob_Models task object</param>
+        /// <param name="sourceFile">sourceFile path</param>
+        /// <param name="targetFile">targetFile path</param>
         public void LogAction(BackupJob_Models task, string sourceFile, string targetFile)
         {
             var logEntry = new

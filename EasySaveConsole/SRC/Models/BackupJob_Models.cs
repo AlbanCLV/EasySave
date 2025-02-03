@@ -7,12 +7,18 @@ using Terminal.Gui;
 
 namespace EasySave.Models
 {
+    /// <summary>
+    /// Enumeration representing the type of backup.
+    /// </summary>
     public enum BackupType
     {
         Full,
         Differential
     }
 
+    /// <summary>
+    /// Model class representing a backup job.
+    /// </summary>
     public class BackupJob_Models
     {
         public string Name { get; set; }
@@ -21,12 +27,18 @@ namespace EasySave.Models
         public BackupType Type { get; set; }
 
 
-        // Liste des tâches de sauvegarde
-        [JsonIgnore]  // Ignore la liste des tâches lors de la sérialisation/désérialisation
+        /// <summary>
+        /// List of backup tasks.
+        /// </summary>
+        [JsonIgnore]
         public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
         private readonly Log_Models logger = new Log_Models();
         private readonly State_Models stateManager = new State_Models();
         private const string SaveFilePath = "tasks.json";
+
+        /// <summary>
+        /// Constructor for creating a backup job.
+        /// </summary>
         public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
         {
             Name = name;
@@ -34,14 +46,16 @@ namespace EasySave.Models
             TargetDirectory = targetDirectory;
             Type = type;
 
-            if (loadTasks)  // Charge les tâches seulement si nécessaire
+            if (loadTasks)  // Load tasks if necessary
             {
                 LoadTasks();
             }
         }
 
 
-        // Method to save tasks to a JSON file
+        /// <summary>
+        /// Saves tasks to a JSON file.
+        /// </summary>
         public void SaveTasks()
         {
             try
@@ -58,7 +72,9 @@ namespace EasySave.Models
             }
         }
 
-        // Charger la liste des tâches depuis le fichier JSON
+        /// <summary>
+        /// Loads tasks from a JSON file.
+        /// </summary>
         public void LoadTasks()
         {
             try
@@ -70,7 +86,7 @@ namespace EasySave.Models
 
                     if (loadedTasks != null)
                     {
-                        Tasks.Clear(); // Évite les doublons
+                        Tasks.Clear();
                         Tasks.AddRange(loadedTasks);
                     }
                 }
@@ -82,7 +98,9 @@ namespace EasySave.Models
         }
 
 
-        // Créer une nouvelle tâche de sauvegarde
+        /// <summary>
+        /// Creates a new backup task.
+        /// </summary>
         public void CreateBackupTask(BackupJob_Models task)
         {
             if (Tasks.Count >= 5)
@@ -90,7 +108,7 @@ namespace EasySave.Models
                 Console.WriteLine("You cannot create more than 5 backup tasks.");
                 return;
             }
-            // Étape 5 : Résumé et confirmation
+            // Resume and confirmation
             Console.Clear();
             Console.WriteLine("=== Task Summary ===");
             Console.WriteLine($"Task Name: {task.Name}");
@@ -111,9 +129,11 @@ namespace EasySave.Models
                 Console.WriteLine("Task creation canceled. Returning to menu...");
             }
         }
-       
 
-        // Afficher toutes les tâches
+
+        /// <summary>
+        /// Displays all backup tasks.
+        /// </summary>
         public void ViewTasks()
         {
             if (Tasks.Count == 0)
@@ -130,23 +150,19 @@ namespace EasySave.Models
             }
         }
 
-        // Method to delete a specific task
+        /// <summary>
+        /// Deletes a backup task.
+        /// </summary>
         public void DeleteTask()
         {
-            ViewTasks(); // Display all tasks
-
+            ViewTasks();
             if (Tasks.Count == 0) return;
-
-            // Prompt the user for the task number to delete
             Console.Write("Enter the number of the task to delete: ");
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
             {
-                // Delete the selected task
                 Console.WriteLine($"Deleting task '{Tasks[taskNumber - 1].Name}'...");
                 Tasks.RemoveAt(taskNumber - 1);
                 Console.WriteLine("Task deleted successfully.");
-
-                // Save the updated task list
                 SaveTasks();
             }
             else
@@ -155,21 +171,20 @@ namespace EasySave.Models
             }
         }
 
+        /// <summary>
+        /// Execute a specific task from number
+        /// </summary>
         public void ExecuteSpecificTask()
         {
-            ViewTasks(); // Display all tasks
-
+            ViewTasks();
             if (Tasks.Count == 0)
             {
                 Console.WriteLine("No tasks available to execute.");
                 return;
             }
-
-            // Prompt the user for the task number to execute
             Console.Write("Enter the number of the task to execute: ");
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
             {
-                // Execute the selected task
                 ExecuteBackup(Tasks[taskNumber - 1]);
             }
             else
@@ -178,12 +193,14 @@ namespace EasySave.Models
             }
         }
 
-
+        /// <summary>
+        /// Execute all tasks sequentially
+        /// </summary>
         public void ExecuteAllTasks()
         {
             foreach (var task in Tasks)
             {
-                ExecuteBackup(task); // Execute each task
+                ExecuteBackup(task);
             }
         }
         private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
@@ -191,7 +208,7 @@ namespace EasySave.Models
             string uniqueName = sourceDirectoryName;
             int counter = 1;
 
-            // Boucle pour trouver un nom unique
+            // loop to find a unique name
             while (Directory.Exists(Path.Combine(destinationPath, uniqueName)))
             {
                 uniqueName = $"{sourceDirectoryName} ({counter})";
@@ -202,59 +219,68 @@ namespace EasySave.Models
         }
         private void CopyDirectoryContent(string sourceDir, string targetDir)
         {
-            // Copier tous les fichiers du répertoire source
+            // Copy all files from source directory
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
-                File.Copy(file, destinationFile, true); // Écraser si le fichier existe
+                File.Copy(file, destinationFile, true); // Overwrite if file already exist
             }
 
-            // Copier tous les sous-dossiers du répertoire source
+            // Copy folders of source directory
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir); // Appel récursif pour copier les sous-dossiers
+                CopyDirectoryContent(directory, destinationSubDir); // Recursive call to copy all subfolders
             }
         }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceDir">Source directory from which files will be copied</param>
+        /// <param name="destDir">Destination directory where files will be copied</param>
         private void CopyModifiedFiles(string sourceDir, string destDir)
         {
             foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
-                // Obtenir le chemin relatif par rapport au répertoire source
+                // Get relative path of source directory
                 string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
 
-                // Construire le chemin complet dans le répertoire cible
+                // Build full path in destination directory
                 string destFile = Path.Combine(destDir, relativePath);
 
-                // Vérifie si le fichier n'existe pas ou s'il a été modifié
+                // Verify if file was modified or already exist
                 if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
                 {
-                    // Créer les sous-dossiers nécessaires dans le répertoire cible
+                    // Create sub folders in destination directory
                     Directory.CreateDirectory(Path.GetDirectoryName(destFile));
 
-                    // Copier le fichier et écraser s'il existe
+                    // Copy file or overwrite it
                     File.Copy(sourceFile, destFile, true);
 
                     Console.WriteLine($"File updated or added: {destFile}");
                 }
             }
         }
-        // Private method to execute a single backup task
+        /// <summary>
+        /// Execute single backup task
+        /// </summary>
+        /// <param name="task">BackupJob_Models object task</param>
         private void ExecuteDifferentialBackup(BackupJob_Models task)
         {
             Console.WriteLine($"Executing differential backup: {task.Name}");
 
-            // Vérifie si le répertoire source existe
+            // Verify if source exist
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
                 return;
             }
 
-            // Vérifie si le répertoire de destination existe
+            // Verify if directory exist
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
 
@@ -274,32 +300,36 @@ namespace EasySave.Models
                 }
                 return;
             }
-            // Copier uniquement les fichiers nouveaux ou modifiés directement dans le répertoire cible
+            // Copy only new or modified files in destination directory
             CopyModifiedFiles(task.SourceDirectory, targetPath);
 
             Console.WriteLine($"Differential backup '{task.Name}' completed successfully.");
         }
+
+        /// <summary>
+        /// Do a full backup Job
+        /// </summary>
+        /// <param name="task">BackupJob_Models task object</param>
         private void PerformFullBackup(BackupJob_Models task)
         {
             Console.WriteLine($"Executing full backup: {task.Name}");
 
-            // Vérifie si le répertoire source existe
+            // Verify if source exist
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
                 return;
             }
 
-            // Créer un répertoire unique pour la sauvegarde
+            // Create unqiue folder for backup
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
 
-            // Crée le répertoire cible
+            // Create destination folder
             Directory.CreateDirectory(targetPath);
 
-            // Copier tout le contenu du répertoire source dans le répertoire cible
+            // Copy source files into destination directory
             CopyDirectoryContent(task.SourceDirectory, targetPath);
-
             Console.WriteLine($"Full backup '{task.Name}' completed successfully.");
         }
 
