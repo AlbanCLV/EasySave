@@ -10,7 +10,7 @@ namespace EasySave.Views
         public void DisplayMainMenu()
         {
             Console.Clear();
-            Console.WriteLine("Welcome to EasySave!");
+            Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               \r\n| $$_____/                               /$$__  $$                              \r\n| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ \r\n| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$\r\n| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$\r\n| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/\r\n| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$\r\n|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/\r\n                               /$$  | $$                                        \r\n                              |  $$$$$$/                                        \r\n                               \\______/                                         \r\n");
             Console.WriteLine("1. Create a backup task");
             Console.WriteLine("2. Execute a backup task");
             Console.WriteLine("3. Execute all tasks sequentially");
