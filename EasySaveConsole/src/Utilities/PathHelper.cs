@@ -3,11 +3,14 @@ using System.IO;
 
 namespace EasySave
 {
+    /// <summary>
+    /// Path helper to ensure path is correct
+    /// </summary>
     public class PathHelper
     {
         public static string GetRelativePath(string basePath, string fullPath)
         {
-            // Ajoute une barre de séparation finale si nécessaire
+            // Add "/" if necessary
             if (!basePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 basePath += Path.DirectorySeparatorChar;
@@ -16,7 +19,7 @@ namespace EasySave
             Uri baseUri = new Uri(basePath, UriKind.Absolute);
             Uri fullUri = new Uri(fullPath, UriKind.Absolute);
 
-            // Calcule le chemin relatif
+            // Create relative path
             return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fullUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
     }

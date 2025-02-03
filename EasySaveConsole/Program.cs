@@ -3,13 +3,20 @@ using EasySave.Controllers;
 
 namespace EasySave
 {
+    /// <summary>
+    /// Main programm to call controller for interactions between Views and Models
+    /// </summary>
     class Program
     {
+        /// <summary>
+        /// Call Controller
+        /// </summary>
+        /// <param name="args">CLI arguments</param>
         static void Main(string[] args)
         {
-            // Le contrôleur s'occupe de créer ses propres instances de la vue et du modèle
+            // Controller will initiate Viexs and Models
             BackupJob_Controller controller = new BackupJob_Controller();
-            controller.Run();  // Démarre la boucle principale de l'application
+            controller.Run();  // Run main loop of application
         }
     }
 }

@@ -4,9 +4,14 @@ using Terminal.Gui;
 
 namespace EasySave.Views
 {
+    /// <summary>
+    /// BackupJob View for user
+    /// </summary>
     public class BackupJob_View
     {
-        // Affiche le menu principal
+        /// <summary>
+        /// Load main menu in CLI
+        /// </summary>
         public void DisplayMainMenu()
         {
             Console.Clear();
@@ -20,7 +25,10 @@ namespace EasySave.Views
             Console.Write("\nSelect an option: ");
         }
 
-        // Récupère les détails d'une tâche de sauvegarde depuis l'utilisateur
+        /// <summary>
+        /// Get backup details from model
+        /// </summary>
+        /// <returns>new BackupJob_Models(name, source, target, type)</returns>
         public BackupJob_Models GetBackupDetails()
         {
             Console.Clear(); // Clear the console before execution
@@ -33,7 +41,7 @@ namespace EasySave.Views
                 
             }
 
-            // Étape 2 : Sélectionner le répertoire source
+            // Select source repository
             Console.WriteLine("\nSelect the source directory:");
             string source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
            while (string.IsNullOrEmpty(source))
@@ -61,11 +69,21 @@ namespace EasySave.Views
             return new BackupJob_Models(name, source, target, type);
         }
 
-        // Affiche un message
+        /// <summary>
+        /// Display message
+        /// </summary>
+        /// <param name="message">string message</param>
         public void DisplayMessage(string message)
         {
             Console.WriteLine(message);
         }
+
+        /// <summary>
+        /// Call interface to choose repositories in a graphical interface 
+        /// </summary>
+        /// <param name="canChooseFiles">bool for files that can be chosen</param>
+        /// <param name="canChooseDirectories">bool for directories that can be chosen</param>
+        /// <returns></returns>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
@@ -85,7 +103,7 @@ namespace EasySave.Views
             }
 
             Application.Shutdown();
-            return null; // Aucun chemin sélectionné
+            return null; // No path selected
         }
     }
 }

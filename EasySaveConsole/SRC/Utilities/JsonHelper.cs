@@ -8,14 +8,16 @@ namespace EasySave.Utilities
 {
     public static class JsonHelper
     {
-        // Sauvegarde un objet en JSON dans un fichier.
+        /// <summary>
+        /// Provides methods for reading and writing JSON files.
+        /// </summary>
         public static void SaveToJson<T>(string filePath, T data)
         {
             try
             {
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
 
-                // Crée le répertoire si nécessaire
+                // Ensure the directory exists
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
                 File.WriteAllText(filePath, json);
@@ -26,7 +28,9 @@ namespace EasySave.Utilities
             }
         }
 
-        // Charge un objet depuis un fichier JSON.
+        /// <summary>
+        /// Loads an object from a JSON file.
+        /// </summary>
         public static T LoadFromJson<T>(string filePath)
         {
             if (!File.Exists(filePath)) return default;

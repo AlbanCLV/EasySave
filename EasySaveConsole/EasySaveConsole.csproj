@@ -72,7 +72,6 @@
     <Compile Include="src\Utilities\JsonHelper.cs" />
     <Compile Include="src\Utilities\PathHelper.cs" />
     <!-- Controllers -->
-    <Compile Include="src\BackupController.cs" />
     <!-- Views -->
     <Compile Include="src\Views\BackupJob_View.cs" />
     <Compile Include="src\Views\Log_View.cs" />
