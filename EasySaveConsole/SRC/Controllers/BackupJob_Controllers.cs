@@ -10,7 +10,6 @@ namespace EasySave.Controllers
 {
     /// <summary>
     /// Controller class for managing interactions between the BackupJob model and view.
-    /// TEST COMMIT in sln
     /// </summary>
     public class BackupJob_Controller
     {
