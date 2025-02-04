@@ -43,21 +43,27 @@ namespace EasySave.Views
             }
 
             // Select source repository
-            Console.WriteLine("\nSelect the source directory:");
+            Console.WriteLine("\nSelect the source directory (Enter):");
+            Console.ReadKey();
             string source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
            while (string.IsNullOrEmpty(source))
             {
                 Console.Write("Source directory cannot be empty. Please enter a valid source directory: ");
-                source = Console.ReadLine();
+                source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
+            Console.WriteLine(source);
+            Console.Write("");
 
-            Console.Write("Enter target directory: ");
+            Console.Write("Enter target directory (Enter): ");
+            Console.ReadKey();
             string target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             while (string.IsNullOrEmpty(target))
             {
                 Console.Write("Target directory cannot be empty. Please enter a valid target directory: ");
-                target = Console.ReadLine();
+                target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
+            Console.WriteLine(target);
+
 
             Console.Write("Enter type (1 = Full, 2 = Differential): ");
             int typeInput;

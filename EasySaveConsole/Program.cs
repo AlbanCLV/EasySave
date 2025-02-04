@@ -45,6 +45,7 @@ namespace EasySave
                         controller_Task.DeleteTask();
                         break;
                     case "6": // Exit the application
+                        Environment.Exit(0); // 0 signifie une fermeture réussie
                         return;
                     default:
                         controller_Task.ErreurChoix();

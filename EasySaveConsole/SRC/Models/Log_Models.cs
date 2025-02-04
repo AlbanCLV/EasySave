@@ -56,6 +56,24 @@ namespace EasySave
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
+        public void LogErreur(String task, String Base,String Erreur)
+        {
+            
+            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+            var logEntry = new
+            {
+                Action = Base, // The action performed (e.g., "Backup Started").
+                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                TaskName = "Backup_" + task, // Name of the backup task.
+                Error = Erreur // Placeholder for transfer time (currently not used).
+            };
+            // Create the log file path based on the current date.
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
+            // Ensure that the log directory exists, create it if necessary.
+            Directory.CreateDirectory(logDirectory);
+            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
+            File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
+        }
 
         /// <summary>
         /// Calculates the total size of all files in a directory and its subdirectories.
@@ -64,13 +82,22 @@ namespace EasySave
         /// <returns>The total size of all files in the directory in bytes.</returns>
         private long GetDirectorySize(DirectoryInfo directory)
         {
+            if (!directory.Exists)
+            {
+                LogErreur("Error", "try to delete a task", "Folder not found");
+                Environment.Exit(0);
+            }
+
             long size = 0;
+
             // Iterate through all files in the directory and subdirectories.
             foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
             {
                 size += file.Length; // Add the file size to the total.
             }
+
             return size; // Return the total size.
         }
+
     }
 }

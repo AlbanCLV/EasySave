@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using EasySave.Controllers;
 using Newtonsoft.Json;  // Assurez-vous que cette directive est présente
@@ -36,7 +37,7 @@ namespace EasySave.Models
         private readonly Log_Models logger = new Log_Models();
         private readonly State_Models stateManager = new State_Models();
         private const string SaveFilePath = "tasks.json";
-        private Log_Controller controller_log;
+        private Log_Controller controller_log = new Log_Controller();
 
 
         /// <summary>
@@ -109,6 +110,14 @@ namespace EasySave.Models
             if (Tasks.Count >= 5)
             {
                 Console.WriteLine("You cannot create more than 5 backup tasks.");
+                controller_log.LogBackupErreur( task.Name, "Attempt to create a task", "You cannot create more than 5 backup tasks");
+                Console.WriteLine("The application will close automatically in:");
+                for (int i = 5; i > 0; i--)
+                {
+                    Console.WriteLine(i);
+                    Thread.Sleep(1000);
+                }
+                Environment.Exit(0); // 0 signifie une fermeture réussie
                 return;
             }
             // Resume and confirmation
@@ -163,29 +172,37 @@ namespace EasySave.Models
             if (Tasks.Count == 0)
             {
                 Console.WriteLine("No tasks available to delete.");
+                controller_log.LogBackupErreur("Error", "try to delete a task", "No tasks available to delete.");
+                Environment.Exit(0);
                 return null; // Return null if no tasks exist
             }
 
-            Console.Write("Enter the number of the task to delete: ");
+            BackupJob_Models deletedTask = null;
 
-            // Validate user input
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+            while (true)
             {
-                BackupJob_Models deletedTask = Tasks[taskNumber - 1]; // Store the task before deletion
+                Console.Write("Enter the number of the task to delete: ");
 
-                Console.WriteLine($"Deleting task '{deletedTask.Name}'...");
-                Tasks.RemoveAt(taskNumber - 1); // Remove the task
-                Console.WriteLine("Task deleted successfully.");
+                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+                {
+                    deletedTask = Tasks[taskNumber - 1]; // Stocker la tâche avant suppression
+                    Console.WriteLine($"Deleting task '{deletedTask.Name}'...");
+                    Tasks.RemoveAt(taskNumber - 1); // Supprimer la tâche
+                    Console.WriteLine("Task deleted successfully.");
 
-                SaveTasks(); // Save the updated task list
+                    SaveTasks(); // Sauvegarder les changements
 
-                return deletedTask; // Return the deleted task
+                    break; // Sortir de la boucle après une entrée valide
+                }
+                else
+                {
+                    Console.WriteLine("Invalid task number. Please enter a valid number.");
+                    controller_log.LogBackupErreur("Error", "try to delete a task", "Invalid task number.");
+                }
             }
-            else
-            {
-                Console.WriteLine("Invalid task number.");
-                return null; // Return null if input is invalid
-            }
+
+            return deletedTask; // Retourner la tâche supprimée
+
         }
 
 
@@ -198,20 +215,27 @@ namespace EasySave.Models
             if (Tasks.Count == 0)
             {
                 Console.WriteLine("No tasks available to execute.");
+                controller_log.LogBackupErreur("error","try to execute a task", "No tasks available to execute.");
+                Environment.Exit(0); // 0 signifie une fermeture réussie
                 return null; // Return null if no tasks are available
             }
             Console.Write("Enter the number of the task to execute: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+            while (true)
             {
-                BackupJob_Models selectedTask = Tasks[taskNumber - 1];
-                ExecuteBackup(selectedTask);
-                return selectedTask; // Return the executed task
+                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+                {
+                    BackupJob_Models selectedTask = Tasks[taskNumber - 1];
+                    ExecuteBackup(selectedTask);
+                    return selectedTask; // Return the executed task
+                }
+                else
+                {
+                    Console.WriteLine("Invalid task number. Please enter a valid number.");
+                    controller_log.LogBackupErreur("Error", "try to execute a task", "Invalid task number.");
+                    Console.Write("Enter the number of the task to execute: ");
+                }
             }
-            else
-            {
-                Console.WriteLine("Invalid task number.");
-                return null; // Return null if the input is invalid
-            }
+
         }
 
 
@@ -306,6 +330,8 @@ namespace EasySave.Models
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
+                controller_log.LogBackupErreur(task.Name, "try to execute a task", $"Source directory '{task.SourceDirectory}' does not exist.");
+                Environment.Exit(0);
                 return;
             }
 
@@ -347,6 +373,8 @@ namespace EasySave.Models
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine($"Source directory '{task.SourceDirectory}' does not exist.");
+                controller_log.LogBackupErreur(task.Name, "try to execute a task", $"Source directory '{task.SourceDirectory}' does not exist.");
+                Environment.Exit(0);
                 return;
             }
 
