@@ -14,9 +14,42 @@ namespace EasySave
         /// <param name="args">CLI arguments</param>
         static void Main(string[] args)
         {
-            // Controller will initiate Viexs and Models
-            BackupJob_Controller controller = new BackupJob_Controller();
-            controller.Run();  // Run main loop of application
+            BackupJob_Controller controller_Tasks = new BackupJob_Controller();
+
+            while (true)
+            {
+
+                string input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        controller_Tasks.CreateBackupTask();
+
+                        break;
+                    case "2":
+                        Console.Clear();
+                        Console.WriteLine("Execute a Backup Task\n");
+                        controller_Tasks.ExecuteSpecificTask();
+                        break;
+                    case "3":
+                        controller_Tasks.ExecuteAllTasks();
+                        break;
+                    case "4":
+                        controller_Tasks.ViewTasks();
+                        break;
+                    case "5":
+                        Console.Write("Delete a backup task \n");
+                        controller_Tasks.DeleteTask();
+                        break;
+                    case "6":
+                        return;
+                    default:
+                        controller_Tasks.ErreurChoixMenu();
+                        break;
+                }
+            }
+
         }
     }
 }
