@@ -39,7 +39,6 @@ namespace EasySave.Controllers
         /// </summary>
         public void CreateBackupTask()
         {
-            backupView.DisplayMainMenu();
             BackupJob_Models task = backupView.GetBackupDetails();
             backupModel.CreateBackupTask(task);
             backupView.DisplayMessage("Backup task created successfully.");
