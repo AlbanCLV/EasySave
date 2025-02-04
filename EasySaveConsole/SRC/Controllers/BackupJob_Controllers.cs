@@ -10,6 +10,7 @@ namespace EasySave.Controllers
 {
     /// <summary>
     /// Controller class for managing interactions between the BackupJob model and view.
+    /// TEST COMMIT
     /// </summary>
     public class BackupJob_Controller
     {
@@ -34,6 +35,7 @@ namespace EasySave.Controllers
 
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
+        /// TEST DOCUMENTATION
         /// </summary>
         private void PauseAndReturn()
         {
