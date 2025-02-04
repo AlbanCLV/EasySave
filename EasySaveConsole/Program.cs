@@ -4,51 +4,52 @@ using EasySave.Controllers;
 namespace EasySave
 {
     /// <summary>
-    /// Main programm to call controller for interactions between Views and Models
+    /// Entry point for the EasySave application.
     /// </summary>
     class Program
     {
-        /// <summary>
-        /// Call Controller
-        /// </summary>
-        /// <param name="args">CLI arguments</param>
         static void Main(string[] args)
         {
-            // Controller will initiate Viexs and Models
-            BackupJob_Controller controller_Task = new BackupJob_Controller();
-            Log_Controller controller_Log = new Log_Controller();
-            /// <summary>
-            /// Main method that manages the menu and navigation.
-            /// </summary>
+            // Set console output encoding to UTF-8
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            // Display language selection
+            Console.WriteLine("Choose a language / Choisissez une langue:");
+            Console.WriteLine("1. English");
+            Console.WriteLine("2. Français");
+            Console.Write("Enter your choice: ");
+            string languageChoice = Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
+
+            // Initialize the controller with the selected language
+            BackupJob_Controller controller = new BackupJob_Controller(languageChoice);
+
             while (true)
             {
-                controller_Task.DisplayMainMenu();
-                string input = Console.ReadLine();
+                controller.DisplayMainMenu();
+                string input = Console.ReadLine()?.Trim(); // Trim to avoid leading/trailing spaces
 
                 switch (input)
                 {
-                    case "1": // Create a backup task
-                        controller_Task.CreateBackupTask();
-
+                    case "1":
+                        controller.CreateBackupTask();
                         break;
-                    case "2": // Execute a specific task
-
-                        controller_Task.ExecuteSpecificTask();
+                    case "2":
+                        controller.ExecuteSpecificTask();
                         break;
-                    case "3": // Execute all tasks
-                        controller_Task.ExecuteAllTasks();
+                    case "3":
+                        controller.ExecuteAllTasks();
                         break;
-                    case "4": // View all tasks
-                        controller_Task.ViewTasks();
+                    case "4":
+                        controller.ViewTasks();
                         break;
-                    case "5": // Delete a task
-                        controller_Task.DeleteTask();
+                    case "5":
+                        controller.DeleteTask();
                         break;
-                    case "6": // Exit the application
-                        Environment.Exit(0); // 0 signifie une fermeture réussie
-                        return;
+                    case "6":
+                        Environment.Exit(0);
+                        break;
                     default:
-                        controller_Task.ErreurChoix();
+                        controller.ErreurChoix();
                         break;
                 }
             }

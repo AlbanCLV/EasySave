@@ -31,7 +31,13 @@ TestResults/
 !packages.config
 *.sqlite
 *.db
+
+# Ignore all .json files
 *.json
+
+# But keep the language files
+!en.json
+!fr.json
 
 # Ignore Visual Studio designer files
 *.Designer.cs

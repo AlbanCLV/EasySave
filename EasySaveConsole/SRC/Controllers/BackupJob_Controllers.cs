@@ -1,10 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using EasySave.Models;
 using EasySave.Views;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
 
 namespace EasySave.Controllers
 {
@@ -13,49 +11,45 @@ namespace EasySave.Controllers
     /// </summary>
     public class BackupJob_Controller
     {
-        private BackupJob_Models backupModel;
-        private BackupJob_View backupView;
-        private Log_Controller controller_log;
-        Stopwatch stopwatch = new Stopwatch();
+        private readonly BackupJob_Models backupModel;
+        private readonly BackupJob_View backupView;
+        private readonly Log_Controller controller_log;
+        private readonly Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
-        /// Default constructor that initializes the view and model.
+        /// Initializes the controller with a specified language.
         /// </summary>
-        public BackupJob_Controller()
+        /// <param name="language">Language code (e.g., "en" or "fr").</param>
+        public BackupJob_Controller(string language)
         {
-            backupView = new BackupJob_View();
-            // The model is initialized with empty (or default) values, then tasks are loaded
-            backupModel = new BackupJob_Models("", "", "", BackupType.Full);
+            backupView = new BackupJob_View(language);
+            backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
             controller_log = new Log_Controller();
-            backupModel.LoadTasks();
-            backupView.DisplayMainMenu();
         }
-      
 
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
         /// </summary>
         private void PauseAndReturn()
         {
-            Console.WriteLine("\nPress any key to return to the menu...");
+            backupView.DisplayMessage("PressKeyToReturn");
             Console.ReadKey();
         }
 
         /// <summary>
         /// Creates a backup task.
-        /// </summary>l
+        /// </summary>
         public void CreateBackupTask()
         {
             BackupJob_Models task = backupView.GetBackupDetails();
             stopwatch.Start();
             backupModel.CreateBackupTask(task);
             stopwatch.Stop();
-            TimeSpan time = stopwatch.Elapsed;
-            string formattedTime = time.ToString(@"hh\:mm\:ss\.fff");
-            backupView.DisplayMessage("Backup task created successfully.");
-            controller_log.LogBackupAction(task, formattedTime, "Create Tasks");
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+            backupView.DisplayMessage("TaskCreated");
+            controller_log.LogBackupAction(task, formattedTime, "Create Task");
             PauseAndReturn();
-  
         }
 
         /// <summary>
@@ -63,14 +57,15 @@ namespace EasySave.Controllers
         /// </summary>
         public void DeleteTask()
         {
-            backupView.DisplayMessage("Delete a backup task \n");
+            backupView.DisplayMessage("DeleteTask");
             ViewTasks();
+
             stopwatch.Start();
             BackupJob_Models task = backupModel.DeleteTask();
             stopwatch.Stop();
-            TimeSpan time = stopwatch.Elapsed;
-            string formattedTime = time.ToString(@"hh\:mm\:ss\.fff");
-            controller_log.LogBackupAction(task, formattedTime, "Delete a Tasks");
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+            controller_log.LogBackupAction(task, formattedTime, "Delete Task");
             PauseAndReturn();
         }
 
@@ -88,48 +83,48 @@ namespace EasySave.Controllers
         /// </summary>
         public void ExecuteSpecificTask()
         {
-            Console.Clear();
-            backupView.DisplayMessage("Execute a Backup Task\n");
+            backupView.DisplayMessage("ExecuteSpecificTask");
             stopwatch.Start();
             BackupJob_Models task = backupModel.ExecuteSpecificTask();
             stopwatch.Stop();
-            TimeSpan time = stopwatch.Elapsed;
-            string formattedTime = time.ToString(@"hh\:mm\:ss\.fff");
-            if (task.Type == BackupType.Full)
-            {
-                controller_log.LogBackupAction(task, formattedTime, "Executing Full backup");
-            }else if (task.Type == BackupType.Differential)
-            {
-                controller_log.LogBackupAction(task, formattedTime, "Executing differential backup");
-            }
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+            string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
+            controller_log.LogBackupAction(task, formattedTime, logType);
             PauseAndReturn();
         }
-        public void ExecuteAllTasks()
-        {
-            Console.Clear();
-            backupView.DisplayMessage("Execute all Backup Task\n");
-            stopwatch.Start();
-            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();
-            stopwatch.Stop();
-            TimeSpan time = stopwatch.Elapsed;
-            string formattedTime = time.ToString(@"hh\:mm\:ss\.fff");
-            foreach (var task in executedTasks)
-            {
-                controller_log.LogBackupAction(task, formattedTime, "Execute All Backup");
-            }
-            PauseAndReturn();
-
-        }
-
 
         /// <summary>
         /// Executes all backup tasks.
         /// </summary>
+        public void ExecuteAllTasks()
+        {
+            backupView.DisplayMessage("ExecuteAllTasks");
+            stopwatch.Start();
 
+            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();
+            stopwatch.Stop();
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+            foreach (var task in executedTasks)
+            {
+                controller_log.LogBackupAction(task, formattedTime, "Executing All Backup");
+            }
+
+            PauseAndReturn();
+        }
+
+        /// <summary>
+        /// Handles invalid menu option input.
+        /// </summary>
         public void ErreurChoix()
         {
-            backupView.DisplayMessage("Invalid option.Please try again.");
+            backupView.DisplayMessage("InvalidOption");
         }
+
+        /// <summary>
+        /// Displays the main menu.
+        /// </summary>
         public void DisplayMainMenu()
         {
             backupView.DisplayMainMenu();

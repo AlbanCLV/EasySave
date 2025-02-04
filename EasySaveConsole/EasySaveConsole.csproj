@@ -70,6 +70,7 @@
     <Compile Include="src\Controllers\State_Controllers.cs" />
     <!-- Utilities -->
     <Compile Include="src\Utilities\JsonHelper.cs" />
+    <Compile Include="src\Utilities\LangManager.cs" />
     <Compile Include="src\Utilities\PathHelper.cs" />
     <!-- Controllers -->
     <!-- Views -->
@@ -81,6 +82,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="src\Lang\en.json" />
+    <None Include="src\Lang\fr.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="States\" />

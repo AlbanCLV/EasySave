@@ -1,75 +1,83 @@
 using System;
 using EasySave.Models;
+using EasySave.Utilities;
 using Terminal.Gui;
 
 namespace EasySave.Views
 {
     /// <summary>
-    /// BackupJob View for user
+    /// View class for managing user interactions with translations.
     /// </summary>
     public class BackupJob_View
     {
+        private readonly LangManager lang;
+
         /// <summary>
-        /// Load main menu in CLI
+        /// Initializes the view with a specified language.
+        /// </summary>
+        /// <param name="language">Language code (e.g., "en" or "fr").</param>
+        public BackupJob_View(string language)
+        {
+            lang = new LangManager(language);
+        }
+
+        /// <summary>
+        /// Load and display the main menu in CLI.
         /// </summary>
         public void DisplayMainMenu()
         {
             Console.Clear();
             Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               \r\n| $$_____/                               /$$__  $$                              \r\n| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ \r\n| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$\r\n| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$\r\n| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/\r\n| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$\r\n|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/\r\n                               /$$  | $$                                        \r\n                              |  $$$$$$/                                        \r\n                               \\______/                                         \r\n");
-            Console.WriteLine("1. Create a backup task");
-            Console.WriteLine("2. Execute a backup task");
-            Console.WriteLine("3. Execute all tasks sequentially");
-            Console.WriteLine("4. View all backup tasks");
-            Console.WriteLine("5. Delete a backup task");
-            Console.WriteLine("6. Exit");
-            Console.Write("\nSelect an option: ");
+            Console.WriteLine($"1. {lang.Translate("CreateBackupTask")}");
+            Console.WriteLine($"2. {lang.Translate("ExecuteBackupTask")}");
+            Console.WriteLine($"3. {lang.Translate("ExecuteAllTasks")}");
+            Console.WriteLine($"4. {lang.Translate("ViewAllTasks")}");
+            Console.WriteLine($"5. {lang.Translate("DeleteTask")}");
+            Console.WriteLine($"6. {lang.Translate("Exit")}");
+            Console.Write($"\n{lang.Translate("SelectOption")}");
         }
 
         /// <summary>
-        /// Get backup details from model
+        /// Get backup details from the user.
         /// </summary>
-        /// <returns>new BackupJob_Models(name, source, target, type)</returns>
+        /// <returns>A new instance of <see cref="BackupJob_Models"/>.</returns>
         public BackupJob_Models GetBackupDetails()
         {
-            Console.Clear(); // Clear the console before execution
-            Console.WriteLine("=== Create a Backup Task ===");
-            Console.Write("Enter task name: ");
+            Console.Clear();
+            Console.WriteLine($"=== {lang.Translate("CreateBackupTask")} ===");
+
+            Console.Write(lang.Translate("EnterTaskName"));
             string name = Console.ReadLine();
 
             while (string.IsNullOrEmpty(name))
             {
-                Console.WriteLine("Task name cannot be empty. Returning to menu...");
+                Console.WriteLine(lang.Translate("TaskNameEmpty"));
                 name = Console.ReadLine();
             }
 
-            // Select source repository
-            Console.WriteLine("\nSelect the source directory (Enter):");
+            Console.WriteLine($"\n{lang.Translate("SelectSourceDir")}");
             Console.ReadKey();
             string source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
-           while (string.IsNullOrEmpty(source))
+            while (string.IsNullOrEmpty(source))
             {
-                Console.Write("Source directory cannot be empty. Please enter a valid source directory: ");
+                Console.WriteLine(lang.Translate("SourceDirEmpty"));
                 source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
-            Console.WriteLine(source);
-            Console.Write("");
 
-            Console.Write("Enter target directory (Enter): ");
+            Console.WriteLine($"\n{lang.Translate("SelectTargetDir")}");
             Console.ReadKey();
             string target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             while (string.IsNullOrEmpty(target))
             {
-                Console.Write("Target directory cannot be empty. Please enter a valid target directory: ");
+                Console.WriteLine(lang.Translate("TargetDirEmpty"));
                 target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
-            Console.WriteLine(target);
 
-
-            Console.Write("Enter type (1 = Full, 2 = Differential): ");
+            Console.Write(lang.Translate("EnterBackupType"));
             int typeInput;
             while (!int.TryParse(Console.ReadLine(), out typeInput) || (typeInput != 1 && typeInput != 2))
             {
-                Console.Write("Invalid input. Please enter 1 for Full or 2 for Differential: ");
+                Console.Write(lang.Translate("InvalidBackupType"));
             }
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
@@ -77,25 +85,25 @@ namespace EasySave.Views
         }
 
         /// <summary>
-        /// Display message
+        /// Display a translated message.
         /// </summary>
-        /// <param name="message">string message</param>
-        public void DisplayMessage(string message)
+        /// <param name="key">Key for the message.</param>
+        public void DisplayMessage(string key)
         {
-            Console.WriteLine(message);
+            Console.WriteLine(lang.Translate(key));
         }
 
         /// <summary>
-        /// Call interface to choose repositories in a graphical interface 
+        /// Browse and select a directory or file using a graphical interface.
         /// </summary>
-        /// <param name="canChooseFiles">bool for files that can be chosen</param>
-        /// <param name="canChooseDirectories">bool for directories that can be chosen</param>
-        /// <returns></returns>
+        /// <param name="canChooseFiles">Whether files can be chosen.</param>
+        /// <param name="canChooseDirectories">Whether directories can be chosen.</param>
+        /// <returns>The selected path as a string.</returns>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
 
-            var dialog = new OpenDialog("Select Path", "Choose a file or directory")
+            var dialog = new OpenDialog(lang.Translate("SelectPathTitle"), lang.Translate("SelectPathDescription"))
             {
                 CanChooseFiles = canChooseFiles,
                 CanChooseDirectories = canChooseDirectories
