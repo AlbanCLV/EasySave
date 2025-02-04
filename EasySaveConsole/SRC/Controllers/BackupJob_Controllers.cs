@@ -22,50 +22,7 @@ namespace EasySave.Controllers
             backupModel = new BackupJob_Models("", "", "", BackupType.Full);
             backupModel.LoadTasks();
         }
-
-        /// <summary>
-        /// Main method that manages the menu and navigation.
-        /// </summary>
-        public void Run()
-        {
-            while (true)
-            {
-                backupView.DisplayMainMenu();
-                string input = Console.ReadLine();
-
-                switch (input)
-                {
-                    case "1": // Create a backup task
-                        CreateBackupTask();
-                        PauseAndReturn();
-                        break;
-                    case "2": // Execute a specific task
-                        Console.Clear();
-                        Console.WriteLine("Execute a Backup Task\n");
-                        ExecuteSpecificTask();
-                        PauseAndReturn();
-                        break;
-                    case "3": // Execute all tasks
-                        ExecuteAllTasks();
-                        PauseAndReturn();
-                        break;
-                    case "4": // View all tasks
-                        ViewTasks();
-                        PauseAndReturn();
-                        break;
-                    case "5": // Delete a task
-                        Console.Write("Delete a backup task \n");
-                        DeleteTask();
-                        PauseAndReturn();
-                        break;
-                    case "6": // Exit the application
-                        return;
-                    default:
-                        backupView.DisplayMessage("Invalid option. Please try again.");
-                        break;
-                }
-            }
-        }
+      
 
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
@@ -84,6 +41,8 @@ namespace EasySave.Controllers
             BackupJob_Models task = backupView.GetBackupDetails();
             backupModel.CreateBackupTask(task);
             backupView.DisplayMessage("Backup task created successfully.");
+            PauseAndReturn();
+
         }
 
         /// <summary>
@@ -92,6 +51,7 @@ namespace EasySave.Controllers
         public void ViewTasks()
         {
             backupModel.ViewTasks();
+            PauseAndReturn();
         }
 
         /// <summary>
@@ -99,9 +59,11 @@ namespace EasySave.Controllers
         /// </summary>
         public void DeleteTask()
         {
+            backupView.DisplayMessage("Delete a backup task \n");
             ViewTasks();
             backupModel.DeleteTask();
             backupView.DisplayMessage("Task deleted successfully.");
+            PauseAndReturn();
         }
 
         /// <summary>
@@ -109,7 +71,10 @@ namespace EasySave.Controllers
         /// </summary>
         public void ExecuteSpecificTask()
         {
+            Console.Clear();
+            backupView.DisplayMessage("Execute a Backup Task\n");
             backupModel.ExecuteSpecificTask();
+            PauseAndReturn();
         }
 
         /// <summary>
@@ -118,6 +83,15 @@ namespace EasySave.Controllers
         public void ExecuteAllTasks()
         {
             backupModel.ExecuteAllTasks();
+            PauseAndReturn();
+        }
+        public void ErreurChoix()
+        {
+            backupView.DisplayMessage("Invalid option.Please try again.");
+        }
+        public void DisplayMainMenu()
+        {
+            backupView.DisplayMainMenu();
         }
     }
 }

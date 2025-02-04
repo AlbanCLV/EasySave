@@ -38,7 +38,7 @@ namespace EasySave.Views
             while (string.IsNullOrEmpty(name))
             {
                 Console.WriteLine("Task name cannot be empty. Returning to menu...");
-                
+                name = Console.ReadLine();
             }
 
             // Select source repository
