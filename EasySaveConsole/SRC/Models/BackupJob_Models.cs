@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using EasySave.Controllers;
 using Newtonsoft.Json;  // Assurez-vous que cette directive est présente
 using Terminal.Gui;
 
@@ -35,6 +36,8 @@ namespace EasySave.Models
         private readonly Log_Models logger = new Log_Models();
         private readonly State_Models stateManager = new State_Models();
         private const string SaveFilePath = "tasks.json";
+        private Log_Controller controller_log;
+
 
         /// <summary>
         /// Constructor for creating a backup job.
@@ -121,7 +124,6 @@ namespace EasySave.Models
             if (confirmation == "Y")
             {
                 Tasks.Add(task);
-                Console.WriteLine("Task created successfully!");
                 SaveTasks();
             }
             else
@@ -153,56 +155,83 @@ namespace EasySave.Models
         /// <summary>
         /// Deletes a backup task.
         /// </summary>
-        public void DeleteTask()
+        public BackupJob_Models DeleteTask()
         {
             ViewTasks();
-            if (Tasks.Count == 0) return;
+
+            // Check if there are tasks to delete
+            if (Tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks available to delete.");
+                return null; // Return null if no tasks exist
+            }
+
             Console.Write("Enter the number of the task to delete: ");
+
+            // Validate user input
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
             {
-                Console.WriteLine($"Deleting task '{Tasks[taskNumber - 1].Name}'...");
-                Tasks.RemoveAt(taskNumber - 1);
+                BackupJob_Models deletedTask = Tasks[taskNumber - 1]; // Store the task before deletion
+
+                Console.WriteLine($"Deleting task '{deletedTask.Name}'...");
+                Tasks.RemoveAt(taskNumber - 1); // Remove the task
                 Console.WriteLine("Task deleted successfully.");
-                SaveTasks();
+
+                SaveTasks(); // Save the updated task list
+
+                return deletedTask; // Return the deleted task
             }
             else
             {
                 Console.WriteLine("Invalid task number.");
+                return null; // Return null if input is invalid
             }
         }
+
 
         /// <summary>
         /// Execute a specific task from number
         /// </summary>
-        public void ExecuteSpecificTask()
+        public BackupJob_Models ExecuteSpecificTask()
         {
             ViewTasks();
             if (Tasks.Count == 0)
             {
                 Console.WriteLine("No tasks available to execute.");
-                return;
+                return null; // Return null if no tasks are available
             }
             Console.Write("Enter the number of the task to execute: ");
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
             {
-                ExecuteBackup(Tasks[taskNumber - 1]);
+                BackupJob_Models selectedTask = Tasks[taskNumber - 1];
+                ExecuteBackup(selectedTask);
+                return selectedTask; // Return the executed task
             }
             else
             {
                 Console.WriteLine("Invalid task number.");
+                return null; // Return null if the input is invalid
             }
         }
+
+
 
         /// <summary>
         /// Execute all tasks sequentially
         /// </summary>
-        public void ExecuteAllTasks()
+        public List<BackupJob_Models> ExecuteAllTasks()
         {
+            List<BackupJob_Models> executedTasks = new List<BackupJob_Models>(); // List to store executed tasks
+
             foreach (var task in Tasks)
             {
-                ExecuteBackup(task);
+                ExecuteBackup(task); // Execute the backup process
+                executedTasks.Add(task); // Add the executed task to the list
             }
+
+            return executedTasks; // Return the list of executed tasks
         }
+
         private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
         {
             string uniqueName = sourceDirectoryName;
@@ -337,7 +366,6 @@ namespace EasySave.Models
         {
             if (task.Type == BackupType.Full)
             {
-                Console.WriteLine($"Performing full backup: {task.Name}");
                 PerformFullBackup(task);
             }
             else if (task.Type == BackupType.Differential)

@@ -15,38 +15,39 @@ namespace EasySave
         static void Main(string[] args)
         {
             // Controller will initiate Viexs and Models
-            BackupJob_Controller controller = new BackupJob_Controller();
-
+            BackupJob_Controller controller_Task = new BackupJob_Controller();
+            Log_Controller controller_Log = new Log_Controller();
             /// <summary>
             /// Main method that manages the menu and navigation.
             /// </summary>
             while (true)
             {
-                controller.DisplayMainMenu();
+                controller_Task.DisplayMainMenu();
                 string input = Console.ReadLine();
 
                 switch (input)
                 {
                     case "1": // Create a backup task
-                        controller.CreateBackupTask();
+                        controller_Task.CreateBackupTask();
+
                         break;
                     case "2": // Execute a specific task
-                        
-                        controller.ExecuteSpecificTask();
+
+                        controller_Task.ExecuteSpecificTask();
                         break;
                     case "3": // Execute all tasks
-                        controller.ExecuteAllTasks();
+                        controller_Task.ExecuteAllTasks();
                         break;
                     case "4": // View all tasks
-                        controller.ViewTasks();
+                        controller_Task.ViewTasks();
                         break;
                     case "5": // Delete a task
-                        controller.DeleteTask();
+                        controller_Task.DeleteTask();
                         break;
                     case "6": // Exit the application
                         return;
                     default:
-                        controller.ErreurChoix();
+                        controller_Task.ErreurChoix();
                         break;
                 }
             }

@@ -74,8 +74,6 @@
     <!-- Controllers -->
     <!-- Views -->
     <Compile Include="src\Views\BackupJob_View.cs" />
-    <Compile Include="src\Views\Log_View.cs" />
-    <Compile Include="src\Views\State_View.cs" />
     <!-- Program -->
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
