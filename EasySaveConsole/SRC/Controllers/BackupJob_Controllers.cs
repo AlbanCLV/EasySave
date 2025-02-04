@@ -16,49 +16,10 @@ namespace EasySave.Controllers
             // Le modèle est initialisé avec des valeurs vides (ou par défaut) puis les tâches sont chargées
             backupModel = new BackupJob_Models("", "", "", BackupType.Full);
             backupModel.LoadTasks();
+            backupView.DisplayMainMenu();
         }
 
-        // Méthode principale qui gère le menu et la navigation
-        public void Run()
-        {
-            while (true)
-            {
-                backupView.DisplayMainMenu();
-                string input = Console.ReadLine();
-
-                switch (input)
-                {
-                    case "1": // Créer une tâche de sauvegarde
-                        CreateBackupTask();
-                        PauseAndReturn();
-                        break;
-                    case "2": // Exécuter une tâche spécifique
-                        Console.Clear();
-                        Console.WriteLine("Execute a Backup Task\n");
-                        ExecuteSpecificTask();
-                        PauseAndReturn();
-                        break;
-                    case "3": // Exécuter toutes les tâches
-                        ExecuteAllTasks();
-                        PauseAndReturn();
-                        break;
-                    case "4": // Voir toutes les tâches
-                        ViewTasks();
-                        PauseAndReturn();
-                        break;
-                    case "5": // Supprimer une tâche
-                        Console.Write("Delete a backup task \n");
-                        DeleteTask();
-                        PauseAndReturn();
-                        break;
-                    case "6": // Quitter l'application
-                        return;
-                    default:
-                        backupView.DisplayMessage("Invalid option. Please try again.");
-                        break;
-                }
-            }
-        }
+        
 
         private void PauseAndReturn()
         {
@@ -69,15 +30,18 @@ namespace EasySave.Controllers
         // Méthode pour créer une tâche de sauvegarde
         public void CreateBackupTask()
         {
+            backupView.DisplayMainMenu();
             BackupJob_Models task = backupView.GetBackupDetails();
             backupModel.CreateBackupTask(task);
             backupView.DisplayMessage("Backup task created successfully.");
+            PauseAndReturn();
         }
 
         // Méthode pour afficher toutes les tâches de sauvegarde
         public void ViewTasks()
         {
             backupModel.ViewTasks();
+            PauseAndReturn();
         }
 
         // Méthode pour supprimer une tâche
@@ -86,18 +50,25 @@ namespace EasySave.Controllers
             ViewTasks();
             backupModel.DeleteTask();
             backupView.DisplayMessage("Task deleted successfully.");
+            PauseAndReturn();
         }
 
         // Exécuter une tâche spécifique
         public void ExecuteSpecificTask()
         {
             backupModel.ExecuteSpecificTask();
+            PauseAndReturn();
         }
 
         // Exécuter toutes les tâches
         public void ExecuteAllTasks()
         {
             backupModel.ExecuteAllTasks();
+            PauseAndReturn();
+        }
+        public void ErreurChoixMenu()
+        {
+            backupView.DisplayMessage("Invalid option. Please try again.");
         }
     }
 }
