@@ -21,6 +21,7 @@ namespace EasySave.Controllers
             // The model is initialized with empty (or default) values, then tasks are loaded
             backupModel = new BackupJob_Models("", "", "", BackupType.Full);
             backupModel.LoadTasks();
+            backupView.DisplayMainMenu();
         }
       
 
@@ -38,6 +39,7 @@ namespace EasySave.Controllers
         /// </summary>
         public void CreateBackupTask()
         {
+            backupView.DisplayMainMenu();
             BackupJob_Models task = backupView.GetBackupDetails();
             backupModel.CreateBackupTask(task);
             backupView.DisplayMessage("Backup task created successfully.");

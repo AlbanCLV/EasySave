@@ -8,5 +8,6 @@ namespace EasySave.Controllers
 {
     public class StateController
     {
+
     }
 }

@@ -35,6 +35,7 @@ namespace EasySave.Views
             Console.WriteLine("=== Create a Backup Task ===");
             Console.Write("Enter task name: ");
             string name = Console.ReadLine();
+
             while (string.IsNullOrEmpty(name))
             {
                 Console.WriteLine("Task name cannot be empty. Returning to menu...");
