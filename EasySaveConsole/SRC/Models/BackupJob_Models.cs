@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using EasySave.Controllers;
 using EasySave.Utilities; // Ajout de la référence au gestionnaire de langue
 using Newtonsoft.Json;
-using Terminal.Gui;
 
 namespace EasySave.Models
 {
@@ -40,7 +38,7 @@ namespace EasySave.Models
         private Log_Controller controller_log = new Log_Controller();
 
         // Instanciation du gestionnaire de langue (ici en français par défaut)
-        private readonly LangManager lang = new LangManager("fr");
+        private readonly LangManager lang;
 
         /// <summary>
         /// Constructor for creating a backup job.
@@ -51,6 +49,9 @@ namespace EasySave.Models
             SourceDirectory = sourceDirectory;
             TargetDirectory = targetDirectory;
             Type = type;
+
+            lang = new LangManager(Program.SelectedLanguage);
+
 
             if (loadTasks)  // Load tasks if necessary
             {

@@ -16,9 +16,10 @@ namespace EasySave.Views
         /// Initializes the view with a specified language.
         /// </summary>
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
-        public BackupJob_View(string language)
+        public BackupJob_View()
+
         {
-            lang = new LangManager(language);
+            lang = new LangManager(Program.SelectedLanguage);
         }
 
         /// <summary>

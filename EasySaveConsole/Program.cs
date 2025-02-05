@@ -8,6 +8,7 @@ namespace EasySave
     /// </summary>
     class Program
     {
+        public static string SelectedLanguage { get; private set; }
         static void Main(string[] args)
         {
             // Set console output encoding to UTF-8
@@ -18,10 +19,10 @@ namespace EasySave
             Console.WriteLine("1. English");
             Console.WriteLine("2. Français");
             Console.Write("Enter your choice: ");
-            string languageChoice = Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
+            SelectedLanguage = Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
 
             // Initialize the controller with the selected language
-            BackupJob_Controller controller = new BackupJob_Controller(languageChoice);
+            BackupJob_Controller controller = new BackupJob_Controller(SelectedLanguage);
 
             while (true)
             {
@@ -56,3 +57,4 @@ namespace EasySave
         }
     }
 }
+
