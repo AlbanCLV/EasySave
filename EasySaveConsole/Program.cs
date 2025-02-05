@@ -17,6 +17,7 @@ namespace EasySave
             // Controller will initiate Viexs and Models
             BackupJob_Controller controller_Task = new BackupJob_Controller();
             Log_Controller controller_Log = new Log_Controller();
+
             /// <summary>
             /// Main method that manages the menu and navigation.
             /// </summary>
@@ -32,6 +33,7 @@ namespace EasySave
 
                         break;
                     case "2": // Execute a specific task
+
 
                         controller_Task.ExecuteSpecificTask();
                         break;

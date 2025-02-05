@@ -16,6 +16,7 @@ namespace EasySave.Controllers
         private BackupJob_Models backupModel;
         private BackupJob_View backupView;
         private Log_Controller controller_log;
+        private State_Controller controller_state;
         Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace EasySave.Controllers
             // The model is initialized with empty (or default) values, then tasks are loaded
             backupModel = new BackupJob_Models("", "", "", BackupType.Full);
             controller_log = new Log_Controller();
+            controller_state = new State_Controller();
             backupModel.LoadTasks();
             backupView.DisplayMainMenu();
         }

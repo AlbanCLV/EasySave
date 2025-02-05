@@ -65,6 +65,7 @@ namespace EasySave
                 Action = Base, // The action performed (e.g., "Backup Started").
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
                 TaskName = "Backup_" + task, // Name of the backup task.
+                TransferTimeMs = -1, // Placeholder for transfer time (currently not used).
                 Error = Erreur // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
