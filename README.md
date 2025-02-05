@@ -1,10 +1,7 @@
 # EasySave
 [![Français](https://img.shields.io/badge/lang-fr-blue.svg)](README.md)
 [![English](https://img.shields.io/badge/lang-en-red.svg)](README.en.md)
-[![Version](https://img.shields.io/badge/version-1.0-green.svg)](https://github.com/votre-repo/EasySave)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[English version](README.en.md)
-
+[![Version](https://img.shields.io/badge/version-1.0-green.svg)]
 ## Description du projet
 
 Le projet EasySave fait partie du programme de développement d'un logiciel de sauvegarde pour la société ProSoft. Le but est de concevoir et déployer un logiciel de sauvegarde performant et maintenable en plusieurs versions majeures et mineures.

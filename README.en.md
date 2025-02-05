@@ -2,9 +2,7 @@
 # EasySave
 [![English](https://img.shields.io/badge/lang-en-red.svg)](README.en.md)
 [![Français](https://img.shields.io/badge/lang-fr-blue.svg)](README.md)
-[![Version](https://img.shields.io/badge/version-1.0-green.svg)](https://github.com/votre-repo/EasySave)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[Version française](README.md)
+[![Version](https://img.shields.io/badge/version-1.0-green.svg)]
 
 ## Project Description
 
