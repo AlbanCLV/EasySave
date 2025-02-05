@@ -74,7 +74,7 @@
     <Compile Include="src\Utilities\PathHelper.cs" />
     <!-- Controllers -->
     <!-- Views -->
-    <Compile Include="src\Views\BackupJob_View.cs" />
+    <Compile Include="src\Views\View.cs" />
     <!-- Program -->
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -8,7 +8,7 @@ namespace EasySave.Views
     /// <summary>
     /// View class for managing user interactions with translations.
     /// </summary>
-    public class BackupJob_View
+    public class View
     {
         private readonly LangManager lang;
 
@@ -16,7 +16,7 @@ namespace EasySave.Views
         /// Initializes the view with a specified language.
         /// </summary>
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
-        public BackupJob_View()
+        public View()
 
         {
             lang = new LangManager(Program.SelectedLanguage);
@@ -121,5 +121,21 @@ namespace EasySave.Views
             Application.Shutdown();
             return null; // No path selected
         }
+
+        public string DisplayLangue()
+        {
+
+            // Set console output encoding to UTF-8
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            // Display language selection
+            Console.WriteLine("Choose a language / Choisissez une langue:");
+            Console.WriteLine("1. English");
+            Console.WriteLine("2. Français");
+            Console.Write("Enter your choice: ");
+            return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
+        }
+
     }
+    
 }

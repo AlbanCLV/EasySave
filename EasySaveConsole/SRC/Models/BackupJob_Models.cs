@@ -32,8 +32,6 @@ namespace EasySave.Models
         /// </summary>
         [JsonIgnore]
         public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
-        private readonly Log_Models logger = new Log_Models();
-        private readonly State_Models stateManager = new State_Models();
         private const string SaveFilePath = "tasks.json";
         private Log_Controller controller_log = new Log_Controller();
 

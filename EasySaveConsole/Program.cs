@@ -1,5 +1,6 @@
 ﻿using System;
 using EasySave.Controllers;
+using EasySave.Utilities;
 
 namespace EasySave
 {
@@ -11,18 +12,11 @@ namespace EasySave
         public static string SelectedLanguage { get; private set; }
         static void Main(string[] args)
         {
-            // Set console output encoding to UTF-8
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            // Display language selection
-            Console.WriteLine("Choose a language / Choisissez une langue:");
-            Console.WriteLine("1. English");
-            Console.WriteLine("2. Français");
-            Console.Write("Enter your choice: ");
-            SelectedLanguage = Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
-
+           
             // Initialize the controller with the selected language
-            BackupJob_Controller controller = new BackupJob_Controller(SelectedLanguage);
+            BackupJob_Controller controller1 = new BackupJob_Controller();
+            SelectedLanguage = controller1.DisplayLangue();
+            BackupJob_Controller controller = new BackupJob_Controller();
 
             while (true)
             {
