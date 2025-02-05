@@ -38,7 +38,8 @@ namespace EasySave.Views
 
             while (string.IsNullOrEmpty(name))
             {
-                Console.WriteLine("Task name cannot be empty. Returning to menu...");
+                Console.WriteLine("Task name cannot be empty.");
+                Console.Write("Enter task name: ");
                 name = Console.ReadLine();
             }
 
