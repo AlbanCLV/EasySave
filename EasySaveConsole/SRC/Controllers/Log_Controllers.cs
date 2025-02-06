@@ -31,7 +31,7 @@ namespace EasySave.Controllers
             logModel.LogAction(task,time, action); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
         }
-        public void LogBackupErreur(string nom, String Base, String Erreur)
+        public void LogBackupErreur(string nom, String Base, String Erreur) 
         {
             logModel.LogErreur(nom, Base, Erreur); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.

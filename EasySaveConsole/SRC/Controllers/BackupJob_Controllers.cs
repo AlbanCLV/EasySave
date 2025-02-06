@@ -11,10 +11,11 @@ namespace EasySave.Controllers
     /// </summary>
     public class BackupJob_Controller
     {
-        private readonly BackupJob_Models backupModel;
-        private readonly View backupView;
-        private readonly Log_Controller controller_log;
-        private readonly Stopwatch stopwatch = new Stopwatch();
+        private BackupJob_Models backupModel;
+        private BackupJob_View backupView;
+        private Log_Controller controller_log;
+        private State_Controller controller_state;
+        Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
         /// Initializes the controller with a specified language.
@@ -25,6 +26,9 @@ namespace EasySave.Controllers
             backupView = new View();
             backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
             controller_log = new Log_Controller();
+            controller_state = new State_Controller();
+            backupModel.LoadTasks();
+            backupView.DisplayMainMenu();
         }
 
         public string DisplayLangue()

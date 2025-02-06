@@ -32,8 +32,10 @@ namespace EasySave.Models
         /// </summary>
         [JsonIgnore]
         public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
+        private readonly Log_Models logger = new Log_Models();
         private const string SaveFilePath = "tasks.json";
         private Log_Controller controller_log = new Log_Controller();
+        private State_Controller controller_State = new State_Controller();
 
         // Instanciation du gestionnaire de langue (ici en français par défaut)
         private readonly LangManager lang;
@@ -259,11 +261,11 @@ namespace EasySave.Models
 
             return Path.Combine(destinationPath, uniqueName);
         }
-
-        private void CopyDirectoryContent(string sourceDir, string targetDir)
+        private void CopyDirectoryContent(string sourceDir, string targetDir, BackupJob_Models task)
         {
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
+                controller_State.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
@@ -274,17 +276,23 @@ namespace EasySave.Models
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir);
+                CopyDirectoryContent(directory, destinationSubDir, task); // Recursive call to copy all subfolders
             }
+            controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
+
         }
 
         /// <summary>
         /// Copies only new or modified files.
         /// </summary>
-        private void CopyModifiedFiles(string sourceDir, string destDir)
+        /// <param name="sourceDir">Source directory from which files will be copied</param>
+        /// <param name="destDir">Destination directory where files will be copied</param>
+        private void CopyModifiedFiles(string sourceDir, string destDir, BackupJob_Models task)
         {
             foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
+                controller_State.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
+                // Get relative path of source directory
                 string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
                 string destFile = Path.Combine(destDir, relativePath);
 
@@ -295,6 +303,8 @@ namespace EasySave.Models
                     Console.WriteLine(string.Format(lang.Translate("file_updated_or_added"), destFile));
                 }
             }
+            controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
+
         }
 
         /// <summary>
@@ -331,8 +341,10 @@ namespace EasySave.Models
                 }
                 return;
             }
-            CopyModifiedFiles(task.SourceDirectory, targetPath);
-            Console.WriteLine(string.Format(lang.Translate("differential_backup_completed"), task.Name));
+            // Copy only new or modified files in destination directory
+            CopyModifiedFiles(task.SourceDirectory, targetPath, task);
+
+            Console.WriteLine($"Differential backup '{task.Name}' completed successfully.");
         }
 
         /// <summary>
