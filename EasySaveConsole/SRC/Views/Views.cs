@@ -128,19 +128,27 @@ namespace EasySave.Views
             return null; // No path selected
         }
 
+        /// <summary>
+        /// Displays a language selection menu and returns the selected language code.
+        /// </summary>
+       
         public string DisplayLangue()
         {
-
-            // Set console output encoding to UTF-8
+            // Set console output encoding to UTF-8 to properly handle special characters
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            // Display language selection
+            // Display the language selection prompt to the user
             Console.WriteLine("Choose a language / Choisissez une langue:");
             Console.WriteLine("1. English");
             Console.WriteLine("2. Français");
+
+            // Ask the user to enter their choice
             Console.Write("Enter your choice: ");
+
+            // Return the selected language code ("fr" for French, "en" for English)
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
+
 
     }
 

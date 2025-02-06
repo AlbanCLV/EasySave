@@ -9,6 +9,7 @@ namespace EasySave.Controllers
 {
     /// <summary>
     /// Controller class for managing interactions between the BackupJob model and view.
+    /// This class handles the creation, execution, and management of backup tasks.
     /// </summary>
     public class BackupJob_Controller
     {
@@ -20,6 +21,7 @@ namespace EasySave.Controllers
 
         /// <summary>
         /// Initializes the controller with a specified language.
+        /// Sets up the view, model, and controllers for logging and state management.
         /// </summary>
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
         public BackupJob_Controller()
@@ -29,19 +31,19 @@ namespace EasySave.Controllers
             controller_log = new Log_Controller();
             controller_state = new State_Controller();
             backupModel.LoadTasks();
-
-
         }
 
+        /// <summary>
+        /// Displays the language selection screen and returns the chosen language.
+        /// </summary>
         public string DisplayLangue()
         {
             return backupView.DisplayLangue();
-
         }
 
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
-        /// TEST DOCUMENTATION
+        /// This is used for user interaction after an operation is complete.
         /// </summary>
         private void PauseAndReturn()
         {
@@ -50,98 +52,104 @@ namespace EasySave.Controllers
         }
 
         /// <summary>
-        /// Creates a backup task.
+        /// Creates a backup task based on the user's input.
+        /// Records the time taken to create the task and logs the action.
         /// </summary>
         public void CreateBackupTask()
         {
-            BackupJob_Models task = backupView.GetBackupDetails();
+            BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
             stopwatch.Start();
-            backupModel.CreateBackupTask(task);
+            backupModel.CreateBackupTask(task);  // Create the backup task
             stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            backupView.DisplayMessage("TaskCreated");
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
-            PauseAndReturn();
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         /// <summary>
         /// Deletes a backup task.
+        /// The user is prompted to view tasks before deleting one, and the action is logged.
         /// </summary>
         public void DeleteTask()
         {
             backupView.DisplayMessage("DeleteTask");
-            ViewTasks();
+            ViewTasks();  // Display current tasks for the user to select from
 
             stopwatch.Start();
-            BackupJob_Models task = backupModel.DeleteTask();
+            BackupJob_Models task = backupModel.DeleteTask();  // Delete the selected task
             stopwatch.Stop();
 
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            controller_log.LogBackupAction(task.Name,task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
-            PauseAndReturn();
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         /// <summary>
-        /// Displays all backup tasks.
+        /// Displays all available backup tasks.
+        /// Allows the user to review existing tasks.
         /// </summary>
         public void ViewTasks()
         {
-            backupModel.ViewTasks();
-            Console.ReadKey();
-
+            backupModel.ViewTasks();  // Display all tasks
+            Console.ReadKey();  // Wait for user input before proceeding
         }
 
         /// <summary>
-        /// Executes a specific backup task.
+        /// Executes a specific backup task selected by the user.
+        /// The task execution time is logged, and a message is displayed based on the type of backup.
         /// </summary>
         public void ExecuteSpecificTask()
         {
-            Console.Clear();
-            backupView.DisplayMessage("ExecuteSpecificTask");
+            Console.Clear();  // Clear the screen for a clean display
+            backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
             stopwatch.Start();
-            BackupJob_Models task = backupModel.ExecuteSpecificTask();
+            BackupJob_Models task = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
             stopwatch.Stop();
 
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType);
-            PauseAndReturn();
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType);  // Log the execution
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         /// <summary>
-        /// Executes all backup tasks.
+        /// Executes all backup tasks sequentially.
+        /// Logs each task's execution and the total time taken.
         /// </summary>
         public void ExecuteAllTasks()
         {
-            backupView.DisplayMessage("ExecuteAllTasks");
+            backupView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
             stopwatch.Start();
 
-            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();
+            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();  // Execute all tasks
             stopwatch.Stop();
 
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             foreach (var task in executedTasks)
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Executing All Backup");
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Executing All Backup");  // Log each task's execution
             }
 
-            PauseAndReturn();
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         /// <summary>
-        /// Handles invalid menu option input.
+        /// Handles invalid menu option input from the user.
+        /// Displays an error message to guide the user back to a valid choice.
         /// </summary>
         public void ErreurChoix()
         {
-            backupView.DisplayMessage("InvalidOption");
+            backupView.DisplayMessage("InvalidOption");  // Display error message for invalid input
         }
 
         /// <summary>
-        /// Displays the main menu.
+        /// Displays the main menu for the user to interact with.
+        /// Allows the user to choose different operations.
         /// </summary>
         public void DisplayMainMenu()
         {
-            backupView.DisplayMainMenu();
+            backupView.DisplayMainMenu();  // Show the main menu to the user
         }
     }
 }
