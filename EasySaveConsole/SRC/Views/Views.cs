@@ -8,7 +8,7 @@ namespace EasySave.Views
     /// <summary>
     /// View class for managing user interactions with translations.
     /// </summary>
-    public class View
+    public class BackupJob_View
     {
         private readonly LangManager lang;
 
@@ -16,7 +16,7 @@ namespace EasySave.Views
         /// Initializes the view with a specified language.
         /// </summary>
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
-        public View()
+        public BackupJob_View()
 
         {
             lang = new LangManager(Program.SelectedLanguage);
@@ -64,6 +64,8 @@ namespace EasySave.Views
                 Console.WriteLine(lang.Translate("SourceDirEmpty"));
                 source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
+            Console.WriteLine(source);
+            Console.Write("");
 
             Console.WriteLine($"\n{lang.Translate("SelectTargetDir")}");
             Console.ReadKey();
@@ -73,6 +75,8 @@ namespace EasySave.Views
                 Console.WriteLine(lang.Translate("TargetDirEmpty"));
                 target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
+            Console.WriteLine(target);
+            Console.Write("");
 
             Console.Write(lang.Translate("EnterBackupType"));
             int typeInput;

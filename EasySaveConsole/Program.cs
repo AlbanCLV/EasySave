@@ -15,6 +15,7 @@ namespace EasySave
            
             // Initialize the controller with the selected language
             BackupJob_Controller controller1 = new BackupJob_Controller();
+            Console.Clear();
             SelectedLanguage = controller1.DisplayLangue();
             BackupJob_Controller controller = new BackupJob_Controller();
 

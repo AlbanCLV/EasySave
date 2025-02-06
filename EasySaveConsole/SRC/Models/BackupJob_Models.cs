@@ -365,7 +365,7 @@ namespace EasySave.Models
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
             Directory.CreateDirectory(targetPath);
-            CopyDirectoryContent(task.SourceDirectory, targetPath);
+            CopyDirectoryContent(task.SourceDirectory, targetPath, task);
             Console.WriteLine(string.Format(lang.Translate("full_backup_completed"), task.Name));
         }
 

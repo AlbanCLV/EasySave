@@ -23,12 +23,13 @@ namespace EasySave.Controllers
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
         public BackupJob_Controller()
         {
-            backupView = new View();
-            backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
-            controller_log = new Log_Controller();
-            controller_state = new State_Controller();
-            backupModel.LoadTasks();
-            backupView.DisplayMainMenu();
+                backupView = new BackupJob_View();
+                backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
+                controller_log = new Log_Controller();
+                controller_state = new State_Controller();
+                backupModel.LoadTasks();
+            
+           
         }
 
         public string DisplayLangue()
@@ -56,7 +57,6 @@ namespace EasySave.Controllers
             stopwatch.Start();
             backupModel.CreateBackupTask(task);
             stopwatch.Stop();
-
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             backupView.DisplayMessage("TaskCreated");
             controller_log.LogBackupAction(task, formattedTime, "Create Task");
@@ -86,7 +86,6 @@ namespace EasySave.Controllers
         public void ViewTasks()
         {
             backupModel.ViewTasks();
-            Console.ReadKey();
         }
 
         /// <summary>
@@ -94,6 +93,7 @@ namespace EasySave.Controllers
         /// </summary>
         public void ExecuteSpecificTask()
         {
+            Console.Clear();
             backupView.DisplayMessage("ExecuteSpecificTask");
             stopwatch.Start();
             BackupJob_Models task = backupModel.ExecuteSpecificTask();
