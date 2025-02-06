@@ -1,78 +1,76 @@
-# EasySave
-Scholar project for dev
-# Projet EasySave - ProSoft
+ï»¿# Projet EasySave - ProSoft
 
-## Description du projet
+[![Version](https://img.shields.io/badge/version-1.0-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v1.0)
+![Langues](https://img.shields.io/badge/langues-FranÃ§ais%20%7C%20English-green)
 
-Le projet **EasySave** fait partie du programme de développement d'un logiciel de sauvegarde pour la société ProSoft. Le but est de concevoir et déployer un logiciel de sauvegarde performant et maintenable en plusieurs versions majeures et mineures. Ce logiciel, **EasySave**, sera distribué aux clients de ProSoft avec un modèle tarifaire spécifique.
+---
 
-## Objectifs du projet
+## ðŸ“š Table des MatiÃ¨res
+- [Ã€ propos du projet](#Ã -propos-du-projet)
+- [Objectifs](#objectifs)
+- [Livrables](#livrables)
+- [Calendrier](#calendrier)
+- [Outils et mÃ©thodes](#outils-et-mÃ©thodes)
+- [Contributions](#contributions)
+- [Licence](#licence)
 
-- Développement du logiciel de sauvegarde **EasySave**.
-- Gestion des versions majeures et mineures du logiciel (version 1.0, 1.1, 2.0, etc.).
-- Fourniture de documentation pour les utilisateurs et pour le support client.
-- Garantie de la maintenabilité du code pour les équipes futures.
+---
 
-## Livrables
+## ðŸŒŸ Ã€ propos du projet
 
-### Livrable 1 (EasySave version 1.0) - Date : 06/02/2025
-- **Version 1.0** du logiciel EasySave.
-- Documentation utilisateur d'une page.
-- Documentation pour le support client.
-- Diagrammes UML relatifs à la version 1.0.
+EasySave est un logiciel de sauvegarde performant et Ã©volutif, dÃ©veloppÃ© dans le cadre du programme de dÃ©veloppement de ProSoft.
 
-### Livrable 2 (EasySave versions 2.0 et 1.1) - Date : 14/02/2025
-- Version 2.0 et version 1.1.
-- Diagrammes UML de la version 2.0.
-- Documentation mise à jour.
+---
 
-### Livrable 3 (EasySave version 3.0) - Date : 28/02/2025
-- Version 3.0.
-- Diagrammes UML de la version 3.0.
-- Documentation finale et Release Notes.
+## ðŸŽ¯ Objectifs
 
-## Calendrier
+- DÃ©veloppement d'un logiciel de sauvegarde multi-version.
+- Documentation utilisateur et support technique.
+- Gestion efficace des versions du logiciel.
 
-### FISA Informatique (Janvier - Février 2025)
+---
 
-- **27/01/2025** : Lancement du projet et Cahier des charges version 1.0.
-- **29/01/2025** : Environnement de travail et accès au tuteur.
-- **05/02/2025** : Livraison des diagrammes UML.
-- **06/02/2025** : Réception du livrable 1 (version 1.0 d'EasySave).
+## ðŸ“¦ Livrables
 
-### FISE Informatique (Avril - Mai 2025)
+### **Version 1.0** - 06/02/2025
+âœ… PremiÃ¨re version stable du logiciel.  
+âœ… Documentation utilisateur et support client.  
+âœ… Diagrammes UML associÃ©s.
 
-- **24/04/2025** : Lancement du projet et Cahier des charges version 1.0.
-- **26/04/2025** : Environnement de travail et accès au tuteur.
-- **07/05/2025** : Livraison des diagrammes UML.
-- **09/05/2025** : Réception du livrable 1.
-- **12/05/2025** : Cahier des charges versions 2 et 1.1.
-- **16/05/2025** : Livraison des diagrammes UML.
-- **19/05/2025** : Réception du livrable 2.
-- **19/05/2025** : Cahier des charges version 3.
-- **28/05/2025** : Livraison des diagrammes UML.
-- **28/05/2025** : Réception du livrable 3.
-- **02/06/2025** : Soutenance du projet.
+### **Version 2.0 & 1.1** - 14/02/2025
+âœ… AmÃ©liorations et corrections de la v1.0.  
+âœ… Nouvelle version avec des fonctionnalitÃ©s avancÃ©es.  
+âœ… Mise Ã  jour de la documentation et des diagrammes UML.
 
-## Contexte et objectifs
+### **Version 3.0** - 28/02/2025
+âœ… FonctionnalitÃ©s finales et optimisation du logiciel.  
+âœ… Documentation complÃ¨te et notes de mise Ã  jour.  
+âœ… Version prÃªte pour distribution commerciale.
 
-Le projet EasySave vise à développer un logiciel de sauvegarde performant, évolutif, et facile à utiliser. Le logiciel devra répondre à plusieurs exigences techniques et organisationnelles, notamment l'intégration dans la suite logicielle de ProSoft et le respect des contraintes liées à la maintenance.
+---
 
-Le projet sera mené sous la supervision du **Directeur des Systèmes d'Information (DSI)** de ProSoft et impliquera une équipe de développement chargée de la gestion des versions, des diagrammes UML, du code, et de la documentation.
+## ðŸ“… Calendrier
 
-### Outils et méthodes
+### **FISA Informatique : Janvier - FÃ©vrier 2025**
+- **27/01/2025** : DÃ©but du projet.
+- **06/02/2025** : Livraison de la version 1.0.
+- **14/02/2025** : Livraison de la version 2.0 et 1.1.
+- **28/02/2025** : Livraison de la version 3.0.
 
-- **Environnement de développement** : Visual Studio 2022 ou supérieur.
-- **Gestion de version** : GitHub pour gérer le versioning et le suivi des modifications.
-- **Outil de modélisation UML** : ArgoUML pour les diagrammes UML.
-- **Langage de programmation** : C# avec la bibliothèque .NET 8.0.
+### **FISE Informatique : Avril - Mai 2025**
+- **24/04/2025** : DÃ©but du projet.
+- **09/05/2025** : Livraison du premier livrable.
+- **19/05/2025** : Livraison du deuxiÃ¨me livrable.
+- **28/05/2025** : Finalisation et tests.
+- **02/06/2025** : Soutenance finale.
 
-### Conventions de développement
+---
 
-- Respect des **conventions de nommage** et des bonnes pratiques de développement.
-- Code lisible, maintenable, et bien documenté.
-- **Documentation utilisateur** et **documentation pour le support technique**.
-- Réduction au maximum des lignes de code dupliquées.
-- Interface utilisateur (IHM) soignée et intuitive.
-  
-## Structure du projet
+## ðŸ›  Outils et mÃ©thodes
+
+- **IDE** : Visual Studio 2022.
+- **Gestion de version** : GitHub.
+- **Outil UML** : Visual Paradigme.
+- **Langage** : C# (.NET 8.0).
+
+
