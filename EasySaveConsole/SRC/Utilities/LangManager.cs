@@ -16,11 +16,13 @@ namespace EasySave.Utilities
 
         public LangManager(string language)
         {
-            langDirectory = Path.Combine(
-                Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName,
-                "src",
-                "Lang"
-            );
+
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Path.GetFullPath(Path.Combine(basePath, "..", "..", ".."));
+
+            // Ensure we go to the correct SRC/Lang directory
+            langDirectory = Path.Combine(projectRoot, "SRC", "Lang");
+
             SetLanguage(language);
             Console.WriteLine($"LangManager initialized with language: {language}");
         }
