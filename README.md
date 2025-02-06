@@ -11,9 +11,6 @@
 - [Livrables](#livrables)
 - [Calendrier](#calendrier)
 - [Outils et méthodes](#outils-et-méthodes)
-- [Contributions](#contributions)
-- [Licence](#licence)
-
 ---
 
 ## 🌟 À propos du projet
