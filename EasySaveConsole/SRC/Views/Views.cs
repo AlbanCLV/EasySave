@@ -53,6 +53,7 @@ namespace EasySave.Views
             while (string.IsNullOrEmpty(name))
             {
                 Console.WriteLine(lang.Translate("TaskNameEmpty"));
+                Console.Write(lang.Translate("EnterTaskName"));
                 name = Console.ReadLine();
             }
 
