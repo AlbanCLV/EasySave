@@ -86,6 +86,8 @@ namespace EasySave.Controllers
         public void ViewTasks()
         {
             backupModel.ViewTasks();
+            Console.ReadKey();
+
         }
 
         /// <summary>
