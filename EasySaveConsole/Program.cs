@@ -12,7 +12,7 @@ namespace EasySave
         public static string SelectedLanguage { get; private set; }
         static void Main(string[] args)
         {
-           
+
             // Initialize the controller with the selected language
             BackupJob_Controller controller1 = new BackupJob_Controller();
             Console.Clear();
@@ -52,4 +52,3 @@ namespace EasySave
         }
     }
 }
-

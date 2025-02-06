@@ -1,4 +1,4 @@
-// Fournit des méthodes pour lire et écrire des fichiers JSON.
+ï»¿// Fournit des mï¿½thodes pour lire et ï¿½crire des fichiers JSON.
 
 using System;
 using System.IO;

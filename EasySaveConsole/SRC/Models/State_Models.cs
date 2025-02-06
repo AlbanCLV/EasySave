@@ -15,7 +15,7 @@ namespace EasySave.Models
         /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
         /// <param name="logDirectory">The directory where logs will be saved.</param>
-        
+
 
         public State_models(string logDirectoryState = "States")
         {
@@ -36,9 +36,9 @@ namespace EasySave.Models
                 Etat = "Active",
                 TotalFile = CountFilesInDirectory(task.SourceDirectory),
                 TotalSize = GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0,
-                Progress = $"{((GetDirectorySize(new DirectoryInfo(desti)) / 1024.0) *100)/ (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0)} %",
+                Progress = $"{((GetDirectorySize(new DirectoryInfo(desti)) / 1024.0) * 100) / (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0)} %",
                 RemainingFiles = CountFilesInDirectory(task.SourceDirectory) - CountFilesInDirectory(desti),
-                RemainingSize = (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0)-(GetDirectorySize(new DirectoryInfo(desti)) / 1024.0),
+                RemainingSize = (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0) - (GetDirectorySize(new DirectoryInfo(desti)) / 1024.0),
                 CurrentSourceFile = task.SourceDirectory,
                 CurrentDestinationFiles = desti
             };
@@ -88,7 +88,7 @@ namespace EasySave.Models
             {
                 Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 TaskName = "Backup_" + task.Name, // Name of the backup task.
-                HeureLastAction = lasth, 
+                HeureLastAction = lasth,
                 Etat = "Error",
                 Error = error,
             };

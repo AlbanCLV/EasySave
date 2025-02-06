@@ -26,12 +26,12 @@ namespace EasySave.Controllers
         /// </summary>
         /// <param name="task">The backup job task that is being logged.</param>
         /// <param name="action">The action (event) that is being performed (e.g., start, complete).</param>
-        public void LogBackupAction(BackupJob_Models task,string time, string action)
+        public void LogBackupAction(BackupJob_Models task, string time, string action)
         {
-            logModel.LogAction(task,time, action); // Logs the action in the Log_Models.
+            logModel.LogAction(task, time, action); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
         }
-        public void LogBackupErreur(string nom, String Base, String Erreur) 
+        public void LogBackupErreur(string nom, String Base, String Erreur)
         {
             logModel.LogErreur(nom, Base, Erreur); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.

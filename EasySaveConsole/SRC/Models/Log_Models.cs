@@ -27,7 +27,7 @@ namespace EasySave
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogAction(BackupJob_Models task, string time ,String act)
+        public void LogAction(BackupJob_Models task, string time, String act)
         {
             // Initialize variable to store the file size (default is 0).
             long fileSize = 0;
@@ -56,9 +56,9 @@ namespace EasySave
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreur(String task, String Base,String Erreur)
+        public void LogErreur(String task, String Base, String Erreur)
         {
-            
+
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
             var logEntry = new
             {
