@@ -23,6 +23,10 @@
 		<None Include="src\Lang\fr.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\EasySaveLog\EasySaveLog.csproj" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<AssemblyTitle>EasySaveConsole</AssemblyTitle>
 		<AssemblyDescription></AssemblyDescription>

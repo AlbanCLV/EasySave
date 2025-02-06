@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using EasySave.Models;
 using Newtonsoft.Json;
+using EasySaveLog;
+
 namespace EasySave.Models
 {
     public class State_models

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using EasySave.Models;
 using EasySave.Views;
+using EasySaveLog;
 
 namespace EasySave.Controllers
 {
@@ -59,7 +60,7 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             backupView.DisplayMessage("TaskCreated");
-            controller_log.LogBackupAction(task, formattedTime, "Create Task");
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
             PauseAndReturn();
         }
 
@@ -76,7 +77,7 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            controller_log.LogBackupAction(task, formattedTime, "Delete Task");
+            controller_log.LogBackupAction(task.Name,task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
             PauseAndReturn();
         }
 
@@ -103,7 +104,7 @@ namespace EasySave.Controllers
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
-            controller_log.LogBackupAction(task, formattedTime, logType);
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType);
             PauseAndReturn();
         }
 
@@ -121,7 +122,7 @@ namespace EasySave.Controllers
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             foreach (var task in executedTasks)
             {
-                controller_log.LogBackupAction(task, formattedTime, "Executing All Backup");
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Executing All Backup");
             }
 
             PauseAndReturn();

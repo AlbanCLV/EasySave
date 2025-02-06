@@ -1,10 +1,9 @@
 using System;
 using System.IO;
 using System.Diagnostics;  // Pour utiliser Stopwatch
-using EasySave.Models;
 using Newtonsoft.Json;
 
-namespace EasySave
+namespace EasySaveLog
 {
     /// <summary>
     /// Model for managing log entries related to backup actions.
@@ -27,22 +26,22 @@ namespace EasySave
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogAction(BackupJob_Models task, string time, String act)
+        public void LogAction(string name, string source, string target , string time, string act)
         {
             // Initialize variable to store the file size (default is 0).
             long fileSize = 0;
 
             // calculate the total size of files within it (including subdirectories).
-            fileSize = GetDirectorySize(new DirectoryInfo(task.SourceDirectory));
+            fileSize = GetDirectorySize(new DirectoryInfo(source));
             double fileSizeInKB = fileSize / 1024.0;
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
             var logEntry = new
             {
                 Action = act, // The action performed (e.g., "Backup Started").
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
-                TaskName = "Backup_" + task.Name, // Name of the backup task.
-                SourceFile = task.SourceDirectory, // Path of the source file or directory.
-                TargetFile = task.TargetDirectory, // Path of the target file or directory.
+                TaskName = "Backup_" + name, // Name of the backup task.
+                SourceFile = source, // Path of the source file or directory.
+                TargetFile = target, // Path of the target file or directory.
                 FileSize = fileSizeInKB, // Size of the source file/directory.
                 TransferTimeMs = time // Placeholder for transfer time (currently not used).
             };

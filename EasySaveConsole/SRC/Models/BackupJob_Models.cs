@@ -5,6 +5,7 @@ using System.Threading;
 using EasySave.Controllers;
 using EasySave.Utilities; // Ajout de la référence au gestionnaire de langue
 using Newtonsoft.Json;
+using EasySaveLog;
 
 namespace EasySave.Models
 {

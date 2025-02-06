@@ -2,6 +2,7 @@
 using EasySave.Models;
 using EasySave.Utilities;
 using Terminal.Gui;
+using EasySaveLog;
 
 namespace EasySave.Views
 {
