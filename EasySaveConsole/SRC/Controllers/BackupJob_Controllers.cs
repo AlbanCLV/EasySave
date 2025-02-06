@@ -23,13 +23,13 @@ namespace EasySave.Controllers
         /// <param name="language">Language code (e.g., "en" or "fr").</param>
         public BackupJob_Controller()
         {
-                backupView = new BackupJob_View();
-                backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
-                controller_log = new Log_Controller();
-                controller_state = new State_Controller();
-                backupModel.LoadTasks();
-            
-           
+            backupView = new BackupJob_View();
+            backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
+            controller_log = new Log_Controller();
+            controller_state = new State_Controller();
+            backupModel.LoadTasks();
+
+
         }
 
         public string DisplayLangue()

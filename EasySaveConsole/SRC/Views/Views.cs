@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using EasySave.Models;
 using EasySave.Utilities;
 using Terminal.Gui;
@@ -136,11 +136,11 @@ namespace EasySave.Views
             // Display language selection
             Console.WriteLine("Choose a language / Choisissez une langue:");
             Console.WriteLine("1. English");
-            Console.WriteLine("2. Fran�ais");
+            Console.WriteLine("2. Français");
             Console.Write("Enter your choice: ");
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
 
     }
-    
+
 }
