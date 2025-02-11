@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;  // Pour utiliser Stopwatch
 using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace EasySaveLog
 {
@@ -11,7 +12,7 @@ namespace EasySaveLog
     public class Log_Models
     {
         private readonly string logDirectory; // Directory to store log files.
-        public string Type_File { get; set; } = "json";
+        public string Type_File { get; set; } 
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
@@ -26,7 +27,7 @@ namespace EasySaveLog
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogAction(string name, string source, string target , string time, string act)
+        public void LogActionJSON(string name, string source, string target , string time, string act)
         {
             // Initialize variable to store the file size (default is 0).
             long fileSize = 0;
@@ -46,7 +47,7 @@ namespace EasySaveLog
                 TransferTimeMs = time // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.{this.Type_File}");
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
@@ -54,7 +55,7 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreur(string task, string Base, string Erreur)
+        public void LogErreurJSON(string task, string Base, string Erreur)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -67,12 +68,91 @@ namespace EasySaveLog
                 Error = Erreur // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.{this.Type_File}");
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
+        public void LogActionXML(string name, string source, string target, string time, string act)
+        {
+            // Initialiser la variable pour stocker la taille du fichier (par défaut à 0)
+            long fileSize = 0;
+
+            // Calculer la taille totale des fichiers dans le répertoire source
+            fileSize = GetDirectorySize(new DirectoryInfo(source));
+            double fileSizeInKB = fileSize / 1024.0;
+
+            // Définir le chemin du fichier log XML basé sur la date actuelle
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
+
+            // Vérifier si le fichier existe, sinon créer un nouveau document XML
+            XDocument xmlDoc;
+            if (File.Exists(logPath))
+            {
+                xmlDoc = XDocument.Load(logPath);
+            }
+            else
+            {
+                xmlDoc = new XDocument(new XElement("Logs"));
+            }
+
+            // Créer une nouvelle entrée de log
+            XElement logEntry = new XElement("Log",
+                new XElement("Action", act),
+                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                new XElement("TaskName", "Backup_" + name),
+                new XElement("SourceFile", source),
+                new XElement("TargetFile", target),
+                new XElement("FileSize", fileSizeInKB),
+                new XElement("TransferTimeMs", time)
+            );
+
+            // Ajouter l'entrée au document XML
+            xmlDoc.Root?.Add(logEntry);
+
+            // S'assurer que le répertoire existe
+            Directory.CreateDirectory(logDirectory);
+
+            // Sauvegarder le fichier XML
+            xmlDoc.Save(logPath);
+        }
+        public void LogErreurXML(string task, string baseAction, string erreur)
+        {
+            // Définir le chemin du fichier log XML basé sur la date actuelle
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
+
+            // Vérifier si le fichier existe, sinon créer un nouveau document XML
+            XDocument xmlDoc;
+            if (File.Exists(logPath))
+            {
+                xmlDoc = XDocument.Load(logPath);
+            }
+            else
+            {
+                xmlDoc = new XDocument(new XElement("Logs"));
+            }
+
+            // Créer une nouvelle entrée de log
+            XElement logEntry = new XElement("Log",
+                new XElement("Action", baseAction),
+                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                new XElement("TaskName", "Backup_" + task),
+                new XElement("TransferTimeMs", -1),
+                new XElement("Error", erreur)
+            );
+
+            // Ajouter l'entrée au document XML
+            xmlDoc.Root?.Add(logEntry);
+
+            // S'assurer que le répertoire existe
+            Directory.CreateDirectory(logDirectory);
+
+            // Sauvegarder le fichier XML
+            xmlDoc.Save(logPath);
+        }
+
+
         public void TypeFile(string Input)
         {
             if (Input == "xml" || Input == "json")
@@ -89,7 +169,7 @@ namespace EasySaveLog
         {
             if (!directory.Exists)
             {
-                LogErreur("Error", "try to delete a task", "Folder not found");
+                LogErreurJSON("Error", "try to delete a task", "Folder not found");
                 Environment.Exit(0);
             }
 

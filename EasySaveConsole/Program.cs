@@ -24,10 +24,13 @@ namespace EasySave
             SelectedLanguage = controller1.DisplayLangue();  // Store the selected language
             BackupJob_Controller controller = new BackupJob_Controller();
 
+            controller.Choice_Type_File_Log();
+
             // Infinite loop to keep displaying the menu until the user decides to exit
             while (true)
             {
                 // Display the main menu
+
                 controller.DisplayMainMenu();
 
                 // Get user input and trim any extra spaces

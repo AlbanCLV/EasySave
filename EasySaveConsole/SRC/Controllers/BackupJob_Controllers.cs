@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using EasySave.Models;
 using EasySave.Views;
 using EasySaveLog;
@@ -58,7 +59,7 @@ namespace EasySave.Controllers
 
             string reponse = backupView.Type_File_Log();
             controller_log.Type_File_Log(reponse);
-
+            backupModel.Type_Log(reponse);
             PauseAndReturn();  
         }
 
@@ -74,7 +75,14 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            string t = controller_log.Get_Type_File();
+            if (t == "json")
+            {
+                controller_log.LogBackupActionJSON(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            }else if (t == "xml")
+            {
+                controller_log.LogBackupActionXML(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            }
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
@@ -92,7 +100,15 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            string t = controller_log.Get_Type_File();
+            if (t == "json")
+            {
+                controller_log.LogBackupActionJSON(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            }
+            else if (t == "xml")
+            {
+                controller_log.LogBackupActionXML(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            }
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
@@ -120,7 +136,15 @@ namespace EasySave.Controllers
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType);  // Log the execution
+            string t = controller_log.Get_Type_File();
+            if (t == "json")
+            {
+                controller_log.LogBackupActionJSON(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+            }
+            else if (t == "xml")
+            {
+                controller_log.LogBackupActionXML(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the error
+            }
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
@@ -137,11 +161,21 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            foreach (var task in executedTasks)
+            string t = controller_log.Get_Type_File();
+            if (t == "json")
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Executing All Backup");  // Log each task's execution
+                foreach (var task in executedTasks)
+                {
+                    controller_log.LogBackupActionJSON(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                }
             }
-
+            else if (t == "xml")
+            {
+                foreach (var task in executedTasks)
+                {
+                    controller_log.LogBackupActionXML(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the error
+                }
+            }
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 

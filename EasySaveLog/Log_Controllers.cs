@@ -27,14 +27,24 @@ namespace EasySaveLog
         /// </summary>
         /// <param name="task">The backup job task that is being logged.</param>
         /// <param name="action">The action (event) that is being performed (e.g., start, complete).</param>
-        public void LogBackupAction(string name, string source, string target, string time, string action)
+        public void LogBackupActionJSON(string name, string source, string target, string time, string action)
         {
-            logModel.LogAction(name, source, target, time, action); // Logs the action in the Log_Models.
+            logModel.LogActionJSON(name, source, target, time, action); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
         }
-        public void LogBackupErreur(string nom, String Base, String Erreur)
+        public void LogBackupActionXML(string name, string source, string target, string time, string action)
         {
-            logModel.LogErreur(nom, Base, Erreur); // Logs the action in the Log_Models.
+            logModel.LogActionXML(name, source, target, time, action); // Logs the action in the Log_Models.
+            Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
+        }
+        public void LogBackupErreurJSON(string nom, String Base, String Erreur)
+        {
+            logModel.LogErreurJSON(nom, Base, Erreur); // Logs the action in the Log_Models.
+            Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
+        }
+        public void LogBackupErreurXML(string nom, String Base, String Erreur)
+        {
+            logModel.LogErreurXML(nom, Base, Erreur); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
         }
         public void Type_File_Log(string type)
