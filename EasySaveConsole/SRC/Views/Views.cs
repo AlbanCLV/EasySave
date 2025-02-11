@@ -44,7 +44,6 @@ namespace EasySave.Views
         {
             Console.Clear();
             Console.WriteLine(lang.Translate("Type_Now") + $"{a}");
-
         }
         public string Type_File_Log()
         {

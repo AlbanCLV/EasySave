@@ -55,8 +55,10 @@ namespace EasySave.Controllers
         {
             string Type_Now = controller_log.Get_Type_File();
             backupView.Get_Type_Log(Type_Now);
+
             string reponse = backupView.Type_File_Log();
-            backupModel.Type_Log_File(reponse);
+            controller_log.Type_File_Log(reponse);
+
             PauseAndReturn();  
         }
 

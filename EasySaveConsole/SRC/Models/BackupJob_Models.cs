@@ -61,11 +61,7 @@ namespace EasySave.Models
             }
         }
 
-        public void Type_Log_File(string choice)
-        {
-            controller_log.Type_File_Log(choice);
-            Console.ReadKey();
-        }
+        
 
 
 

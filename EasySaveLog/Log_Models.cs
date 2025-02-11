@@ -75,7 +75,7 @@ namespace EasySaveLog
         }
         public void TypeFile(string Input)
         {
-            if (Input == "json" || Input =="xml")
+            if (Input == "xml" || Input == "json")
             {
                 this.Type_File = Input;
             }

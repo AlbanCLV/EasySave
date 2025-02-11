@@ -16,7 +16,10 @@ namespace EasySaveLog
         /// </summary>
         public Log_Controller()
         {
-            logModel = new Log_Models(); // Initializes the log model to handle log actions.
+            if (logModel == null)
+            {
+                logModel = new Log_Models();
+            }
         }
 
         /// <summary>
