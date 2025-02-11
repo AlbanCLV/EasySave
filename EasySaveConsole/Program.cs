@@ -57,6 +57,9 @@ namespace EasySave
                         controller.DeleteTask();
                         break;
                     case "6":
+                        controller.Choice_Type_File_Log();
+                        break;
+                    case "7":
                         // Exit the application
                         Environment.Exit(0);
                         break;

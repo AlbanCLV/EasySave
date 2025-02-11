@@ -44,6 +44,7 @@ namespace EasySave.Models
         /// <summary>
         /// Constructor for creating a backup job.
         /// </summary>
+        
         public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
         {
             Name = name;
@@ -59,6 +60,15 @@ namespace EasySave.Models
                 LoadTasks();
             }
         }
+
+        public void Type_Log_File(string choice)
+        {
+            controller_log.Type_File_Log(choice);
+            Console.ReadKey();
+        }
+
+
+
 
         /// <summary>
         /// Saves tasks to a JSON file.

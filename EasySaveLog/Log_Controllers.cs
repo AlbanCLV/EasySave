@@ -34,5 +34,14 @@ namespace EasySaveLog
             logModel.LogErreur(nom, Base, Erreur); // Logs the action in the Log_Models.
             Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
         }
+        public void Type_File_Log(string type)
+        {
+            logModel.TypeFile(type);
+        }
+        public string Get_Type_File()
+        {
+            return logModel.Type_File;
+        }
+
     }
 }

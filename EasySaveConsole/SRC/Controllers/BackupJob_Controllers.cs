@@ -51,6 +51,15 @@ namespace EasySave.Controllers
             Console.ReadKey();
         }
 
+        public void Choice_Type_File_Log()
+        {
+            string Type_Now = controller_log.Get_Type_File();
+            backupView.Get_Type_Log(Type_Now);
+            string reponse = backupView.Type_File_Log();
+            backupModel.Type_Log_File(reponse);
+            PauseAndReturn();  
+        }
+
         /// <summary>
         /// Creates a backup task based on the user's input.
         /// Records the time taken to create the task and logs the action.

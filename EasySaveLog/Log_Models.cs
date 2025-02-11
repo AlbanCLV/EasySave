@@ -11,7 +11,7 @@ namespace EasySaveLog
     public class Log_Models
     {
         private readonly string logDirectory; // Directory to store log files.
-
+        public string Type_File { get; set; } = "json";
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
@@ -45,9 +45,8 @@ namespace EasySaveLog
                 FileSize = fileSizeInKB, // Size of the source file/directory.
                 TransferTimeMs = time // Placeholder for transfer time (currently not used).
             };
-
             // Create the log file path based on the current date.
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.{this.Type_File}");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
@@ -55,7 +54,7 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreur(String task, String Base, String Erreur)
+        public void LogErreur(string task, string Base, string Erreur)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -68,13 +67,19 @@ namespace EasySaveLog
                 Error = Erreur // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.{this.Type_File}");
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-
+        public void TypeFile(string Input)
+        {
+            if (Input == "json" || Input =="xml")
+            {
+                this.Type_File = Input;
+            }
+        }
         /// <summary>
         /// Calculates the total size of all files in a directory and its subdirectories.
         /// </summary>
