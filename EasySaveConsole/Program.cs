@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using EasySave.Controllers;
 using EasySave.Utilities;
 
@@ -22,53 +23,145 @@ namespace EasySave
             BackupJob_Controller controller1 = new BackupJob_Controller();
             Console.Clear();  // Clear the console for a fresh display
             SelectedLanguage = controller1.DisplayLangue();  // Store the selected language
+            LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
             BackupJob_Controller controller = new BackupJob_Controller();
+            MenuInvoker invoker = new MenuInvoker();
+            // Ajouter les commandes à l'invoker
+            invoker.SetCommand("1", new CreateBackupTaskCommand(controller));
+            invoker.SetCommand("2", new ExecuteSpecificTaskCommand(controller));
+            invoker.SetCommand("3", new ExecuteAllTasksCommand(controller));
+            invoker.SetCommand("4", new ViewTasksCommand(controller));
+            invoker.SetCommand("5", new DeleteTaskCommand(controller));
+            controller.Choice_Type_File_Log();
 
             // Infinite loop to keep displaying the menu until the user decides to exit
             while (true)
             {
                 // Display the main menu
+
                 controller.DisplayMainMenu();
 
                 // Get user input and trim any extra spaces
                 string input = Console.ReadLine()?.Trim();
 
-                // Switch case to handle different user inputs for menu options
-                switch (input)
+                invoker.InvokeCommand(input);
+
+                if (input == "7")
                 {
-                    case "1":
-                        // Create a new backup task
-                        controller.CreateBackupTask();
-                        break;
-                    case "2":
-                        // Execute a specific backup task
-                        controller.ExecuteSpecificTask();
-                        break;
-                    case "3":
-                        // Execute all backup tasks
-                        controller.ExecuteAllTasks();
-                        break;
-                    case "4":
-                        // View all existing tasks
-                        controller.ViewTasks();
-                        break;
-                    case "5":
-                        // Delete a backup task
-                        controller.DeleteTask();
-                        break;
-                    case "6":
-                        controller.Choice_Type_File_Log();
-                        break;
-                    case "7":
-                        // Exit the application
-                        Environment.Exit(0);
-                        break;
-                    default:
-                        // Handle invalid menu choice
-                        controller.ErreurChoix();
-                        break;
+                    Environment.Exit(0);
                 }
             }
         }
     }
+
+    public interface ICommand
+    {
+        void Execute();
+    }
+    public class CreateBackupTaskCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public CreateBackupTaskCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.CreateBackupTask();
+        }
+    }
+    public class ExecuteSpecificTaskCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public ExecuteSpecificTaskCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.ExecuteSpecificTask();
+        }
+    }
+    public class ExecuteAllTasksCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public ExecuteAllTasksCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.ExecuteAllTasks();
+        }
+    }
+    public class ViewTasksCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public ViewTasksCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.ViewTasks();
+        }
+    }
+    public class DeleteTaskCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public DeleteTaskCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.DeleteTask();
+        }
+    }
+    public class MenuInvoker
+    {
+        private readonly Dictionary<string, ICommand> _commands = new Dictionary<string, ICommand>();
+
+        // Associe une commande à un choix du menu
+        public void SetCommand(string key, ICommand command)
+        {
+            _commands[key] = command;
+        }
+
+        // Exécute la commande associée à la clé donnée
+        public void InvokeCommand(string key)
+        {
+            if (_commands.ContainsKey(key))
+            {
+                _commands[key].Execute();
+            }
+            else
+            {
+                Console.WriteLine("Commande invalide.");
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
