@@ -1,73 +1,110 @@
-﻿# Projet EasySave - ProSoft
+﻿# EasySave Project - ProSoft
 
 [![Version](https://img.shields.io/badge/version-1.0-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v1.0)
-![Langues](https://img.shields.io/badge/langues-Français%20%7C%20English-green)
+[![Version](https://img.shields.io/badge/version-1.1-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v1.1)
+![Languages](https://img.shields.io/badge/languages-French%20%7C%20English-green)
 
 ---
 
-## 📚 Table des Matières
-- [À propos du projet](#à-propos-du-projet)
-- [Objectifs](#objectifs)
-- [Livrables](#livrables)
-- [Calendrier](#calendrier)
-- [Outils et méthodes](#outils-et-méthodes)
----
-
-## 🌟 À propos du projet
-
-EasySave est un logiciel de sauvegarde performant et évolutif, développé dans le cadre du programme de développement de ProSoft.
+🌍 **This project is available in multiple languages:**  
+🇬🇧 [English (current)](README.md) | 🇫🇷 [Français](README_FR.md)
 
 ---
 
-## 🎯 Objectifs
-
-- Développement d'un logiciel de sauvegarde multi-version.
-- Documentation utilisateur et support technique.
-- Gestion efficace des versions du logiciel.
+## 📚 Table of Contents
+- [About the Project](#about-the-project)
+- [Objectives](#objectives)
+- [Deliverables](#deliverables)
+- [Schedule](#schedule)
+- [Tools & Methods](#tools--methods)
+- [Contributors](#contributors)
+- [Version Summary](#version-summary)
 
 ---
 
-## 📦 Livrables
+## 🌟 About the Project
+
+EasySave is a powerful and scalable backup software developed as part of ProSoft's development program.
+
+---
+
+## 🎯 Objectives
+
+- Development of multi-version backup software.
+- User documentation and technical support.
+- Efficient version management of the software.
+
+---
+
+## 📦 Deliverables
 
 ### **Version 1.0** - 06/02/2025
-✅ Première version stable du logiciel.  
-✅ Documentation utilisateur et support client.  
-✅ Diagrammes UML associés.
+✅ First stable version of the software.  
+✅ User documentation and customer support.  
+✅ Associated UML diagrams.
 
 ### **Version 2.0 & 1.1** - 14/02/2025
-✅ Améliorations et corrections de la v1.0.  
-✅ Nouvelle version avec des fonctionnalités avancées.  
-✅ Mise à jour de la documentation et des diagrammes UML.
+✅ Improvements and bug fixes for v1.0.  
+✅ New version with advanced features.  
+✅ Updated documentation and UML diagrams.
 
 ### **Version 3.0** - 28/02/2025
-✅ Fonctionnalités finales et optimisation du logiciel.  
-✅ Documentation complète et notes de mise à jour.  
-✅ Version prête pour distribution commerciale.
+✅ Final features and software optimization.  
+✅ Complete documentation and release notes.  
+✅ Version ready for commercial distribution.
 
 ---
 
-## 📅 Calendrier
+## 📅 Schedule
 
-### **FISA Informatique : Janvier - Février 2025**
-- **27/01/2025** : Début du projet.
-- **06/02/2025** : Livraison de la version 1.0.
-- **14/02/2025** : Livraison de la version 2.0 et 1.1.
-- **28/02/2025** : Livraison de la version 3.0.
+### **FISA Computer Science: January - February 2025**
+- **27/01/2025**: Project kickoff.
+- **06/02/2025**: Release of version 1.0.
+- **14/02/2025**: Release of versions 1.1 and 2.0.
+- **28/02/2025**: Release of version 3.0.
 
-### **FISE Informatique : Avril - Mai 2025**
-- **24/04/2025** : Début du projet.
-- **09/05/2025** : Livraison du premier livrable.
-- **19/05/2025** : Livraison du deuxième livrable.
-- **28/05/2025** : Finalisation et tests.
-- **02/06/2025** : Soutenance finale.
+### **FISE Computer Science: April - May 2025**
+- **24/04/2025**: Project kickoff.
+- **09/05/2025**: First deliverable release.
+- **19/05/2025**: Second deliverable release.
+- **28/05/2025**: Finalization and testing.
+- **02/06/2025**: Final presentation.
 
 ---
 
-## 🛠 Outils et méthodes
+## 🛠 Tools & Methods
 
-- **IDE** : Visual Studio 2022.
-- **Gestion de version** : GitHub.
-- **Outil UML** : Visual Paradigme.
-- **Langage** : C# (.NET 8.0).
+- **IDE**: Visual Studio 2022.
+- **Version Control**: GitHub.
+- **UML Tool**: Visual Paradigm.
+- **Programming Language**: C# (.NET 8.0).
 
+---
 
+## 👥 Contributors
+
+| Name | Email |
+|------|--------------------------|
+| Alban Calvo | alban.calvo1@viacesi.fr |
+| Evan Joasson | evan.joasson@viacesi.fr |
+| Jonas Mionnet | jonas.mionnet@viacesi.fr |
+| Matheo Pinget | matheo.pinget@viacesi.fr |
+
+---
+
+## 📊 Version Summary
+
+| Feature | Version 1.0 | Version 1.1 | Version 2.0 |
+|----------|------------|------------|------------|
+| User Interface | Console | Console | Graphical |
+| Multi-language | English & French | English & French | English & French |
+| Backup Jobs | Limited to 5 | Limited to 5 | Unlimited |
+| Daily Log File | Yes | Yes | Yes |
+| Log File DLL Usage | Yes | Yes | Yes |
+| State File | Yes | Yes | Yes |
+| Backup Operation Mode | Sequential or Mono | Sequential or Mono | Sequential or Mono |
+| Stop if Business Software Detected | No | No | Yes |
+| Command Line Interface | Yes | Yes | Same as v1.0 |
+| Use of External Encryption Software ("CryptoSoft") | No | No | Yes |
+
+---
