@@ -1,0 +1,71 @@
+﻿<Window x:Class="EasySaveWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EasySaveWPF"
+        mc:Ignorable="d"
+        Title="EasySave" Height="450" Width="800">
+    <Grid>
+        <!-- Définition de 2 colonnes -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Haut de l'écran pour les champs d'entrée -->
+            <RowDefinition Height="*"/>
+            <!-- Espace pour la liste des tâches -->
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <!-- Première colonne pour les champs -->
+            <ColumnDefinition Width="*"/>
+            <!-- Deuxième colonne pour les actions -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Premier champ principal : Formulaire d'entrée en haut -->
+        <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Margin="10">
+            <TextBlock Text="Nom" />
+            <TextBox Name="NomTextBox" Width="280" Margin="0,5" />
+
+            <TextBlock Text="Source" />
+            <TextBox Name="SourceTextBox" Width="280" Margin="0,5" />
+
+            <TextBlock Text="Destination" />
+            <TextBox Name="DestinationTextBox" Width="280" Margin="0,5" />
+
+            <TextBlock Text="Type" />
+            <ComboBox Name="TypeComboBox" Width="280" Margin="0,5">
+                <ComboBoxItem Content="Full" />
+                <ComboBoxItem Content="Differentielle" />
+            </ComboBox>
+
+            <!-- Bouton Add pour ajouter une nouvelle tâche -->
+            <Button Content="Add" Width="280" Margin="0,10" Click="AddButton_Click" />
+        </StackPanel>
+
+        <!-- Deuxième champ principal : Liste des tâches en bas -->
+        <DataGrid Name="TasksDataGrid" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="*"/>
+                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*"/>
+
+                <!-- Colonne pour les boutons Lancer et Supprimer -->
+                <DataGridTemplateColumn Header="Actions" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Lancer" Width="50" Margin="5" />
+                                <Button Content="Supprimer" Width="50" Margin="5" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
+
+
+
