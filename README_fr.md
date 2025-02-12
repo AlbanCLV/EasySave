@@ -7,7 +7,7 @@
 ---
 
 🌍 **Ce projet est disponible en plusieurs langues :**  
-🇬🇧 [English](README.md) | 🇫🇷 [Français (actuel)](README_FR.md)
+🇬🇧 [English](README.md) | 🇫🇷 [Français (actuel)](README_fr.md)
 
 ---
 
