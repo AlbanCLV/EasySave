@@ -117,13 +117,13 @@ namespace EasySave.Models
         /// <summary>
         /// Creates a new backup task.
         /// </summary>
-        public void CreateBackupTask(BackupJob_Models task)
+        public string CreateBackupTask(BackupJob_Models task)
         {
             if (Tasks.Count >= 5)
             {
                 Console.WriteLine(lang.Translate("max_tasks_error"));
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, lang.Translate("create_task_attempt"), lang.Translate("max_tasks_error"));  // Log the action
+                controller_log.LogBackupErreur(task.Name, "Create task attempt", "Max tasks error");  // Log the action
                 Console.WriteLine(lang.Translate("app_closing_in"));
                 for (int i = 5; i > 0; i--)
                 {
@@ -131,7 +131,6 @@ namespace EasySave.Models
                     Thread.Sleep(1000);
                 }
                 Environment.Exit(0);
-                return;
             }
             // Resume and confirmation
             Console.Clear();
@@ -147,10 +146,12 @@ namespace EasySave.Models
             {
                 Tasks.Add(task);
                 SaveTasks();
+                return "ok";
             }
             else
             {
                 Console.WriteLine(lang.Translate("task_creation_canceled"));
+                return "ko";
             }
         }
 
@@ -183,14 +184,10 @@ namespace EasySave.Models
         /// </summary>
         public BackupJob_Models DeleteTask()
         {
-            ViewTasks();
-
             if (Tasks.Count == 0)
             {
-                Console.WriteLine(lang.Translate("no_tasks_to_delete"));
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("no_tasks_to_delete"));
-                Environment.Exit(0);
+                controller_log.LogBackupErreur("Error", "Delete task attempt", "No tasks to delete");
                 return null;
             }
             BackupJob_Models deletedTask = null;
@@ -211,7 +208,7 @@ namespace EasySave.Models
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
                     string t = controller_log.Get_Type_File();
-                    controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("invalid_task_number"));  // Log the action
+                    controller_log.LogBackupErreur("Error","Delete tasks attemps", "Invalid task numebr");  // Log the action
                 }
             }
             return deletedTask;
@@ -227,8 +224,7 @@ namespace EasySave.Models
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_execute"));
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur("error", lang.Translate("execute_task_attempt"), lang.Translate("no_tasks_to_execute"));
-                Environment.Exit(0);
+                controller_log.LogBackupErreur("error", "Execute specific task", "No tasks to execute");
                 return null;
             }
             Console.Write(lang.Translate("enter_task_number_to_execute"));
@@ -244,7 +240,7 @@ namespace EasySave.Models
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
                     string t = controller_log.Get_Type_File();
-                    controller_log.LogBackupErreur("Error", lang.Translate("execute_task_attempt"), lang.Translate("invalid_task_number"));
+                    controller_log.LogBackupErreur("Error", "Execute specific task", "Invalid task number");
                     Console.Write(lang.Translate("enter_task_number_to_execute"));
                 }
             }
@@ -255,6 +251,13 @@ namespace EasySave.Models
         /// </summary>
         public List<BackupJob_Models> ExecuteAllTasks()
         {
+            if (Tasks.Count == 0)
+            {
+                Console.WriteLine(lang.Translate("no_tasks_to_execute"));
+                string t = controller_log.Get_Type_File();
+                controller_log.LogBackupErreur("error", "Execute all task", "No task to execute");
+                return null;
+            }
             List<BackupJob_Models> executedTasks = new List<BackupJob_Models>();
 
             foreach (var task in Tasks)
@@ -336,7 +339,7 @@ namespace EasySave.Models
             {
                 Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, lang.Translate("execute_task_attempt"), string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
+                controller_log.LogBackupErreur(task.Name, "Execute task attempt", string.Format("Source directory not exist", task.SourceDirectory));
                 Environment.Exit(0);
                 return;
             }
@@ -377,7 +380,7 @@ namespace EasySave.Models
             {
                 Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, lang.Translate("execute_task_attempt"), string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
+                controller_log.LogBackupErreur(task.Name, "Execute task attempt", string.Format("Source directory not exist", task.SourceDirectory));
                 Environment.Exit(0);
                 return;
             }

@@ -81,12 +81,13 @@ namespace EasySave.Controllers
 
         public void Choice_Type_File_Log()
         {
+
             string Type_Now = controller_log.Get_Type_File();
             backupView.Get_Type_Log(Type_Now);
-
             string reponse = backupView.Type_File_Log();
             controller_log.Type_File_Log(reponse);
             backupModel.Type_Log(reponse);
+
             PauseAndReturn();  
         }
 
@@ -98,13 +99,18 @@ namespace EasySave.Controllers
         {
             BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
             stopwatch.Start();
-            backupModel.CreateBackupTask(task);  // Create the backup task
+            string cond = backupModel.CreateBackupTask(task);  // Create the backup task
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
             string t = controller_log.Get_Type_File();
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
-            PauseAndReturn();  // Wait for user input before returning to the menu
+            if (cond == "ok")
+            {
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            }
+            else if (cond == "ko")
+            {
+                controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.");  // Log the action
+            }
         }
 
         /// <summary>
@@ -113,11 +119,12 @@ namespace EasySave.Controllers
         /// </summary>
         public void DeleteTask()
         {
-            backupView.DisplayMessage("DeleteTask");
+            Console.Clear();
             ViewTasks();  // Display current tasks for the user to select from
 
             stopwatch.Start();
             BackupJob_Models task = backupModel.DeleteTask();  // Delete the selected task
+            if (task == null) { return; }
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
@@ -146,6 +153,7 @@ namespace EasySave.Controllers
             backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
             stopwatch.Start();
             BackupJob_Models task = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
+            if (task == null) { return; }
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
@@ -161,12 +169,13 @@ namespace EasySave.Controllers
         /// </summary>
         public void ExecuteAllTasks()
         {
+            Console.Clear();  // Clear the screen for a clean display
             backupView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
             stopwatch.Start();
 
             List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();  // Execute all tasks
             stopwatch.Stop();
-
+            if (executedTasks == null) { return; }
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
