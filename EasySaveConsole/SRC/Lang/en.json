@@ -10,6 +10,7 @@
   "Type_Now": "Type of the Log File(s):",
   "Choice_log_display": "Change the log format",
   "No_Change_Log": "No changes made.,",
+  "Choice_langue": "Change language (En / Fr)",
   "SelectOption": "Select an option: ",
   "No_Change_Type_Log": "Error: Invalid format. Please enter 'json' or 'xml'. Or type 'exit' to cancel.",
   "EnterTaskName": "Enter task name: ",

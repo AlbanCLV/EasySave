@@ -22,9 +22,11 @@ namespace EasySave
             // Initialize the controller and display the language selection screen
             BackupJob_Controller controller1 = new BackupJob_Controller();
             Console.Clear();  // Clear the console for a fresh display
+
             SelectedLanguage = controller1.DisplayLangue();  // Store the selected language
             LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
             BackupJob_Controller controller = new BackupJob_Controller();
+
             MenuInvoker invoker = new MenuInvoker();
             // Ajouter les commandes à l'invoker
             invoker.SetCommand("1", new CreateBackupTaskCommand(controller));
@@ -32,7 +34,8 @@ namespace EasySave
             invoker.SetCommand("3", new ExecuteAllTasksCommand(controller));
             invoker.SetCommand("4", new ViewTasksCommand(controller));
             invoker.SetCommand("5", new DeleteTaskCommand(controller));
-            controller.Choice_Type_File_Log();
+            invoker.SetCommand("6", new ChoiceFileLog(controller));
+
 
             controller.Choice_Type_File_Log();
 
@@ -40,6 +43,7 @@ namespace EasySave
             while (true)
             {
                 // Display the main menu
+                LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
 
                 controller.DisplayMainMenu();
 
@@ -116,18 +120,43 @@ namespace EasySave
             _controller.ViewTasks();
         }
     }
-    public class DeleteTaskCommand : ICommand
+    public class ChoiceFileLog : ICommand
     {
         private readonly BackupJob_Controller _controller;
 
-        public DeleteTaskCommand(BackupJob_Controller controller)
+        public ChoiceFileLog(BackupJob_Controller controller)
         {
             _controller = controller;
         }
 
         public void Execute()
         {
+            _controller.Choice_Type_File_Log();
+        }
+    }
+    public class DeleteTaskCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+        public DeleteTaskCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+        public void Execute()
+        {
             _controller.DeleteTask();
+        }
+    }
+    public class Choice_Langue : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+        public Choice_Langue(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+        public void Execute()
+        {
+            string SelectedLanguage = _controller.DisplayLangue();  // Store the selected language
+            LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
         }
     }
     public class MenuInvoker

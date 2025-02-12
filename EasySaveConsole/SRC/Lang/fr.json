@@ -9,6 +9,7 @@
   "Exit": "Quitter",
   "Type_Now": "Type du / des Fichiers Logs : ",
   "Choice_log_display": "Changer le Format des Log",
+  "Choice_langue": "Changer de langue (En / Fr)",
   "No_Change_Log": "Aucun changement effectué.",
   "SelectOption": "Selectionnez une option: ",
   "EnterTaskName": "Entrez le nom de la tache: ",
