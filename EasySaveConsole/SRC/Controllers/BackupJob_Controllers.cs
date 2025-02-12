@@ -152,16 +152,22 @@ namespace EasySave.Controllers
             Console.Clear();  // Clear the screen for a clean display
             backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
             stopwatch.Start();
-            BackupJob_Models task = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
-            if (task == null) { return; }
-            stopwatch.Stop();
 
+            List<BackupJob_Models> tasks = backupModel.ExecuteSpecificTask();  // Execute the selected backup tasks
+            if (tasks == null || tasks.Count == 0) { return; }
+
+            stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
-            string t = controller_log.Get_Type_File();
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+
+            foreach (var task in tasks)
+            {
+                string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+            }
+
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
+
 
         /// <summary>
         /// Executes all backup tasks sequentially.

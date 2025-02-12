@@ -5,7 +5,9 @@ using System.Threading;
 using EasySave.Controllers;
 using EasySave.Utilities; // Ajout de la référence au gestionnaire de langue
 using Newtonsoft.Json;
-using EasySaveLog;  
+using EasySaveLog;
+using System.Linq;
+
 
 namespace EasySave.Models
 {
@@ -217,34 +219,83 @@ namespace EasySave.Models
         /// <summary>
         /// Execute a specific task from number
         /// </summary>
-        public BackupJob_Models ExecuteSpecificTask()
+        public List<BackupJob_Models> ExecuteSpecificTask()
         {
             ViewTasks();
             if (Tasks.Count == 0)
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_execute"));
-                string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur("error", "Execute specific task", "No tasks to execute");
                 return null;
             }
+
             Console.Write(lang.Translate("enter_task_number_to_execute"));
             while (true)
             {
-                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+                string input = Console.ReadLine();
+                List<int> taskNumbers = ParseTaskNumbers(input);
+
+                if (taskNumbers.Count > 0)
                 {
-                    BackupJob_Models selectedTask = Tasks[taskNumber - 1];
-                    ExecuteBackup(selectedTask);
-                    return selectedTask;
+                    List<BackupJob_Models> selectedTasks = new List<BackupJob_Models>();
+
+                    foreach (int taskNumber in taskNumbers)
+                    {
+                        if (taskNumber > 0 && taskNumber <= Tasks.Count)
+                        {
+                            BackupJob_Models selectedTask = Tasks[taskNumber - 1];
+                            ExecuteBackup(selectedTask);
+                            selectedTasks.Add(selectedTask);
+                        }
+                        else
+                        {
+                            Console.WriteLine(lang.Translate("invalid_task_number") + $" ({taskNumber})");
+                            controller_log.LogBackupErreur("Error", "Execute specific task", $"Invalid task number: {taskNumber}");
+                        }
+                    }
+
+                    return selectedTasks;
                 }
                 else
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
-                    string t = controller_log.Get_Type_File();
-                    controller_log.LogBackupErreur("Error", "Execute specific task", "Invalid task number");
+                    controller_log.LogBackupErreur("Error", "Execute specific task", "Invalid task number format");
                     Console.Write(lang.Translate("enter_task_number_to_execute"));
                 }
             }
         }
+
+        // Fonction pour interpréter les entrées utilisateur sous forme de liste de nombres
+        private List<int> ParseTaskNumbers(string input)
+        {
+            List<int> taskNumbers = new List<int>();
+            string[] parts = input.Split(',');
+
+            foreach (string part in parts)
+            {
+                if (part.Contains("-"))
+                {
+                    string[] range = part.Split('-');
+                    if (range.Length == 2 && int.TryParse(range[0], out int start) && int.TryParse(range[1], out int end))
+                    {
+                        if (start > 0 && end >= start)
+                        {
+                            for (int i = start; i <= end; i++)
+                            {
+                                taskNumbers.Add(i);
+                            }
+                        }
+                    }
+                }
+                else if (int.TryParse(part, out int singleNumber) && singleNumber > 0)
+                {
+                    taskNumbers.Add(singleNumber);
+                }
+            }
+
+            return taskNumbers.Distinct().OrderBy(n => n).ToList();
+        }
+
 
         /// <summary>
         /// Execute all tasks sequentially
