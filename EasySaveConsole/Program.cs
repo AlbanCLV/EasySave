@@ -34,6 +34,8 @@ namespace EasySave
             invoker.SetCommand("5", new DeleteTaskCommand(controller));
             controller.Choice_Type_File_Log();
 
+            controller.Choice_Type_File_Log();
+
             // Infinite loop to keep displaying the menu until the user decides to exit
             while (true)
             {
