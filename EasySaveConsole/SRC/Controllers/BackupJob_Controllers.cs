@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using EasySave.Models;
 using EasySave.Views;
 using EasySaveLog;
+using EasySave.Utilities;  // Assurez-vous d'inclure le namespace pour LangManager
+
 
 namespace EasySave.Controllers
 {
@@ -13,17 +16,20 @@ namespace EasySave.Controllers
     /// </summary>
     public class BackupJob_Controller
     {
+        // Singleton instance
+        private static BackupJob_Controller _instance;
+
+        // Lock object for thread safety
+        private static readonly object _lock = new object();
         private BackupJob_Models backupModel;
         private BackupJob_View backupView;
         private Log_Controller controller_log;
         private State_Controller controller_state;
-        Stopwatch stopwatch = new Stopwatch();
+        private Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
-        /// Initializes the controller with a specified language.
-        /// Sets up the view, model, and controllers for logging and state management.
+        /// Private constructor to prevent direct instantiation.
         /// </summary>
-        /// <param name="language">Language code (e.g., "en" or "fr").</param>
         public BackupJob_Controller()
         {
             backupView = new BackupJob_View();
@@ -32,13 +38,35 @@ namespace EasySave.Controllers
             controller_state = new State_Controller();
             backupModel.LoadTasks();
         }
-
+        /// <summary>
+        /// Gets the singleton instance of the BackupJob_Controller class.
+        /// </summary>
+        public static BackupJob_Controller Instance
+        {
+            get
+            {
+                // Use double-check locking to ensure thread-safety
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new BackupJob_Controller();
+                        }
+                    }
+                }
+                return _instance;
+            }
+        }
         /// <summary>
         /// Displays the language selection screen and returns the chosen language.
         /// </summary>
         public string DisplayLangue()
         {
-            return backupView.DisplayLangue();
+          return backupView.DisplayLangue();
+          
+
         }
 
         /// <summary>
@@ -49,6 +77,17 @@ namespace EasySave.Controllers
         {
             backupView.DisplayMessage("PressKeyToReturn");
             Console.ReadKey();
+        }
+
+        public void Choice_Type_File_Log()
+        {
+            string Type_Now = controller_log.Get_Type_File();
+            backupView.Get_Type_Log(Type_Now);
+
+            string reponse = backupView.Type_File_Log();
+            controller_log.Type_File_Log(reponse);
+            backupModel.Type_Log(reponse);
+            PauseAndReturn();  
         }
 
         /// <summary>
@@ -63,6 +102,7 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
+            string t = controller_log.Get_Type_File();
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
@@ -81,6 +121,7 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string t = controller_log.Get_Type_File();
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
@@ -109,7 +150,8 @@ namespace EasySave.Controllers
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType);  // Log the execution
+            string t = controller_log.Get_Type_File();
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
@@ -126,11 +168,11 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Executing All Backup");  // Log each task's execution
+               controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
             }
-
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 

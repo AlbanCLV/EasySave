@@ -44,6 +44,7 @@ namespace EasySave.Models
         /// <summary>
         /// Constructor for creating a backup job.
         /// </summary>
+        
         public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
         {
             Name = name;
@@ -59,6 +60,11 @@ namespace EasySave.Models
                 LoadTasks();
             }
         }
+
+        
+
+
+
 
         /// <summary>
         /// Saves tasks to a JSON file.
@@ -101,6 +107,13 @@ namespace EasySave.Models
             }
         }
 
+        public void Type_Log(string a)
+        {
+            controller_log.Type_File_Log(a);
+        }
+
+
+
         /// <summary>
         /// Creates a new backup task.
         /// </summary>
@@ -109,7 +122,8 @@ namespace EasySave.Models
             if (Tasks.Count >= 5)
             {
                 Console.WriteLine(lang.Translate("max_tasks_error"));
-                controller_log.LogBackupErreur(task.Name, lang.Translate("create_task_attempt"), lang.Translate("max_tasks_error"));
+                string t = controller_log.Get_Type_File();
+                controller_log.LogBackupErreur(task.Name, lang.Translate("create_task_attempt"), lang.Translate("max_tasks_error"));  // Log the action
                 Console.WriteLine(lang.Translate("app_closing_in"));
                 for (int i = 5; i > 0; i--)
                 {
@@ -174,11 +188,11 @@ namespace EasySave.Models
             if (Tasks.Count == 0)
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_delete"));
+                string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("no_tasks_to_delete"));
                 Environment.Exit(0);
                 return null;
             }
-
             BackupJob_Models deletedTask = null;
 
             while (true)
@@ -196,7 +210,8 @@ namespace EasySave.Models
                 else
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
-                    controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("invalid_task_number"));
+                    string t = controller_log.Get_Type_File();
+                    controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("invalid_task_number"));  // Log the action
                 }
             }
             return deletedTask;
@@ -211,6 +226,7 @@ namespace EasySave.Models
             if (Tasks.Count == 0)
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_execute"));
+                string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur("error", lang.Translate("execute_task_attempt"), lang.Translate("no_tasks_to_execute"));
                 Environment.Exit(0);
                 return null;
@@ -227,6 +243,7 @@ namespace EasySave.Models
                 else
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
+                    string t = controller_log.Get_Type_File();
                     controller_log.LogBackupErreur("Error", lang.Translate("execute_task_attempt"), lang.Translate("invalid_task_number"));
                     Console.Write(lang.Translate("enter_task_number_to_execute"));
                 }
@@ -318,6 +335,7 @@ namespace EasySave.Models
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
+                string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur(task.Name, lang.Translate("execute_task_attempt"), string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
                 Environment.Exit(0);
                 return;
@@ -358,6 +376,7 @@ namespace EasySave.Models
             if (!Directory.Exists(task.SourceDirectory))
             {
                 Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
+                string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur(task.Name, lang.Translate("execute_task_attempt"), string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
                 Environment.Exit(0);
                 return;

@@ -3,6 +3,7 @@ using EasySave.Models;
 using EasySave.Utilities;
 using Terminal.Gui;
 using EasySaveLog;
+using System.Xml.Linq;
 
 namespace EasySave.Views
 {
@@ -35,10 +36,39 @@ namespace EasySave.Views
             Console.WriteLine($"3. {lang.Translate("ExecuteAllTasks")}");
             Console.WriteLine($"4. {lang.Translate("ViewAllTasks")}");
             Console.WriteLine($"5. {lang.Translate("DeleteTask")}");
-            Console.WriteLine($"6. {lang.Translate("Exit")}");
+            Console.WriteLine($"6. {lang.Translate("Choice_log_display")}");
+            Console.WriteLine($"7. {lang.Translate("Exit")}");
             Console.Write($"\n{lang.Translate("SelectOption")}");
         }
+        public void Get_Type_Log(string a)
+        {
+            Console.Clear();
+            Console.WriteLine(lang.Translate("Type_Now") + $"{a}");
+        }
+        public string Type_File_Log()
+        {
+            Console.Write(lang.Translate("Choix_log"));
+            string format = Console.ReadLine();
 
+            while (format != "xml" && format != "json" && format != "exit")
+            {
+                Console.WriteLine(lang.Translate("No_Change_Type_Log"));
+                Console.Write(lang.Translate("Choix_log"));
+                format = Console.ReadLine();
+            }
+            if (format == "json" || format == "xml")
+            {
+                Console.WriteLine(lang.Translate("GUI_Log"));
+                Console.WriteLine(format);
+                return format;
+            }
+            else if (format == "exit")
+            {
+                Console.WriteLine(lang.Translate("No_Change_Log"));
+                return format;
+            }
+            return format;
+        }
         /// <summary>
         /// Get backup details from the user.
         /// </summary>
@@ -95,6 +125,12 @@ namespace EasySave.Views
         /// Display a translated message.
         /// </summary>
         /// <param name="key">Key for the message.</param>
+        /// 
+
+        
+
+
+
         public void DisplayMessage(string key)
         {
             Console.WriteLine(lang.Translate(key));

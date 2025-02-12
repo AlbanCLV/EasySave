@@ -14,9 +14,11 @@ namespace EasySave.Utilities
 
         private readonly string langDirectory;
 
+        private static LangManager _instance;
+
+        // Private constructor to prevent instantiation
         public LangManager(string language)
         {
-
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
             string projectRoot = Path.GetFullPath(Path.Combine(basePath, "..", "..", ".."));
 
@@ -25,6 +27,19 @@ namespace EasySave.Utilities
 
             SetLanguage(language);
             Console.WriteLine($"LangManager initialized with language: {language}");
+        }
+
+        // Singleton pattern for LangManager
+        public static LangManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new LangManager("en"); // Default language, can be overridden
+                }
+                return _instance;
+            }
         }
 
         public void SetLanguage(string language)

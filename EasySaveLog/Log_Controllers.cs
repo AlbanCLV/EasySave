@@ -7,16 +7,17 @@ namespace EasySaveLog
     /// Controller for logging actions related to backup tasks.
     /// Manages the interaction between the Log model and the view.
     /// </summary>
+    /// 
     public class Log_Controller
     {
-        private Log_Models logModel; // Instance of the Log_Models class to handle log operations.
+        private readonly Log_Models logModel; // Utilisation de l'instance Singleton
 
         /// <summary>
         /// Constructor initializes the Log_Models instance.
         /// </summary>
         public Log_Controller()
         {
-            logModel = new Log_Models(); // Initializes the log model to handle log actions.
+            logModel = Log_Models.Instance; // On récupère l'instance unique
         }
 
         /// <summary>
@@ -26,13 +27,23 @@ namespace EasySaveLog
         /// <param name="action">The action (event) that is being performed (e.g., start, complete).</param>
         public void LogBackupAction(string name, string source, string target, string time, string action)
         {
-            logModel.LogAction(name, source, target, time, action); // Logs the action in the Log_Models.
-            Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
+            logModel.LogAction(name, source, target, time, action);
+            Console.ReadLine();
         }
         public void LogBackupErreur(string nom, String Base, String Erreur)
         {
-            logModel.LogErreur(nom, Base, Erreur); // Logs the action in the Log_Models.
-            Console.ReadLine(); // Pauses the program to allow the user to read the debug output.
+            logModel.LogErreur(nom, Base, Erreur);
+            Console.ReadLine();
         }
+
+        public void Type_File_Log(string type)
+        {
+            logModel.TypeFile(type);
+        }
+        public string Get_Type_File()
+        {
+            return logModel.Type_File;
+        }
+
     }
 }
