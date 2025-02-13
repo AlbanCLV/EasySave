@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using EasySave.Controllers;
-using EasySave.Utilities; // Ajout de la référence au gestionnaire de langue
-using Newtonsoft.Json;
+using EasySave.Utilities; // Gestionnaire de langue
+using EasySaveConsole.Utilities; // Pour EncryptionUtility
 using EasySaveLog;
-using System.Linq;
-
+using Newtonsoft.Json;
 
 namespace EasySave.Models
 {
@@ -46,7 +46,6 @@ namespace EasySave.Models
         /// <summary>
         /// Constructor for creating a backup job.
         /// </summary>
-        
         public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
         {
             Name = name;
@@ -56,17 +55,11 @@ namespace EasySave.Models
 
             lang = new LangManager(Program.SelectedLanguage);
 
-
             if (loadTasks)  // Load tasks if necessary
             {
                 LoadTasks();
             }
         }
-
-        
-
-
-
 
         /// <summary>
         /// Saves tasks to a JSON file.
@@ -113,8 +106,6 @@ namespace EasySave.Models
         {
             controller_log.Type_File_Log(a);
         }
-
-
 
         /// <summary>
         /// Creates a new backup task.
@@ -210,7 +201,7 @@ namespace EasySave.Models
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
                     string t = controller_log.Get_Type_File();
-                    controller_log.LogBackupErreur("Error","Delete tasks attemps", "Invalid task numebr");  // Log the action
+                    controller_log.LogBackupErreur("Error", "Delete tasks attemps", "Invalid task numebr");  // Log the action
                 }
             }
             return deletedTask;
@@ -296,7 +287,6 @@ namespace EasySave.Models
             return taskNumbers.Distinct().OrderBy(n => n).ToList();
         }
 
-
         /// <summary>
         /// Execute all tasks sequentially
         /// </summary>
@@ -333,6 +323,7 @@ namespace EasySave.Models
 
             return Path.Combine(destinationPath, uniqueName);
         }
+
         private void CopyDirectoryContent(string sourceDir, string targetDir, BackupJob_Models task)
         {
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
@@ -341,6 +332,8 @@ namespace EasySave.Models
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
+                // Application du chiffrement après copie du fichier
+                EncryptionUtility.ProcessFile(destinationFile, true);
             }
 
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
@@ -348,10 +341,9 @@ namespace EasySave.Models
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir, task); // Recursive call to copy all subfolders
+                CopyDirectoryContent(directory, destinationSubDir, task); // Appel récursif pour copier les sous-dossiers
             }
             controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
-
         }
 
         /// <summary>
@@ -373,10 +365,11 @@ namespace EasySave.Models
                     Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                     File.Copy(sourceFile, destFile, true);
                     Console.WriteLine(string.Format(lang.Translate("file_updated_or_added"), destFile));
+                    // Application du chiffrement après copie du fichier
+                    EncryptionUtility.ProcessFile(destFile, true);
                 }
             }
             controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-
         }
 
         /// <summary>

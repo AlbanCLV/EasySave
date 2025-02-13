@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using EasySave.Models;
 using EasySave.Views;
+using EasySaveConsole.Utilities;
 using EasySaveLog;
-using EasySave.Utilities;  // Assurez-vous d'inclure le namespace pour LangManager
-
 
 namespace EasySave.Controllers
 {
@@ -18,7 +15,6 @@ namespace EasySave.Controllers
     {
         // Singleton instance
         private static BackupJob_Controller _instance;
-
         // Lock object for thread safety
         private static readonly object _lock = new object();
         private BackupJob_Models backupModel;
@@ -38,6 +34,7 @@ namespace EasySave.Controllers
             controller_state = new State_Controller();
             backupModel.LoadTasks();
         }
+
         /// <summary>
         /// Gets the singleton instance of the BackupJob_Controller class.
         /// </summary>
@@ -45,7 +42,6 @@ namespace EasySave.Controllers
         {
             get
             {
-                // Use double-check locking to ensure thread-safety
                 if (_instance == null)
                 {
                     lock (_lock)
@@ -59,21 +55,19 @@ namespace EasySave.Controllers
                 return _instance;
             }
         }
+
         /// <summary>
         /// Displays the language selection screen and returns the chosen language.
         /// </summary>
         public string DisplayLangue()
         {
-          return backupView.DisplayLangue();
-          
-
+            return backupView.DisplayLangue();
         }
 
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
-        /// This is used for user interaction after an operation is complete.
         /// </summary>
-        private void PauseAndReturn()
+        public void PauseAndReturn()
         {
             backupView.DisplayMessage("PressKeyToReturn");
             Console.ReadKey();
@@ -81,132 +75,187 @@ namespace EasySave.Controllers
 
         public void Choice_Type_File_Log()
         {
-
             string Type_Now = controller_log.Get_Type_File();
             backupView.Get_Type_Log(Type_Now);
             string reponse = backupView.Type_File_Log();
             controller_log.Type_File_Log(reponse);
             backupModel.Type_Log(reponse);
+            PauseAndReturn();
+        }
 
-            PauseAndReturn();  
+        /// <summary>
+        /// Configure les paramètres de chiffrement en demandant à l'utilisateur.
+        /// </summary>
+        public void ConfigureEncryption()
+        {
+            var encryptionSettings = backupView.GetEncryptionSettings();
+            EncryptionUtility.SetEncryptionSettings(encryptionSettings.password, encryptionSettings.encryptAll, encryptionSettings.selectedExtensions, encryptionSettings.encryptEnabled);
         }
 
         /// <summary>
         /// Creates a backup task based on the user's input.
-        /// Records the time taken to create the task and logs the action.
         /// </summary>
         public void CreateBackupTask()
         {
-            BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
+            BackupJob_Models task = backupView.GetBackupDetails();
             stopwatch.Start();
-            string cond = backupModel.CreateBackupTask(task);  // Create the backup task
+            string cond = backupModel.CreateBackupTask(task);
             stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string t = controller_log.Get_Type_File();
             if (cond == "ok")
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+                try
+                {
+                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erreur lors du log: " + ex.Message);
+                }
             }
             else if (cond == "ko")
             {
-                controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.");  // Log the action
+                try
+                {
+                    controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erreur lors du log: " + ex.Message);
+                }
             }
         }
 
         /// <summary>
         /// Deletes a backup task.
-        /// The user is prompted to view tasks before deleting one, and the action is logged.
         /// </summary>
         public void DeleteTask()
         {
             Console.Clear();
-            ViewTasks();  // Display current tasks for the user to select from
-
+            ViewTasks();
             stopwatch.Start();
-            BackupJob_Models task = backupModel.DeleteTask();  // Delete the selected task
+            BackupJob_Models task = backupModel.DeleteTask();
             if (task == null) { return; }
             stopwatch.Stop();
-
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string t = controller_log.Get_Type_File();
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
-            PauseAndReturn();  // Wait for user input before returning to the menu
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
+            PauseAndReturn();
         }
 
         /// <summary>
         /// Displays all available backup tasks.
-        /// Allows the user to review existing tasks.
         /// </summary>
         public void ViewTasks()
         {
-            backupModel.ViewTasks();  // Display all tasks
-            Console.ReadKey();  // Wait for user input before proceeding
+            backupModel.ViewTasks();
+            Console.ReadKey();
         }
 
         /// <summary>
         /// Executes a specific backup task selected by the user.
-        /// The task execution time is logged, and a message is displayed based on the type of backup.
         /// </summary>
         public void ExecuteSpecificTask()
         {
-            Console.Clear();  // Clear the screen for a clean display
-            backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
+            Console.Clear();
+            backupView.DisplayMessage("ExecuteSpecificTask");
+            // Configure encryption before executing the backup
+            ConfigureEncryption();
             stopwatch.Start();
-
-            List<BackupJob_Models> tasks = backupModel.ExecuteSpecificTask();  // Execute the selected backup tasks
+            var tasks = backupModel.ExecuteSpecificTask();
             if (tasks == null || tasks.Count == 0) { return; }
-
             stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             foreach (var task in tasks)
             {
-                string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+                try
+                {
+                    string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
+                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erreur lors du log: " + ex.Message);
+                }
             }
-
-            PauseAndReturn();  // Wait for user input before returning to the menu
+            PauseAndReturn();
         }
-
 
         /// <summary>
         /// Executes all backup tasks sequentially.
-        /// Logs each task's execution and the total time taken.
         /// </summary>
         public void ExecuteAllTasks()
         {
-            Console.Clear();  // Clear the screen for a clean display
-            backupView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
+            Console.Clear();
+            backupView.DisplayMessage("ExecuteAllTasks");
+            // Configure encryption before executing the backup
+            ConfigureEncryption();
             stopwatch.Start();
-
-            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();  // Execute all tasks
+            var executedTasks = backupModel.ExecuteAllTasks();
             stopwatch.Stop();
             if (executedTasks == null) { return; }
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
             {
-               controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");
             }
-            PauseAndReturn();  // Wait for user input before returning to the menu
+            PauseAndReturn();
+        }
+
+        /// <summary>
+        /// Déchiffre l'intégralité d'un dossier choisi par l'utilisateur.
+        /// </summary>
+        public void DecryptFolder()
+        {
+            backupView.DisplayMessage("EnterDecryptionPassword");
+            string password = backupView.ReadPassword();
+            if (string.IsNullOrEmpty(password))
+            {
+                backupView.DisplayMessage("PasswordEmpty");
+                PauseAndReturn();
+                return;
+            }
+            backupView.DisplayMessage("DecryptFolderPrompt");
+            string folderPath = backupView.BrowsePath(canChooseFiles: false, canChooseDirectories: true);
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                backupView.DisplayMessage("NoFolderSelected");
+                PauseAndReturn();
+                return;
+            }
+            // Configurer le chiffrement pour le déchiffrement (on force EncryptAll=true)
+            EncryptionUtility.SetEncryptionSettings(password, true, new string[0], true);
+            string[] encryptedFiles = System.IO.Directory.GetFiles(folderPath, "*.aes", System.IO.SearchOption.AllDirectories);
+            bool errorOccurred = false;
+            foreach (string file in encryptedFiles)
+            {
+                bool success = EncryptionUtility.DecryptFileWithResult(file);
+                if (!success)
+                    errorOccurred = true;
+            }
+            if (errorOccurred)
+                backupView.DisplayMessage("DecryptionError");
+            else
+                backupView.DisplayMessage("FolderDecrypted");
+            PauseAndReturn();
         }
 
         /// <summary>
         /// Handles invalid menu option input from the user.
-        /// Displays an error message to guide the user back to a valid choice.
         /// </summary>
         public void ErreurChoix()
         {
-            backupView.DisplayMessage("InvalidOption");  // Display error message for invalid input
+            backupView.DisplayMessage("InvalidOption");
         }
 
         /// <summary>
         /// Displays the main menu for the user to interact with.
-        /// Allows the user to choose different operations.
         /// </summary>
         public void DisplayMainMenu()
         {
-            backupView.DisplayMainMenu();  // Show the main menu to the user
+            backupView.DisplayMainMenu();
         }
     }
 }

@@ -1,10 +1,7 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-using EasySave.Models;
-using Newtonsoft.Json;
 using EasySaveLog;
+using Newtonsoft.Json;
 
 namespace EasySave.Models
 {

@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Diagnostics;  // Pour utiliser Stopwatch
-using Newtonsoft.Json;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace EasySaveLog
 {
@@ -59,7 +58,7 @@ namespace EasySaveLog
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogActionJSON(string name, string source, string target , string time, string act)
+        public void LogActionJSON(string name, string source, string target, string time, string act)
         {
             // Initialize variable to store the file size (default is 0).
             long fileSize = 0;
