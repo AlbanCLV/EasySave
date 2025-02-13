@@ -39,26 +39,26 @@ namespace EasySaveLog
                 }
             }
         }
-        public void LogAction(string name, string source, string target, string time, string act)
+        public void LogAction(string name, string source, string target, string time, string act, string encryption)
         {
             if (Type_File.ToLower() == "json")
-                LogActionJSON(name, source, target, time, act);
+                LogActionJSON(name, source, target, time, act, encryption);
             else
-                LogActionXML(name, source, target, time, act);
+                LogActionXML(name, source, target, time, act, encryption);
         }
-        public void LogErreur(string task, string baseAction, string erreur)
+        public void LogErreur(string task, string baseAction, string erreur, string encryption)
         {
             if (Type_File.ToLower() == "json")
-                LogErreurJSON(task, baseAction, erreur);
+                LogErreurJSON(task, baseAction, erreur, encryption);
             else
-                LogErreurXML(task, baseAction, erreur);
+                LogErreurXML(task, baseAction, erreur, encryption);
         }
         /// <summary>
         /// Creates a new log entry for a backup action, with details about the task, source, and destination.
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogActionJSON(string name, string source, string target, string time, string act)
+        public void LogActionJSON(string name, string source, string target, string time, string act, string encryption)
         {
             // Initialize variable to store the file size (default is 0).
             long fileSize = 0;
@@ -75,7 +75,9 @@ namespace EasySaveLog
                 SourceFile = source, // Path of the source file or directory.
                 TargetFile = target, // Path of the target file or directory.
                 FileSize = fileSizeInKB, // Size of the source file/directory.
-                TransferTimeMs = time // Placeholder for transfer time (currently not used).
+                TransferTimeMs = time, // Placeholder for transfer time (currently not used).
+                Encryption = encryption // Placeholder for transfer time (currently not used).
+
             };
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
@@ -84,7 +86,7 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreurJSON(string task, string Base, string Erreur)
+        public void LogErreurJSON(string task, string Base, string Erreur, string encryption)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -94,7 +96,8 @@ namespace EasySaveLog
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
                 TaskName = "Backup_" + task, // Name of the backup task.
                 TransferTimeMs = -1, // Placeholder for transfer time (currently not used).
-                Error = Erreur // Placeholder for transfer time (currently not used).
+                Error = Erreur, // Placeholder for transfer time (currently not used).
+                Encryption = encryption
             };
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
@@ -103,7 +106,7 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogActionXML(string name, string source, string target, string time, string act)
+        public void LogActionXML(string name, string source, string target, string time, string act, string encryption)
         {
             // Initialiser la variable pour stocker la taille du fichier (par défaut à 0)
             long fileSize = 0;
@@ -134,7 +137,9 @@ namespace EasySaveLog
                 new XElement("SourceFile", source),
                 new XElement("TargetFile", target),
                 new XElement("FileSize", fileSizeInKB),
-                new XElement("TransferTimeMs", time)
+                new XElement("TransferTimeMs", time),
+                new XElement("Encryption", encryption)
+
             );
 
             // Ajouter l'entrée au document XML
@@ -146,7 +151,7 @@ namespace EasySaveLog
             // Sauvegarder le fichier XML
             xmlDoc.Save(logPath);
         }
-        public void LogErreurXML(string task, string baseAction, string erreur)
+        public void LogErreurXML(string task, string baseAction, string erreur, string encryption)
         {
             // Définir le chemin du fichier log XML basé sur la date actuelle
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
@@ -168,7 +173,8 @@ namespace EasySaveLog
                 new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
                 new XElement("TaskName", "Backup_" + task),
                 new XElement("TransferTimeMs", -1),
-                new XElement("Error", erreur)
+                new XElement("Error", erreur),
+                new XElement("Encryption", encryption)
             );
 
             // Ajouter l'entrée au document XML
@@ -198,7 +204,7 @@ namespace EasySaveLog
         {
             if (!directory.Exists)
             {
-                LogErreurJSON("Error", "try to delete a task", "Folder not found");
+                LogErreurJSON("Error", "try to delete a task", "Folder not found", "N/A");
                 Environment.Exit(0);
             }
 

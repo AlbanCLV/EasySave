@@ -108,7 +108,7 @@ namespace EasySave.Models
         {
             if (!directory.Exists)
             {
-                LogModels.LogErreurJSON("Error", "try to delete a task", "Folder not found");
+                LogModels.LogErreurJSON("Error", "try to delete a task", "Folder not found", "N/A");
                 Environment.Exit(0);
             }
 

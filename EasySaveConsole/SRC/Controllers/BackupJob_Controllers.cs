@@ -86,10 +86,11 @@ namespace EasySave.Controllers
         /// <summary>
         /// Configure les paramètres de chiffrement en demandant à l'utilisateur.
         /// </summary>
-        public void ConfigureEncryption()
+        public (bool encryptEnabled, string password, bool encryptAll, string[] selectedExtensions) ConfigureEncryption()
         {
             var encryptionSettings = backupView.GetEncryptionSettings();
             EncryptionUtility.SetEncryptionSettings(encryptionSettings.password, encryptionSettings.encryptAll, encryptionSettings.selectedExtensions, encryptionSettings.encryptEnabled);
+            return encryptionSettings;
         }
 
         /// <summary>
@@ -107,7 +108,7 @@ namespace EasySave.Controllers
             {
                 try
                 {
-                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
+                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task", "N/A");
                 }
                 catch (Exception ex)
                 {
@@ -118,7 +119,7 @@ namespace EasySave.Controllers
             {
                 try
                 {
-                    controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.");
+                    controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.", "N/A");
                 }
                 catch (Exception ex)
                 {
@@ -140,7 +141,7 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string t = controller_log.Get_Type_File();
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "N/A");
             PauseAndReturn();
         }
 
@@ -161,9 +162,9 @@ namespace EasySave.Controllers
             Console.Clear();
             backupView.DisplayMessage("ExecuteSpecificTask");
             // Configure encryption before executing the backup
-            ConfigureEncryption();
+            var encryption = ConfigureEncryption();
             stopwatch.Start();
-            var tasks = backupModel.ExecuteSpecificTask();
+            var tasks = backupModel.ExecuteSpecificTask(encryption.encryptEnabled);
             if (tasks == null || tasks.Count == 0) { return; }
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
@@ -172,7 +173,7 @@ namespace EasySave.Controllers
                 try
                 {
                     string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
-                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");
+                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, logType, encryption.encryptEnabled.ToString());
                 }
                 catch (Exception ex)
                 {
@@ -190,16 +191,16 @@ namespace EasySave.Controllers
             Console.Clear();
             backupView.DisplayMessage("ExecuteAllTasks");
             // Configure encryption before executing the backup
-            ConfigureEncryption();
+            var encryption = ConfigureEncryption();
             stopwatch.Start();
-            var executedTasks = backupModel.ExecuteAllTasks();
+            var executedTasks = backupModel.ExecuteAllTasks(encryption.encryptEnabled);
             stopwatch.Stop();
             if (executedTasks == null) { return; }
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
             string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task", encryption.encryptEnabled.ToString());
             }
             PauseAndReturn();
         }

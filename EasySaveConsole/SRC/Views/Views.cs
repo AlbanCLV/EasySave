@@ -191,6 +191,7 @@ namespace EasySave.Views
                 if (string.IsNullOrEmpty(response))
                 {
                     Console.WriteLine("Entrée vide. Veuillez répondre par O ou N.");
+                    
                     continue;
                 }
                 if (response == "O" || response == "N")

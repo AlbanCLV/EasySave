@@ -27,9 +27,9 @@ namespace EasySaveLog
         /// <param name="target">The target location for the backup.</param>
         /// <param name="time">The time taken for the backup (in ms).</param>
         /// <param name="action">The action performed (e.g., "Started", "Completed").</param>
-        public void LogBackupAction(string name, string source, string target, string time, string action)
+        public void LogBackupAction(string name, string source, string target, string time, string action, string encryption)
         {
-            logModel.LogAction(name, source, target, time, action);
+            logModel.LogAction(name, source, target, time, action, encryption);
             Console.ReadLine();
         }
         /// <summary>
@@ -38,9 +38,9 @@ namespace EasySaveLog
         /// <param name="task">The backup task name.</param>
         /// <param name="baseAction">The base action that triggered the error.</param>
         /// <param name="error">The error message.</param>
-        public void LogBackupErreur(string nom, String Base, String Erreur)
+        public void LogBackupErreur(string nom, String Base, String Erreur, string encryption)
         {
-            logModel.LogErreur(nom, Base, Erreur);
+            logModel.LogErreur(nom, Base, Erreur, encryption);
             Console.ReadLine();
         }
         /// <summary>
