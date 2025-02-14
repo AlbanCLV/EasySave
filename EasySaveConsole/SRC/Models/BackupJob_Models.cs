@@ -26,9 +26,14 @@ namespace EasySave.Models
         public string TargetDirectory { get; set; }
         public BackupType Type { get; set; }
 
-        private static List<BackupJob_Models> _tasks = new List<BackupJob_Models>();
-        public static IReadOnlyList<BackupJob_Models> Tasks => _tasks.AsReadOnly();
+        private static readonly string ConfigFilePath = "business_apps.txt";
 
+        /// <summary>
+        /// List of backup tasks.
+        /// </summary>
+        [JsonIgnore]
+        public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
+        private readonly Log_Models logger = new Log_Models();
         private const string SaveFilePath = "tasks.json";
         private readonly LangManager lang = LangManager.Instance;
 
@@ -268,17 +273,63 @@ namespace EasySave.Models
             if (!sourceDirectory.Exists)
                 throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
 
-            foreach (FileInfo file in sourceDirectory.GetFiles("*", SearchOption.AllDirectories))
+        public void AddBusinessApplication(string appName)
+        {
+            if (string.IsNullOrWhiteSpace(appName)) return;
+
+            List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+            .Select(line => line.Trim().ToLower()) // Normalisation
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+            // Vérifier si l'application existe déjà
+            if (existingApps.Contains(appName.ToLower())) // Comparaison insensible à la casse
             {
-                string relativePath = file.FullName.Substring(sourceDir.Length + 1);
-                string destFile = Path.Combine(destDir, relativePath);
-                if (!File.Exists(destFile) || file.LastWriteTime > File.GetLastWriteTime(destFile))
+                Console.WriteLine($"{appName} est déjà dans la liste des logiciels métier.");
+            }
+            else
+            {
+                File.AppendAllText(ConfigFilePath, appName + Environment.NewLine);
+                Console.WriteLine($"{appName} ajouté à la liste des logiciels métier.");
+            }
+            Console.WriteLine("\nAppuyez sur une touche pour revenir au menu...");
+            Console.ReadKey(); // Pause pour laisser le temps à l'utilisateur de voir le message
+        }
+
+        public void DisplayExistingApplications()
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+                    .Select(line => line.Trim())
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToList();
+
+                Console.WriteLine("\n📋 Applications métier déjà enregistrées :");
+                if (existingApps.Count > 0)
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
-                    file.CopyTo(destFile, true);
-                    // Chiffrer le fichier copié
-                    EncryptionUtility.ProcessFile(destFile, true);
+                    foreach (var app in existingApps)
+                    {
+                        Console.WriteLine("- " + app);
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("(Aucune application enregistrée pour l'instant.)");
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private void ExecuteBackup(BackupJob_Models task)
+        {
+            if (task.Type == BackupType.Full)
+            {
+                PerformFullBackup(task);
+            }
+            else if (task.Type == BackupType.Differential)
+            {
+                ExecuteDifferentialBackup(task);
             }
         }
 

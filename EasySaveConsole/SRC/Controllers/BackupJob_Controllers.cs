@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using EasySave.Models;
 using EasySave.Views;
-using EasySave.Log;
-using EasySave.Utilities;  // For LangManager and EncryptionUtility
-using EasySave.Controllers; // For State_Controller
+using EasySaveLog;
+using EasySave.Utilities;
+using Terminal.Gui;  // Assurez-vous d'inclure le namespace pour LangManager
 
 namespace EasySave.Controllers
 {
@@ -158,19 +158,23 @@ namespace EasySave.Controllers
 
         public void ExecuteSpecificTask()
         {
-            try
+            Console.Clear();  // Clear the screen for a clean display
+            backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
+
+            if (ProcessWatcher.IsBusinessApplicationRunning())
             {
-                Console.Clear();
-                backupView.DisplayMessage("ExecuteSpecificTask");
-                // Configure encryption before executing the backup.
-                ConfigureEncryption();
-                stopwatch.Restart();
-                // ExecuteSpecificTask is assumed to be a static method that executes the specific task.
-                BackupJob_Models.ExecuteSpecificTask();
-                stopwatch.Stop();
-                PauseAndReturn();
+                return;
             }
-            catch (Exception ex)
+
+            stopwatch.Start();
+
+            List<BackupJob_Models> tasks = backupModel.ExecuteSpecificTask();  // Execute the selected backup tasks
+            if (tasks == null || tasks.Count == 0) { return; }
+
+            stopwatch.Stop();
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+
+            foreach (var task in tasks)
             {
                 Console.WriteLine("Error executing specific task: " + ex.Message);
             }
@@ -232,10 +236,33 @@ namespace EasySave.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error decrypting folder: " + ex.Message);
+                if (ProcessWatcher.IsBusinessApplicationRunning())
+                {
+                    Console.WriteLine($"Logiciel métier détecté ! La sauvegarde '{task.Name}' est suspendue.");
+                    break; // Arrêter la sauvegarde après la tâche en cours
+                }
+                else {
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                }
             }
+
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
+        public void AddBusinessApplication()
+        {
+            Console.Clear();
+            backupModel.DisplayExistingApplications();
+            Console.Write("Entrez le nom de l'application métier à surveiller : ");
+            string appName = Console.ReadLine()?.Trim();
+
+            backupModel.AddBusinessApplication(appName);
+        }
+
+        /// <summary>
+        /// Handles invalid menu option input from the user.
+        /// Displays an error message to guide the user back to a valid choice.
+        /// </summary>
         public void ErreurChoix()
         {
             backupView.DisplayMessage("InvalidOption");

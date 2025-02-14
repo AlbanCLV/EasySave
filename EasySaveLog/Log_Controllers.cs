@@ -11,7 +11,7 @@ namespace EasySave.Log
 
         public Log_Controller()
         {
-            logModel = Log_Models.Instance;
+            logModel = Log_Models.Instance ?? new Log_Models(); // On récupère l'instance unique
         }
 
         public void LogBackupAction(string name, string source, string target, string time, string action)
