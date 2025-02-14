@@ -8,7 +8,7 @@ using Terminal.Gui;
 namespace EasySave.Views
 {
     /// <summary>
-    /// Vue qui gère les interactions utilisateur, l'affichage du menu et la saisie de données.
+    /// View that handles user interactions, displays the menu, and gathers input.
     /// </summary>
     public class BackupJob_View
     {
@@ -22,6 +22,7 @@ namespace EasySave.Views
         public void DisplayMainMenu()
         {
             Console.Clear();
+            // ASCII art header
             Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               ");
             Console.WriteLine("| $$_____/                               /$$__  $$                              ");
             Console.WriteLine("| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ ");
@@ -47,7 +48,7 @@ namespace EasySave.Views
         public void Get_Type_Log(string a)
         {
             Console.Clear();
-            Console.WriteLine(lang.Translate("Type_Now") + $"{a}");
+            Console.WriteLine(lang.Translate("Type_Now") + " " + a);
         }
 
         public string Type_File_Log()
@@ -114,7 +115,7 @@ namespace EasySave.Views
             int typeInput;
             while (!int.TryParse(Console.ReadLine(), out typeInput) || (typeInput != 1 && typeInput != 2))
             {
-                Console.Write(lang.Translate("InvalidBackupType"));
+                Console.WriteLine(lang.Translate("InvalidBackupType"));
             }
             BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
 
@@ -129,13 +130,11 @@ namespace EasySave.Views
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
-
             var dialog = new OpenDialog(lang.Translate("SelectPathTitle"), lang.Translate("SelectPathDescription"))
             {
                 CanChooseFiles = canChooseFiles,
                 CanChooseDirectories = canChooseDirectories
             };
-
             Application.Run(dialog);
             string result = dialog.FilePath.ToString();
             Application.Shutdown();
@@ -145,76 +144,75 @@ namespace EasySave.Views
         public string DisplayLangue()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine("Choose a language / Choisissez une langue:");
+            Console.WriteLine(lang.Translate("ChooseLanguage")); // e.g., "Choose a language:"
             Console.WriteLine("1. English");
             Console.WriteLine("2. Français");
-            Console.Write("Enter your choice: ");
+            Console.Write(lang.Translate("EnterChoice")); // e.g., "Enter your choice: "
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
 
+        // Updated encryption settings prompt – removes the unnecessary "Do not encrypt" option.
         public (bool encryptEnabled, string password, bool encryptAll, string[] selectedExtensions) GetEncryptionSettings()
         {
             Console.Clear();
             string response = "";
             while (true)
             {
-                Console.WriteLine("Voulez-vous crypter les sauvegardes ? (O/N)");
+                // "EncryptPrompt" should be defined in your translation file, e.g., "Do you want to encrypt backups? (Y/N)"
+                Console.WriteLine(lang.Translate("EncryptPrompt"));
                 response = Console.ReadLine()?.Trim().ToUpper();
                 if (string.IsNullOrEmpty(response))
                 {
-                    Console.WriteLine("Entrée vide. Veuillez répondre par O ou N.");
-                    
+                    Console.WriteLine(lang.Translate("EmptyInput"));
                     continue;
                 }
-                if (response == "O" || response == "N")
+                // Accept "Y" or "O" (for yes) and "N" for no.
+                if (response == "Y" || response == "O" || response == "N")
                     break;
                 else
-                    Console.WriteLine("Réponse invalide. Veuillez répondre par O ou N.");
+                    Console.WriteLine(lang.Translate("InvalidInput"));
             }
             if (response == "N")
             {
                 return (false, "", false, new string[0]);
             }
+            // Since encryption is desired, present only two options: encrypt all or encrypt selected extensions.
             string option = "";
             while (true)
             {
-                Console.WriteLine("Choisissez l'option de chiffrement :");
-                Console.WriteLine("1. Chiffrer toutes les sauvegardes");
-                Console.WriteLine("3. Chiffrer seulement certaines extensions");
+                Console.WriteLine(lang.Translate("EncryptionOptionPrompt")); // e.g., "Choose encryption option:"
+                Console.WriteLine("1. " + lang.Translate("EncryptAllBackups"));   // e.g., "Encrypt all backups"
+                Console.WriteLine("2. " + lang.Translate("EncryptSelectedExtensions")); // e.g., "Encrypt only selected extensions"
                 option = Console.ReadLine()?.Trim();
                 if (string.IsNullOrEmpty(option))
                 {
-                    Console.WriteLine("Entrée vide. Veuillez entrer 1, 2 ou 3.");
+                    Console.WriteLine(lang.Translate("EmptyInput"));
                     continue;
                 }
-                if (option == "1" || option == "2" || option == "3")
+                if (option == "1" || option == "2")
                     break;
                 else
-                    Console.WriteLine("Entrée invalide. Veuillez entrer 1, 2 ou 3.");
-            }
-            if (option == "2")
-            {
-                return (false, "", false, new string[0]);
+                    Console.WriteLine(lang.Translate("InvalidInput"));
             }
             bool encryptAll = option == "1";
             string[] selectedExtensions = new string[0];
-            if (option == "3")
+            if (option == "2")
             {
-                Console.WriteLine("Entrez les extensions à crypter, séparées par des virgules (ex : .txt, .docx) :");
+                Console.WriteLine(lang.Translate("EnterExtensions")); // e.g., "Enter extensions to encrypt, separated by commas:"
                 string extensionsInput = Console.ReadLine();
                 while (string.IsNullOrEmpty(extensionsInput))
                 {
-                    Console.WriteLine("Aucune extension fournie. Veuillez entrer au moins une extension.");
+                    Console.WriteLine(lang.Translate("EmptyInput"));
                     extensionsInput = Console.ReadLine();
                 }
                 selectedExtensions = extensionsInput.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                     .Select(e => e.Trim()).ToArray();
             }
-            Console.WriteLine("Entrez le mot de passe pour le chiffrement (il ne sera pas affiché) :");
+            Console.WriteLine(lang.Translate("EnterEncryptionPassword")); // e.g., "Enter the encryption password (it will not be displayed):"
             string password = ReadPassword();
             while (string.IsNullOrEmpty(password))
             {
-                Console.WriteLine("Le mot de passe ne peut pas être vide. Veuillez réessayer :");
+                Console.WriteLine(lang.Translate("EmptyInput"));
                 password = ReadPassword();
             }
             return (true, password, encryptAll, selectedExtensions);
