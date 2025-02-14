@@ -7,7 +7,9 @@ using System.Text;
 namespace EasySave.Utilities
 {
     /// <summary>
-    /// Utilitaire de chiffrement/déchiffrement des fichiers.
+    /// Utility for encrypting/decrypting files using AES in CBC mode with PKCS7 padding.
+    /// This version uses a random IV for each file, which is written as the first 16 bytes
+    /// of the encrypted file.
     /// </summary>
     public class EncryptionUtility
     {
@@ -17,7 +19,7 @@ namespace EasySave.Utilities
         private static bool EncryptEnabled;
 
         /// <summary>
-        /// Configure les paramètres de chiffrement.
+        /// Configures encryption parameters.
         /// </summary>
         public static void SetEncryptionSettings(string password, bool encryptAllSetting, string[] selectedExtensionsSetting, bool encryptEnabledSetting)
         {
@@ -29,10 +31,13 @@ namespace EasySave.Utilities
         }
 
         /// <summary>
-        /// Indique si le chiffrement est activé.
+        /// Indicates whether encryption is enabled.
         /// </summary>
         public static bool IsEncryptionEnabled => EncryptEnabled;
 
+        /// <summary>
+        /// Generates an AES key from the user's password using SHA256.
+        /// </summary>
         private static byte[] GenerateKeyFromPassword()
         {
             using (SHA256 sha256 = SHA256.Create())
@@ -44,7 +49,7 @@ namespace EasySave.Utilities
         }
 
         /// <summary>
-        /// Traite le fichier en chiffrant ou déchiffrant selon le paramètre "encrypt".
+        /// Processes a file by encrypting or decrypting it based on the 'encrypt' parameter.
         /// </summary>
         public static void ProcessFile(string filePath, bool encrypt)
         {
@@ -54,7 +59,7 @@ namespace EasySave.Utilities
                 return;
             }
 
-            // Pour tester, le filtrage par extension est désactivé.
+            // For testing, extension filtering is disabled.
             string outputFile = encrypt ? filePath + ".aes" : filePath.Replace(".aes", "");
             Console.WriteLine((encrypt ? "Starting encryption" : "Starting decryption") + " for file: " + filePath);
             if (encrypt)
@@ -63,6 +68,9 @@ namespace EasySave.Utilities
                 DecryptFile(filePath, outputFile);
         }
 
+        /// <summary>
+        /// Encrypts the input file and writes the encrypted data (prefixed by a random IV) to the output file.
+        /// </summary>
         private static void EncryptFile(string inputFile, string outputFile)
         {
             try
@@ -73,17 +81,22 @@ namespace EasySave.Utilities
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
                     aes.Key = key;
-                    // Utilise les 16 premiers octets de la clé comme IV
-                    aes.IV = key.Take(16).ToArray();
-                    Console.WriteLine("IV generated. Length: " + aes.IV.Length);
+                    aes.GenerateIV();  // Generate a random IV
+                    byte[] iv = aes.IV;
+                    Console.WriteLine("IV generated. Length: " + iv.Length);
 
-                    using (FileStream fsInput = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
+                    // Write the IV at the beginning of the output file
                     using (FileStream fsOutput = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
-                    using (CryptoStream cs = new CryptoStream(fsOutput, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
-                        fsInput.CopyTo(cs);
+                        fsOutput.Write(iv, 0, iv.Length);
+                        using (CryptoStream cs = new CryptoStream(fsOutput, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                        using (FileStream fsInput = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
+                        {
+                            fsInput.CopyTo(cs);
+                        }
                     }
                 }
+                // Delete the original file after successful encryption
                 File.Delete(inputFile);
                 Console.WriteLine($"Encryption completed for file: {inputFile}. Encrypted file: {outputFile}");
             }
@@ -93,23 +106,35 @@ namespace EasySave.Utilities
             }
         }
 
+        /// <summary>
+        /// Decrypts the input file and writes the decrypted data to the output file.
+        /// The method reads the IV from the beginning of the encrypted file.
+        /// </summary>
         private static bool DecryptFile(string inputFile, string outputFile)
         {
             try
             {
                 byte[] key = GenerateKeyFromPassword();
-                using (Aes aes = Aes.Create())
+                using (FileStream fsInput = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
                 {
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.Key = key;
-                    aes.IV = key.Take(16).ToArray();
+                    // Read the IV from the beginning of the file
+                    byte[] iv = new byte[16];
+                    int bytesRead = fsInput.Read(iv, 0, iv.Length);
+                    if (bytesRead < iv.Length)
+                        throw new Exception("Failed to read IV from file.");
 
-                    using (FileStream fsInput = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
-                    using (FileStream fsOutput = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
-                    using (CryptoStream cs = new CryptoStream(fsInput, aes.CreateDecryptor(), CryptoStreamMode.Read))
+                    using (Aes aes = Aes.Create())
                     {
-                        cs.CopyTo(fsOutput);
+                        aes.Mode = CipherMode.CBC;
+                        aes.Padding = PaddingMode.PKCS7;
+                        aes.Key = key;
+                        aes.IV = iv;
+
+                        using (FileStream fsOutput = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+                        using (CryptoStream cs = new CryptoStream(fsInput, aes.CreateDecryptor(), CryptoStreamMode.Read))
+                        {
+                            cs.CopyTo(fsOutput);
+                        }
                     }
                 }
                 File.Delete(inputFile);
@@ -130,6 +155,9 @@ namespace EasySave.Utilities
             }
         }
 
+        /// <summary>
+        /// Public method to decrypt a file and return the result.
+        /// </summary>
         public static bool DecryptFileWithResult(string filePath)
         {
             string outputFile = filePath.Replace(".aes", "");

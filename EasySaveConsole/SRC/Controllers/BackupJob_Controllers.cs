@@ -3,14 +3,14 @@ using System.Diagnostics;
 using EasySave.Models;
 using EasySave.Views;
 using EasySave.Log;
-using EasySaveLog;
-using EasySave.Utilities;
+using EasySave.Utilities;  // For LangManager and EncryptionUtility
+using EasySave.Controllers; // For State_Controller
 
 namespace EasySave.Controllers
 {
     /// <summary>
-    /// Contrôleur principal qui gère la logique (création, exécution, suppression) des tâches.
-    /// Intègre également les logs et la mise à jour de l'état.
+    /// Main controller that handles backup tasks (creation, execution, deletion)
+    /// and integrates logging and state updates.
     /// </summary>
     public class BackupJob_Controller
     {
@@ -21,6 +21,7 @@ namespace EasySave.Controllers
         private State_Controller controller_state;
         private Stopwatch stopwatch = new Stopwatch();
 
+        // Private constructor for the singleton pattern.
         private BackupJob_Controller()
         {
             backupView = new BackupJob_View();
@@ -65,54 +66,81 @@ namespace EasySave.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erreur lors du choix du type de log : " + ex.Message);
+                Console.WriteLine("Error choosing log type: " + ex.Message);
             }
         }
 
+        /// <summary>
+        /// Configures encryption settings based on user input.
+        /// </summary>
         public void ConfigureEncryption()
         {
-            BackupJob_Models task = backupView.GetBackupDetails();
-            stopwatch.Start();
-            string cond = backupModel.CreateBackupTask(task);
-            stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            string t = controller_log.Get_Type_File();
-            if (cond == "ok")
+            var encryptionSettings = backupView.GetEncryptionSettings();
+            EncryptionUtility.SetEncryptionSettings(
+                encryptionSettings.password,
+                encryptionSettings.encryptAll,
+                encryptionSettings.selectedExtensions,
+                encryptionSettings.encryptEnabled);
+        }
+
+        public void CreateBackupTask()
+        {
+            try
             {
-                try
+                BackupJob_Models task = backupView.GetBackupDetails();
+                stopwatch.Restart();
+                string cond = BackupJob_Models.CreateBackupTask(task);
+                stopwatch.Stop();
+                string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+
+                if (cond == "ok")
                 {
-                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
+                    try
+                    {
+                        controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error during log: " + ex.Message);
+                    }
                 }
-                catch (Exception ex)
+                else if (cond == "ko")
                 {
-                    Console.WriteLine("Erreur lors du log: " + ex.Message);
+                    try
+                    {
+                        controller_log.LogBackupErreur(task.Name, "create_task_attempt", "User cancelled task creation.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error during log: " + ex.Message);
+                    }
                 }
             }
-            else if (cond == "ko")
+            catch (Exception ex)
             {
-                try
-                {
-                    controller_log.LogBackupErreur(task.Name, "create_task_attempt", "The user entered 'no' during the confirmation.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Erreur lors du log: " + ex.Message);
-                }
+                Console.WriteLine("Error creating backup task: " + ex.Message);
             }
         }
 
         public void DeleteTask()
         {
-            Console.Clear();
-            ViewTasks();
-            stopwatch.Start();
-            BackupJob_Models task = backupModel.DeleteTask();
-            if (task == null) { return; }
-            stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            string t = controller_log.Get_Type_File();
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
-            PauseAndReturn();
+            try
+            {
+                Console.Clear();
+                ViewTasks();
+                stopwatch.Restart();
+                BackupJob_Models task = BackupJob_Models.DeleteTask();
+                if (task == null)
+                    return;
+                stopwatch.Stop();
+                string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
+                PauseAndReturn();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error deleting task: " + ex.Message);
+            }
         }
 
         public void ViewTasks()
@@ -124,50 +152,46 @@ namespace EasySave.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erreur lors de l'affichage des tâches : " + ex.Message);
+                Console.WriteLine("Error viewing tasks: " + ex.Message);
             }
         }
 
         public void ExecuteSpecificTask()
         {
-            Console.Clear();
-            backupView.DisplayMessage("ExecuteSpecificTask");
-            // Configure encryption before executing the backup
-            ConfigureEncryption();
-            stopwatch.Start();
-            var tasks = backupModel.ExecuteSpecificTask();
-            if (tasks == null || tasks.Count == 0) { return; }
-            stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            foreach (var task in tasks)
+            try
             {
-                try
-                {
-                    string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";
-                    controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Erreur lors du log: " + ex.Message);
-                }
+                Console.Clear();
+                backupView.DisplayMessage("ExecuteSpecificTask");
+                // Configure encryption before executing the backup.
+                ConfigureEncryption();
+                stopwatch.Restart();
+                // ExecuteSpecificTask is assumed to be a static method that executes the specific task.
+                BackupJob_Models.ExecuteSpecificTask();
+                stopwatch.Stop();
+                PauseAndReturn();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error executing specific task: " + ex.Message);
             }
         }
 
         public void ExecuteAllTasks()
         {
-            Console.Clear();
-            backupView.DisplayMessage("ExecuteAllTasks");
-            // Configure encryption before executing the backup
-            ConfigureEncryption();
-            stopwatch.Start();
-            var executedTasks = backupModel.ExecuteAllTasks();
-            stopwatch.Stop();
-            if (executedTasks == null) { return; }
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-            string t = controller_log.Get_Type_File();
-            foreach (var task in executedTasks)
+            try
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");
+                Console.Clear();
+                backupView.DisplayMessage("ExecuteAllTasks");
+                // Configure encryption before executing the backup.
+                ConfigureEncryption();
+                stopwatch.Restart();
+                BackupJob_Models.ExecuteAllTasks();
+                stopwatch.Stop();
+                PauseAndReturn();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error executing all tasks: " + ex.Message);
             }
         }
 
@@ -208,7 +232,7 @@ namespace EasySave.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erreur lors du déchiffrement du dossier : " + ex.Message);
+                Console.WriteLine("Error decrypting folder: " + ex.Message);
             }
         }
 
