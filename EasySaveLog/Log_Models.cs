@@ -30,7 +30,7 @@ namespace EasySaveLog
         {
             get
             {
-                lock (_lock)  // Thread-safety
+                lock (_lock)
                 {
                     if (_instance == null)
                     {

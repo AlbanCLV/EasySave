@@ -37,7 +37,8 @@ namespace EasySave.Views
             Console.WriteLine($"4. {lang.Translate("ViewAllTasks")}");
             Console.WriteLine($"5. {lang.Translate("DeleteTask")}");
             Console.WriteLine($"6. {lang.Translate("Choice_log_display")}");
-            Console.WriteLine($"7. {lang.Translate("Exit")}");
+            Console.WriteLine($"7. {lang.Translate("add_buisness_app")}");
+            Console.WriteLine($"8. {lang.Translate("Exit")}");
             Console.Write($"\n{lang.Translate("SelectOption")}");
         }
         public void Get_Type_Log(string a)

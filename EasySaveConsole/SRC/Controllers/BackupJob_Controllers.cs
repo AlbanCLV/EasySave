@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using EasySave.Models;
 using EasySave.Views;
 using EasySaveLog;
-using EasySave.Utilities;  // Assurez-vous d'inclure le namespace pour LangManager
+using EasySave.Utilities;
+using Terminal.Gui;  // Assurez-vous d'inclure le namespace pour LangManager
 
 
 namespace EasySave.Controllers
@@ -151,6 +152,12 @@ namespace EasySave.Controllers
         {
             Console.Clear();  // Clear the screen for a clean display
             backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
+
+            if (ProcessWatcher.IsBusinessApplicationRunning())
+            {
+                return;
+            }
+
             stopwatch.Start();
 
             List<BackupJob_Models> tasks = backupModel.ExecuteSpecificTask();  // Execute the selected backup tasks
@@ -186,9 +193,27 @@ namespace EasySave.Controllers
             string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
             {
-               controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                if (ProcessWatcher.IsBusinessApplicationRunning())
+                {
+                    Console.WriteLine($"Logiciel métier détecté ! La sauvegarde '{task.Name}' est suspendue.");
+                    break; // Arrêter la sauvegarde après la tâche en cours
+                }
+                else {
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                }
             }
+
             PauseAndReturn();  // Wait for user input before returning to the menu
+        }
+
+        public void AddBusinessApplication()
+        {
+            Console.Clear();
+            backupModel.DisplayExistingApplications();
+            Console.Write("Entrez le nom de l'application métier à surveiller : ");
+            string appName = Console.ReadLine()?.Trim();
+
+            backupModel.AddBusinessApplication(appName);
         }
 
         /// <summary>

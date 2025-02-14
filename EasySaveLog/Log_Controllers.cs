@@ -17,7 +17,7 @@ namespace EasySaveLog
         /// </summary>
         public Log_Controller()
         {
-            logModel = Log_Models.Instance; // On récupère l'instance unique
+            logModel = Log_Models.Instance ?? new Log_Models(); // On récupère l'instance unique
         }
 
         // <summary>

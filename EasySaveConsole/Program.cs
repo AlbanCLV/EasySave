@@ -22,6 +22,8 @@ namespace EasySave
             // Initialize the controller and display the language selection screen
             BackupJob_Controller controller1 = new BackupJob_Controller();
             Console.Clear();  // Clear the console for a fresh display
+            Console.WriteLine("Démarrage du ProcessWatcher");
+            ProcessWatcher.StartWatching(); //Lancement du programme de surveillance
 
             SelectedLanguage = controller1.DisplayLangue();  // Store the selected language
             LangManager.Instance.SetLanguage(SelectedLanguage);  // Update the language
@@ -35,6 +37,8 @@ namespace EasySave
             invoker.SetCommand("4", new ViewTasksCommand(controller));
             invoker.SetCommand("5", new DeleteTaskCommand(controller));
             invoker.SetCommand("6", new ChoiceFileLogCommand(controller));
+            invoker.SetCommand("7", new AddBusinessApplicationCommand(controller));
+
 
             // Initialize file log choice
             controller.Choice_Type_File_Log();
@@ -52,8 +56,8 @@ namespace EasySave
                 // Invoke the command based on user input
                 invoker.InvokeCommand(input);
 
-                // Exit the application if the user selects "7"
-                if (input == "7")
+                // Exit the application if the user selects "8"
+                if (input == "8")
                 {
                     Environment.Exit(0);
                 }
@@ -219,6 +223,23 @@ namespace EasySave
         }
     }
 
+    /// <summary>
+    /// Command class to add a business application.
+    /// </summary>
+    public class AddBusinessApplicationCommand : ICommand
+    {
+        private readonly BackupJob_Controller _controller;
+
+        public AddBusinessApplicationCommand(BackupJob_Controller controller)
+        {
+            _controller = controller;
+        }
+
+        public void Execute()
+        {
+            _controller.AddBusinessApplication();
+        }
+    }
 
 
 

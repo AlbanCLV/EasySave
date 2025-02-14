@@ -30,6 +30,8 @@ namespace EasySave.Models
         public string TargetDirectory { get; set; }
         public BackupType Type { get; set; }
 
+        private static readonly string ConfigFilePath = "business_apps.txt";
+
         /// <summary>
         /// List of backup tasks.
         /// </summary>
@@ -441,6 +443,54 @@ namespace EasySave.Models
             Directory.CreateDirectory(targetPath);
             CopyDirectoryContent(task.SourceDirectory, targetPath, task);
             Console.WriteLine(string.Format(lang.Translate("full_backup_completed"), task.Name));
+        }
+
+        public void AddBusinessApplication(string appName)
+        {
+            if (string.IsNullOrWhiteSpace(appName)) return;
+
+            List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+            .Select(line => line.Trim().ToLower()) // Normalisation
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+            // Vérifier si l'application existe déjà
+            if (existingApps.Contains(appName.ToLower())) // Comparaison insensible à la casse
+            {
+                Console.WriteLine($"{appName} est déjà dans la liste des logiciels métier.");
+            }
+            else
+            {
+                File.AppendAllText(ConfigFilePath, appName + Environment.NewLine);
+                Console.WriteLine($"{appName} ajouté à la liste des logiciels métier.");
+            }
+            Console.WriteLine("\nAppuyez sur une touche pour revenir au menu...");
+            Console.ReadKey(); // Pause pour laisser le temps à l'utilisateur de voir le message
+        }
+
+        public void DisplayExistingApplications()
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+                    .Select(line => line.Trim())
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToList();
+
+                Console.WriteLine("\n📋 Applications métier déjà enregistrées :");
+                if (existingApps.Count > 0)
+                {
+                    foreach (var app in existingApps)
+                    {
+                        Console.WriteLine("- " + app);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("(Aucune application enregistrée pour l'instant.)");
+                }
+                Console.WriteLine();
+            }
         }
 
         private void ExecuteBackup(BackupJob_Models task)
