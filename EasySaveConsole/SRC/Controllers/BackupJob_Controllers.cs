@@ -85,62 +85,28 @@ namespace EasySave.Controllers
 
         public void CreateBackupTask()
         {
-            try
-            {
-                BackupJob_Models task = backupView.GetBackupDetails();
-                stopwatch.Restart();
-                string cond = BackupJob_Models.CreateBackupTask(task);
-                stopwatch.Stop();
-                string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-
-                if (cond == "ok")
-                {
-                    try
-                    {
-                        controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error during log: " + ex.Message);
-                    }
-                }
-                else if (cond == "ko")
-                {
-                    try
-                    {
-                        controller_log.LogBackupErreur(task.Name, "create_task_attempt", "User cancelled task creation.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error during log: " + ex.Message);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error creating backup task: " + ex.Message);
-            }
+            BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
+            stopwatch.Start();
+            backupModel.CreateBackupTask(task);  // Create the backup task
+            stopwatch.Stop();
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         public void DeleteTask()
         {
-            try
-            {
-                Console.Clear();
-                ViewTasks();
-                stopwatch.Restart();
-                BackupJob_Models task = BackupJob_Models.DeleteTask();
-                if (task == null)
-                    return;
-                stopwatch.Stop();
-                string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");
-                PauseAndReturn();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error deleting task: " + ex.Message);
-            }
+            backupView.DisplayMessage("DeleteTask");
+            ViewTasks();  // Display current tasks for the user to select from
+
+            stopwatch.Start();
+            BackupJob_Models task = backupModel.DeleteTask();  // Delete the selected task
+            stopwatch.Stop();
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         public void ViewTasks()
@@ -174,10 +140,9 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
 
-            foreach (var task in tasks)
-            {
-                Console.WriteLine("Error executing specific task: " + ex.Message);
-            }
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+            PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
         public void ExecuteAllTasks()

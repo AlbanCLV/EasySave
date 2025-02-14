@@ -20,9 +20,9 @@ namespace EasySave.Log
             logModel.LogAction(name, source, target, time, action);
         }
 
-        public void LogBackupErreur(string name, string baseAction, string error)
+        public void LogBackupErreur(string nom, String Base, String Erreur)
         {
-            logModel.LogErreurJSON(name, baseAction, error);
+            logModel.LogErreur(nom, Base, Erreur);
         }
 
         public void Type_File_Log(string type)

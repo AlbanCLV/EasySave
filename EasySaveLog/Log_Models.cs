@@ -11,9 +11,11 @@ namespace EasySave.Log
     /// </summary>
     public class Log_Models
     {
-        private static Log_Models _instance;
-        private static readonly object _lock = new object();
-        private readonly string logDirectory; // Répertoire où les logs seront sauvegardés
+#nullable enable
+        private static Log_Models? _instance;  // Instance unique
+        private static readonly object _lock = new object(); // Verrou pour éviter les problèmes de multithreading
+        private readonly string logDirectory;  // Répertoire des logs
+        public string Type_File { get; set; } = "json";
 
         public string Type_File { get; set; } = "json"; // Format de log par défaut
 
@@ -96,7 +98,7 @@ namespace EasySave.Log
         {
             if (!directory.Exists)
             {
-                LogErreur("Error", "GetDirectorySize", "Folder not found");
+                LogErreurJSON("Error", "Error", "Folder not found");
                 Environment.Exit(0);
             }
 

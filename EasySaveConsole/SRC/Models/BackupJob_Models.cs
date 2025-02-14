@@ -133,7 +133,9 @@ namespace EasySave.Models
         {
             if (_tasks.Count == 0)
             {
-                Console.WriteLine(LangManager.Instance.Translate("no_tasks_to_delete"));
+                Console.WriteLine(lang.Translate("no_tasks_to_delete"));
+                controller_log.LogBackupErreur("Error", lang.Translate("delete_task_attempt"), lang.Translate("no_tasks_to_delete"));
+                Environment.Exit(0);
                 return null;
             }
             BackupJob_Models deletedTask = null;
