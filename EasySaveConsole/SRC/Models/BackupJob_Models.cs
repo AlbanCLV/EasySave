@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using EasySave.Controllers;
-using EasySave.Utilities; // Gestionnaire de langue
-using EasySaveConsole.Utilities; // Pour EncryptionUtility
-using EasySaveLog;
 using Newtonsoft.Json;
+using EasySave.Utilities;
+using EasySave.Log;
+using EasySave.Controllers;
 
 namespace EasySave.Models
 {
-    /// <summary>
-    /// Enumeration representing the type of backup.
-    /// </summary>
     public enum BackupType
     {
         Full,
@@ -21,7 +16,8 @@ namespace EasySave.Models
     }
 
     /// <summary>
-    /// Model class representing a backup job.
+    /// Représente une tâche de sauvegarde et gère la liste globale des tâches.
+    /// Intègre la logique de sauvegarde complète et différentielle avec chiffrement.
     /// </summary>
     public class BackupJob_Models
     {
@@ -30,57 +26,21 @@ namespace EasySave.Models
         public string TargetDirectory { get; set; }
         public BackupType Type { get; set; }
 
-        /// <summary>
-        /// List of backup tasks.
-        /// </summary>
-        [JsonIgnore]
-        public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
-        private readonly Log_Models logger = new Log_Models();
+        private static List<BackupJob_Models> _tasks = new List<BackupJob_Models>();
+        public static IReadOnlyList<BackupJob_Models> Tasks => _tasks.AsReadOnly();
+
         private const string SaveFilePath = "tasks.json";
-        private Log_Controller controller_log = new Log_Controller();
-        private State_Controller controller_State = new State_Controller();
+        private readonly LangManager lang = LangManager.Instance;
 
-        // Instanciation du gestionnaire de langue (ici en français par défaut)
-        private readonly LangManager lang;
-
-        /// <summary>
-        /// Constructor for creating a backup job.
-        /// </summary>
-        public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
+        public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type)
         {
             Name = name;
             SourceDirectory = sourceDirectory;
             TargetDirectory = targetDirectory;
             Type = type;
-
-            lang = new LangManager(Program.SelectedLanguage);
-
-            if (loadTasks)  // Load tasks if necessary
-            {
-                LoadTasks();
-            }
         }
 
-        /// <summary>
-        /// Saves tasks to a JSON file.
-        /// </summary>
-        public void SaveTasks()
-        {
-            try
-            {
-                string json = JsonConvert.SerializeObject(Tasks, Formatting.Indented);
-                File.WriteAllText(SaveFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"{lang.Translate("error_saving_tasks")}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Loads tasks from a JSON file.
-        /// </summary>
-        public void LoadTasks()
+        public static void LoadTasks()
         {
             try
             {
@@ -88,36 +48,34 @@ namespace EasySave.Models
                 {
                     string json = File.ReadAllText(SaveFilePath);
                     var loadedTasks = JsonConvert.DeserializeObject<List<BackupJob_Models>>(json);
-
                     if (loadedTasks != null)
-                    {
-                        Tasks.Clear();
-                        Tasks.AddRange(loadedTasks);
-                    }
+                        _tasks = loadedTasks;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{lang.Translate("error_loading_tasks")}: {ex.Message}");
+                Console.WriteLine($"{LangManager.Instance.Translate("error_loading_tasks")}: {ex.Message}");
             }
         }
 
-        public void Type_Log(string a)
+        public static void SaveTasks()
         {
-            controller_log.Type_File_Log(a);
+            try
+            {
+                string json = JsonConvert.SerializeObject(_tasks, Formatting.Indented);
+                File.WriteAllText(SaveFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{LangManager.Instance.Translate("error_saving_tasks")}: {ex.Message}");
+            }
         }
 
-        /// <summary>
-        /// Creates a new backup task.
-        /// </summary>
-        public string CreateBackupTask(BackupJob_Models task)
+        public static string CreateBackupTask(BackupJob_Models task)
         {
-            if (Tasks.Count >= 5)
+            if (_tasks.Count >= 5)
             {
-                Console.WriteLine(lang.Translate("max_tasks_error"));
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "Create task attempt", "Max tasks error");  // Log the action
-                Console.WriteLine(lang.Translate("app_closing_in"));
+                Console.WriteLine(LangManager.Instance.Translate("max_tasks_error"));
                 for (int i = 5; i > 0; i--)
                 {
                     Console.WriteLine(i);
@@ -125,327 +83,205 @@ namespace EasySave.Models
                 }
                 Environment.Exit(0);
             }
-            // Resume and confirmation
             Console.Clear();
-            Console.WriteLine(lang.Translate("task_summary"));
-            Console.WriteLine($"{lang.Translate("task_name")}: {task.Name}");
-            Console.WriteLine($"{lang.Translate("source_directory")}: {task.SourceDirectory}");
-            Console.WriteLine($"{lang.Translate("target_directory")}: {task.TargetDirectory}");
-            Console.WriteLine($"{lang.Translate("backup_type")}: {(task.Type == BackupType.Full ? lang.Translate("full_backup") : lang.Translate("differential_backup"))}");
-            Console.WriteLine($"\n{lang.Translate("confirm_task_creation")}");
-
+            Console.WriteLine(LangManager.Instance.Translate("task_summary"));
+            Console.WriteLine($"{LangManager.Instance.Translate("task_name")}: {task.Name}");
+            Console.WriteLine($"{LangManager.Instance.Translate("source_directory")}: {task.SourceDirectory}");
+            Console.WriteLine($"{LangManager.Instance.Translate("target_directory")}: {task.TargetDirectory}");
+            Console.WriteLine($"{LangManager.Instance.Translate("backup_type")}: {(task.Type == BackupType.Full ? LangManager.Instance.Translate("full_backup") : LangManager.Instance.Translate("differential_backup"))}");
+            Console.WriteLine($"\n{LangManager.Instance.Translate("confirm_task_creation")}");
             string confirmation = Console.ReadLine()?.ToUpper();
             if (confirmation == "Y")
             {
-                Tasks.Add(task);
+                _tasks.Add(task);
                 SaveTasks();
                 return "ok";
             }
             else
             {
-                Console.WriteLine(lang.Translate("task_creation_canceled"));
+                Console.WriteLine(LangManager.Instance.Translate("task_creation_canceled"));
                 return "ko";
             }
         }
 
-        /// <summary>
-        /// Displays all backup tasks.
-        /// </summary>
-        public void ViewTasks()
+        public static void ViewTasks()
         {
-            if (Tasks.Count == 0)
+            if (_tasks.Count == 0)
             {
-                Console.WriteLine(lang.Translate("no_backup_tasks"));
+                Console.WriteLine(LangManager.Instance.Translate("no_backup_tasks"));
                 return;
             }
-
             Console.Clear();
-            Console.WriteLine(lang.Translate("existing_backup_tasks"));
-            for (int i = 0; i < Tasks.Count; i++)
+            Console.WriteLine(LangManager.Instance.Translate("existing_backup_tasks"));
+            for (int i = 0; i < _tasks.Count; i++)
             {
-                Console.WriteLine($"{i + 1}. {lang.Translate("task_details")}:");
-                Console.WriteLine($"{lang.Translate("task_name")}: {Tasks[i].Name}");
-                Console.WriteLine($"{lang.Translate("source_directory")}: {Tasks[i].SourceDirectory}");
-                Console.WriteLine($"{lang.Translate("target_directory")}: {Tasks[i].TargetDirectory}");
-                Console.WriteLine($"{lang.Translate("backup_type")}: {Tasks[i].Type}");
+                Console.WriteLine($"{i + 1}. {LangManager.Instance.Translate("task_details")}:");
+                Console.WriteLine($"{LangManager.Instance.Translate("task_name")}: {_tasks[i].Name}");
+                Console.WriteLine($"{LangManager.Instance.Translate("source_directory")}: {_tasks[i].SourceDirectory}");
+                Console.WriteLine($"{LangManager.Instance.Translate("target_directory")}: {_tasks[i].TargetDirectory}");
+                Console.WriteLine($"{LangManager.Instance.Translate("backup_type")}: {_tasks[i].Type}");
                 Console.WriteLine();
             }
         }
 
-        /// <summary>
-        /// Deletes a backup task.
-        /// </summary>
-        public BackupJob_Models DeleteTask()
+        public static BackupJob_Models DeleteTask()
         {
-            if (Tasks.Count == 0)
+            if (_tasks.Count == 0)
             {
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur("Error", "Delete task attempt", "No tasks to delete");
+                Console.WriteLine(LangManager.Instance.Translate("no_tasks_to_delete"));
                 return null;
             }
             BackupJob_Models deletedTask = null;
-
             while (true)
             {
-                Console.Write(lang.Translate("enter_task_number_to_delete"));
-                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
+                Console.Write(LangManager.Instance.Translate("enter_task_number_to_delete"));
+                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= _tasks.Count)
                 {
-                    deletedTask = Tasks[taskNumber - 1];
-                    Console.WriteLine(string.Format(lang.Translate("deleting_task"), deletedTask.Name));
-                    Tasks.RemoveAt(taskNumber - 1);
-                    Console.WriteLine(lang.Translate("task_deleted_successfully"));
+                    deletedTask = _tasks[taskNumber - 1];
+                    Console.WriteLine(string.Format(LangManager.Instance.Translate("deleting_task"), deletedTask.Name));
+                    _tasks.RemoveAt(taskNumber - 1);
+                    Console.WriteLine(LangManager.Instance.Translate("task_deleted_successfully"));
                     SaveTasks();
                     break;
                 }
                 else
                 {
-                    Console.WriteLine(lang.Translate("invalid_task_number"));
-                    string t = controller_log.Get_Type_File();
-                    controller_log.LogBackupErreur("Error", "Delete tasks attemps", "Invalid task numebr");  // Log the action
+                    Console.WriteLine(LangManager.Instance.Translate("invalid_task_number"));
                 }
             }
             return deletedTask;
         }
 
-        /// <summary>
-        /// Execute a specific task from number
-        /// </summary>
-        public List<BackupJob_Models> ExecuteSpecificTask()
+        #region Exécution des Tâches
+
+        public static void ExecuteAllTasks()
         {
-            ViewTasks();
-            if (Tasks.Count == 0)
+            if (_tasks.Count == 0)
             {
-                Console.WriteLine(lang.Translate("no_tasks_to_execute"));
-                controller_log.LogBackupErreur("error", "Execute specific task", "No tasks to execute");
-                return null;
-            }
-
-            Console.Write(lang.Translate("enter_task_number_to_execute"));
-            while (true)
-            {
-                string input = Console.ReadLine();
-                List<int> taskNumbers = ParseTaskNumbers(input);
-
-                if (taskNumbers.Count > 0)
-                {
-                    List<BackupJob_Models> selectedTasks = new List<BackupJob_Models>();
-
-                    foreach (int taskNumber in taskNumbers)
-                    {
-                        if (taskNumber > 0 && taskNumber <= Tasks.Count)
-                        {
-                            BackupJob_Models selectedTask = Tasks[taskNumber - 1];
-                            ExecuteBackup(selectedTask);
-                            selectedTasks.Add(selectedTask);
-                        }
-                        else
-                        {
-                            Console.WriteLine(lang.Translate("invalid_task_number") + $" ({taskNumber})");
-                            controller_log.LogBackupErreur("Error", "Execute specific task", $"Invalid task number: {taskNumber}");
-                        }
-                    }
-
-                    return selectedTasks;
-                }
-                else
-                {
-                    Console.WriteLine(lang.Translate("invalid_task_number"));
-                    controller_log.LogBackupErreur("Error", "Execute specific task", "Invalid task number format");
-                    Console.Write(lang.Translate("enter_task_number_to_execute"));
-                }
-            }
-        }
-
-        // Fonction pour interpréter les entrées utilisateur sous forme de liste de nombres
-        private List<int> ParseTaskNumbers(string input)
-        {
-            List<int> taskNumbers = new List<int>();
-            string[] parts = input.Split(',');
-
-            foreach (string part in parts)
-            {
-                if (part.Contains("-"))
-                {
-                    string[] range = part.Split('-');
-                    if (range.Length == 2 && int.TryParse(range[0], out int start) && int.TryParse(range[1], out int end))
-                    {
-                        if (start > 0 && end >= start)
-                        {
-                            for (int i = start; i <= end; i++)
-                            {
-                                taskNumbers.Add(i);
-                            }
-                        }
-                    }
-                }
-                else if (int.TryParse(part, out int singleNumber) && singleNumber > 0)
-                {
-                    taskNumbers.Add(singleNumber);
-                }
-            }
-
-            return taskNumbers.Distinct().OrderBy(n => n).ToList();
-        }
-
-        /// <summary>
-        /// Execute all tasks sequentially
-        /// </summary>
-        public List<BackupJob_Models> ExecuteAllTasks()
-        {
-            if (Tasks.Count == 0)
-            {
-                Console.WriteLine(lang.Translate("no_tasks_to_execute"));
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur("error", "Execute all task", "No task to execute");
-                return null;
-            }
-            List<BackupJob_Models> executedTasks = new List<BackupJob_Models>();
-
-            foreach (var task in Tasks)
-            {
-                ExecuteBackup(task);
-                executedTasks.Add(task);
-            }
-
-            return executedTasks;
-        }
-
-        private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
-        {
-            string uniqueName = sourceDirectoryName;
-            int counter = 1;
-
-            while (Directory.Exists(Path.Combine(destinationPath, uniqueName)))
-            {
-                uniqueName = $"{sourceDirectoryName} ({counter})";
-                counter++;
-            }
-
-            return Path.Combine(destinationPath, uniqueName);
-        }
-
-        private void CopyDirectoryContent(string sourceDir, string targetDir, BackupJob_Models task)
-        {
-            foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
-            {
-                controller_State.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
-                string fileName = Path.GetFileName(file);
-                string destinationFile = Path.Combine(targetDir, fileName);
-                File.Copy(file, destinationFile, true);
-                // Application du chiffrement après copie du fichier
-                EncryptionUtility.ProcessFile(destinationFile, true);
-            }
-
-            foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
-            {
-                string directoryName = Path.GetFileName(directory);
-                string destinationSubDir = Path.Combine(targetDir, directoryName);
-                Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir, task); // Appel récursif pour copier les sous-dossiers
-            }
-            controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
-        }
-
-        /// <summary>
-        /// Copies only new or modified files.
-        /// </summary>
-        /// <param name="sourceDir">Source directory from which files will be copied</param>
-        /// <param name="destDir">Destination directory where files will be copied</param>
-        private void CopyModifiedFiles(string sourceDir, string destDir, BackupJob_Models task)
-        {
-            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
-            {
-                controller_State.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-                // Get relative path of source directory
-                string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
-                string destFile = Path.Combine(destDir, relativePath);
-
-                if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
-                    File.Copy(sourceFile, destFile, true);
-                    Console.WriteLine(string.Format(lang.Translate("file_updated_or_added"), destFile));
-                    // Application du chiffrement après copie du fichier
-                    EncryptionUtility.ProcessFile(destFile, true);
-                }
-            }
-            controller_State.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-        }
-
-        /// <summary>
-        /// Execute single backup task (differential or full).
-        /// </summary>
-        private void ExecuteDifferentialBackup(BackupJob_Models task)
-        {
-            Console.WriteLine(string.Format(lang.Translate("executing_differential_backup"), task.Name));
-
-            if (!Directory.Exists(task.SourceDirectory))
-            {
-                Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "Execute task attempt", string.Format("Source directory not exist", task.SourceDirectory));
-                Environment.Exit(0);
+                Console.WriteLine(LangManager.Instance.Translate("no_tasks_to_execute"));
                 return;
             }
-
-            string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
-            string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
-
-            if (!Directory.Exists(targetPath))
+            foreach (var task in _tasks)
             {
-                Console.WriteLine(string.Format(lang.Translate("destination_no_backup"), sourceDirectoryName));
-                Console.Write(lang.Translate("full_backup_instead_prompt"));
-                string input = Console.ReadLine()?.ToUpper();
+                ExecuteBackup(task);
+            }
+            Console.WriteLine(LangManager.Instance.Translate("all_tasks_executed"));
+        }
 
+        public static void ExecuteSpecificTask()
+        {
+            ViewTasks();
+            if (_tasks.Count == 0)
+            {
+                Console.WriteLine(LangManager.Instance.Translate("no_tasks_to_execute"));
+                return;
+            }
+            Console.Write(LangManager.Instance.Translate("enter_task_number_to_execute"));
+            string input = Console.ReadLine();
+            if (int.TryParse(input, out int taskNumber) && taskNumber > 0 && taskNumber <= _tasks.Count)
+            {
+                ExecuteBackup(_tasks[taskNumber - 1]);
+                Console.WriteLine(LangManager.Instance.Translate("task_executed_successfully"));
+            }
+            else
+            {
+                Console.WriteLine(LangManager.Instance.Translate("invalid_task_number"));
+            }
+        }
+
+        private static void ExecuteBackup(BackupJob_Models task)
+        {
+            if (task.Type == BackupType.Full)
+                PerformFullBackup(task);
+            else if (task.Type == BackupType.Differential)
+                ExecuteDifferentialBackup(task);
+        }
+
+        private static void PerformFullBackup(BackupJob_Models task)
+        {
+            Console.WriteLine(string.Format(LangManager.Instance.Translate("executing_full_backup"), task.Name));
+            if (!Directory.Exists(task.SourceDirectory))
+            {
+                Console.WriteLine(string.Format(LangManager.Instance.Translate("source_directory_not_exist"), task.SourceDirectory));
+                return;
+            }
+            if (!Directory.Exists(task.TargetDirectory))
+            {
+                Directory.CreateDirectory(task.TargetDirectory);
+            }
+            CopyDirectory(task.SourceDirectory, task.TargetDirectory);
+            Console.WriteLine(string.Format(LangManager.Instance.Translate("full_backup_completed"), task.Name));
+            State_Controller.Instance.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), task.TargetDirectory);
+        }
+
+        private static void ExecuteDifferentialBackup(BackupJob_Models task)
+        {
+            Console.WriteLine(string.Format(LangManager.Instance.Translate("executing_differential_backup"), task.Name));
+            if (!Directory.Exists(task.TargetDirectory))
+            {
+                Console.WriteLine(string.Format(LangManager.Instance.Translate("destination_directory_missing"), task.TargetDirectory));
+                Console.Write(LangManager.Instance.Translate("prompt_full_backup_instead"));
+                string input = Console.ReadLine()?.ToUpper();
                 if (input == "Y")
                 {
                     PerformFullBackup(task);
                 }
                 else
                 {
-                    Console.WriteLine(lang.Translate("differential_backup_canceled"));
+                    Console.WriteLine(LangManager.Instance.Translate("differential_backup_canceled"));
+                    return;
                 }
-                return;
             }
-            // Copy only new or modified files in destination directory
-            CopyModifiedFiles(task.SourceDirectory, targetPath, task);
-
-            Console.WriteLine($"Differential backup '{task.Name}' completed successfully.");
+            else
+            {
+                CopyModifiedFiles(task.SourceDirectory, task.TargetDirectory);
+                Console.WriteLine(string.Format(LangManager.Instance.Translate("differential_backup_completed"), task.Name));
+                State_Controller.Instance.StatEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), task.TargetDirectory);
+            }
         }
 
-        /// <summary>
-        /// Execute full backup.
-        /// </summary>
-        private void PerformFullBackup(BackupJob_Models task)
+        private static void CopyDirectory(string sourceDir, string destDir)
         {
-            Console.WriteLine(string.Format(lang.Translate("executing_full_backup"), task.Name));
+            DirectoryInfo sourceDirectory = new DirectoryInfo(sourceDir);
+            if (!sourceDirectory.Exists)
+                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
 
-            if (!Directory.Exists(task.SourceDirectory))
+            DirectoryInfo[] dirs = sourceDirectory.GetDirectories();
+            Directory.CreateDirectory(destDir);
+            foreach (FileInfo file in sourceDirectory.GetFiles())
             {
-                Console.WriteLine(string.Format(lang.Translate("source_directory_not_exist"), task.SourceDirectory));
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "Execute task attempt", string.Format("Source directory not exist", task.SourceDirectory));
-                Environment.Exit(0);
-                return;
+                string targetFilePath = Path.Combine(destDir, file.Name);
+                file.CopyTo(targetFilePath, true);
+                // Chiffrer le fichier copié
+                EncryptionUtility.ProcessFile(targetFilePath, true);
             }
-
-            string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
-            string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
-            Directory.CreateDirectory(targetPath);
-            CopyDirectoryContent(task.SourceDirectory, targetPath, task);
-            Console.WriteLine(string.Format(lang.Translate("full_backup_completed"), task.Name));
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string newDestinationDir = Path.Combine(destDir, subdir.Name);
+                CopyDirectory(subdir.FullName, newDestinationDir);
+            }
         }
 
-        private void ExecuteBackup(BackupJob_Models task)
+        private static void CopyModifiedFiles(string sourceDir, string destDir)
         {
-            if (task.Type == BackupType.Full)
+            DirectoryInfo sourceDirectory = new DirectoryInfo(sourceDir);
+            if (!sourceDirectory.Exists)
+                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
+
+            foreach (FileInfo file in sourceDirectory.GetFiles("*", SearchOption.AllDirectories))
             {
-                PerformFullBackup(task);
-            }
-            else if (task.Type == BackupType.Differential)
-            {
-                ExecuteDifferentialBackup(task);
+                string relativePath = file.FullName.Substring(sourceDir.Length + 1);
+                string destFile = Path.Combine(destDir, relativePath);
+                if (!File.Exists(destFile) || file.LastWriteTime > File.GetLastWriteTime(destFile))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+                    file.CopyTo(destFile, true);
+                    // Chiffrer le fichier copié
+                    EncryptionUtility.ProcessFile(destFile, true);
+                }
             }
         }
+
+        #endregion
     }
 }

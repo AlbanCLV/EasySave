@@ -1,60 +1,64 @@
+using System;
+using System.IO;
 using EasySave.Models;
 
 namespace EasySave.Controllers
 {
     /// <summary>
-    /// Controller for logging actions related to backup tasks.
-    /// Manages the interaction between the Log model and the view.
-    /// This class is responsible for logging the states and actions during backup tasks.
+    /// Contrôleur d'état qui enregistre l'état d'exécution des sauvegardes.
     /// </summary>
     public class State_Controller
     {
-        private State_models StateModels; // Instance of the State_models class to handle log operations related to task states.
+        private const string StateFilePath = "state.log";
+        private static State_Controller _instance;
+        private static readonly object _lock = new object();
 
-        /// <summary>
-        /// Constructor initializes the State_models instance.
-        /// This constructor prepares the state model for logging backup task states.
-        /// </summary>
-        public State_Controller()
+        private State_Controller() { }
+
+        public static State_Controller Instance
         {
-            StateModels = new State_models(); // Initializes the state model to handle log actions related to task states.
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new State_Controller();
+                    }
+                }
+                return _instance;
+            }
         }
 
-        /// <summary>
-        /// Logs a backup action, including task details.
-        /// This method updates the state of the backup task with the current status and destination.
-        /// </summary>
-        /// <param name="task">The backup job task that is being logged.</param>
-        /// <param name="lasth">The source directory of the backup task.</param>
-        /// <param name="desti">The destination directory of the backup task.</param>
-        public void StateUpdate(BackupJob_Models task, string lasth, string desti)
+        public void StateUpdate(BackupJob_Models task, string timeStamp, string targetDirectory)
         {
-            StateModels.StateUpdate(task, lasth, desti);  // Log the current state of the backup task
+            string entry = $"{timeStamp} - Task: {task.Name} is running. Target: {targetDirectory}";
+            AppendState(entry);
         }
 
-        /// <summary>
-        /// Logs the end of a backup task.
-        /// This method is called when the backup task is finished.
-        /// </summary>
-        /// <param name="task">The backup job task that is being logged.</param>
-        /// <param name="lasth">The source directory of the completed backup task.</param>
-        /// <param name="desti">The destination directory of the completed backup task.</param>
-        public void StatEnd(BackupJob_Models task, string lasth, string desti)
+        public void StatEnd(BackupJob_Models task, string timeStamp, string targetDirectory)
         {
-            StateModels.SatetEnd(task, lasth, desti);  // Log the end of the backup task
+            string entry = $"{timeStamp} - Task: {task.Name} completed. Target: {targetDirectory}";
+            AppendState(entry);
         }
 
-        /// <summary>
-        /// Logs an error related to a backup task.
-        /// This method is called when an error occurs during the backup task.
-        /// </summary>
-        /// <param name="task">The backup job task that encountered an error.</param>
-        /// <param name="lasth">The source directory of the backup task where the error occurred.</param>
-        /// <param name="error">The error message describing what went wrong during the task.</param>
-        /// <param name="desti">The destination directory where the backup task was supposed to complete.</param>
-        public void StateError(BackupJob_Models task, string lasth, string error, string desti)
+        public void StateError(BackupJob_Models task, string timeStamp, string error, string targetDirectory)
         {
-            StateModels.StateError(task, lasth, error, desti);  // Log the error encountered during the backup task
+            string entry = $"{timeStamp} - Task: {task.Name} encountered an error. Error: {error}";
+            AppendState(entry);
+        }
+
+        private void AppendState(string entry)
+        {
+            try
+            {
+                File.AppendAllText(StateFilePath, entry + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'écriture de l'état : {ex.Message}");
+            }
         }
     }
 }

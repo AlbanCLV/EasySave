@@ -8,23 +8,17 @@ using Terminal.Gui;
 namespace EasySave.Views
 {
     /// <summary>
-    /// View class for managing user interactions with translations.
+    /// Vue qui gère les interactions utilisateur, l'affichage du menu et la saisie de données.
     /// </summary>
     public class BackupJob_View
     {
         private readonly LangManager lang;
 
-        /// <summary>
-        /// Initializes the view with a specified language.
-        /// </summary>
         public BackupJob_View()
         {
-            lang = new LangManager(Program.SelectedLanguage);
+            lang = LangManager.Instance;
         }
 
-        /// <summary>
-        /// Load and display the main menu in CLI.
-        /// </summary>
         public void DisplayMainMenu()
         {
             Console.Clear();
@@ -81,9 +75,6 @@ namespace EasySave.Views
             return format;
         }
 
-        /// <summary>
-        /// Get backup details from the user.
-        /// </summary>
         public BackupJob_Models GetBackupDetails()
         {
             Console.Clear();
@@ -130,17 +121,11 @@ namespace EasySave.Views
             return new BackupJob_Models(name, source, target, type);
         }
 
-        /// <summary>
-        /// Display a translated message.
-        /// </summary>
         public void DisplayMessage(string key)
         {
             Console.WriteLine(lang.Translate(key));
         }
 
-        /// <summary>
-        /// Browse and select a directory or file using a graphical interface.
-        /// </summary>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
@@ -152,20 +137,11 @@ namespace EasySave.Views
             };
 
             Application.Run(dialog);
-
-            if (!string.IsNullOrEmpty(dialog.FilePath.ToString()))
-            {
-                Application.Shutdown();
-                return dialog.FilePath.ToString();
-            }
-
+            string result = dialog.FilePath.ToString();
             Application.Shutdown();
-            return null;
+            return string.IsNullOrEmpty(result) ? null : result;
         }
 
-        /// <summary>
-        /// Displays a language selection menu and returns the selected language code.
-        /// </summary>
         public string DisplayLangue()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -176,10 +152,6 @@ namespace EasySave.Views
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
 
-        /// <summary>
-        /// Récupère les paramètres de chiffrement auprès de l'utilisateur.
-        /// Cette méthode est appelée uniquement lors de l'exécution des sauvegardes.
-        /// </summary>
         public (bool encryptEnabled, string password, bool encryptAll, string[] selectedExtensions) GetEncryptionSettings()
         {
             Console.Clear();
@@ -207,7 +179,6 @@ namespace EasySave.Views
             {
                 Console.WriteLine("Choisissez l'option de chiffrement :");
                 Console.WriteLine("1. Chiffrer toutes les sauvegardes");
-                Console.WriteLine("2. Ne pas crypter");
                 Console.WriteLine("3. Chiffrer seulement certaines extensions");
                 option = Console.ReadLine()?.Trim();
                 if (string.IsNullOrEmpty(option))
@@ -248,9 +219,6 @@ namespace EasySave.Views
             return (true, password, encryptAll, selectedExtensions);
         }
 
-        /// <summary>
-        /// Lit le mot de passe en masquant les caractères tapés.
-        /// </summary>
         public string ReadPassword()
         {
             StringBuilder sb = new StringBuilder();
@@ -258,13 +226,9 @@ namespace EasySave.Views
             while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
             {
                 if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
-                {
                     sb.Remove(sb.Length - 1, 1);
-                }
                 else if (!char.IsControl(key.KeyChar))
-                {
                     sb.Append(key.KeyChar);
-                }
             }
             Console.WriteLine();
             return sb.ToString();
