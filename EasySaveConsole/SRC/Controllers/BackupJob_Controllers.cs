@@ -102,7 +102,6 @@ namespace EasySave.Controllers
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
-            string t = controller_log.Get_Type_File();
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
@@ -121,7 +120,6 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            string t = controller_log.Get_Type_File();
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
@@ -149,8 +147,6 @@ namespace EasySave.Controllers
             stopwatch.Stop();
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            string logType = task.Type == BackupType.Full ? "Executing Full Backup" : "Executing Differential Backup";  // Determine log type based on task type
-            string t = controller_log.Get_Type_File();
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }

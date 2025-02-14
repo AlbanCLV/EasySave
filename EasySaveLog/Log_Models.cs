@@ -15,7 +15,7 @@ namespace EasySaveLog
         private static Log_Models? _instance;  // Instance unique
         private static readonly object _lock = new object(); // Verrou pour éviter les problèmes de multithreading
         private readonly string logDirectory;  // Répertoire des logs
-        public string Type_File { get; set; }
+        public string Type_File { get; set; } = "json";
 
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
@@ -199,7 +199,7 @@ namespace EasySaveLog
         {
             if (!directory.Exists)
             {
-                LogErreurJSON("Error", "try to delete a task", "Folder not found");
+                LogErreurJSON("Error", "Error", "Folder not found");
                 Environment.Exit(0);
             }
 

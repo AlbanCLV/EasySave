@@ -28,12 +28,11 @@ namespace EasySaveLog
         public void LogBackupAction(string name, string source, string target, string time, string action)
         {
             logModel.LogAction(name, source, target, time, action);
-            Console.ReadLine();
         }
+
         public void LogBackupErreur(string nom, String Base, String Erreur)
         {
             logModel.LogErreur(nom, Base, Erreur);
-            Console.ReadLine();
         }
 
         public void Type_File_Log(string type)

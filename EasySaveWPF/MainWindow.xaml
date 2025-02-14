@@ -7,65 +7,62 @@
         mc:Ignorable="d"
         Title="EasySave" Height="450" Width="800">
     <Grid>
-        <!-- Définition de 2 colonnes -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Haut de l'écran pour les champs d'entrée -->
             <RowDefinition Height="*"/>
-            <!-- Espace pour la liste des tâches -->
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
-            <!-- Première colonne pour les champs -->
-            <ColumnDefinition Width="*"/>
-            <!-- Deuxième colonne pour les actions -->
+            <ColumnDefinition Width="490"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <!-- Premier champ principal : Formulaire d'entrée en haut -->
-        <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Margin="10">
+        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="10,0,10,0" Height="260">
             <TextBlock Text="Nom" />
-            <TextBox Name="NomTextBox" Width="280" Margin="0,5" />
-
+            <StackPanel Orientation="Horizontal">
+                <TextBox Name="NomTextBox" Width="300" Margin="0,5" />
+            </StackPanel>
+            
             <TextBlock Text="Source" />
-            <TextBox Name="SourceTextBox" Width="280" Margin="0,5" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox Name="SourceTextBox" Width="300" Margin="0,5" />
+                <Button Content="..." Width="30" Margin="5,0" Click="BrowseSourceButton_Click" />
+            </StackPanel>
 
             <TextBlock Text="Destination" />
-            <TextBox Name="DestinationTextBox" Width="280" Margin="0,5" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox Name="DestinationTextBox" Width="300" Margin="0,5" />
+                <Button Content="..." Width="30" Margin="5,0" Click="BrowseDestinationButton_Click" />
+            </StackPanel>
 
             <TextBlock Text="Type" />
-            <ComboBox Name="TypeComboBox" Width="280" Margin="0,5">
+            <ComboBox Name="TypeComboBox" Width="300" Margin="0,5" HorizontalAlignment="Left">
                 <ComboBoxItem Content="Full" />
-                <ComboBoxItem Content="Differentielle" />
+                <ComboBoxItem Content="Differential" />
             </ComboBox>
 
-            <!-- Bouton Add pour ajouter une nouvelle tâche -->
-            <Button Content="Add" Width="280" Margin="0,10" Click="AddButton_Click" />
+            <Button Content="Add" Width="300" Margin="0,10" Click="AddButton_Click" HorizontalAlignment="Left" />
+            <Button Content="View" Width="300" Click="ViewButton_Click" Margin="0,10" HorizontalAlignment="Left" />
         </StackPanel>
 
-        <!-- Deuxième champ principal : Liste des tâches en bas -->
-        <DataGrid Name="TasksDataGrid" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10" AutoGenerateColumns="False">
+        <DataGrid Name="TasksDataGrid" Grid.Row="1" Grid.ColumnSpan="2" Margin="10,10,10,10" AutoGenerateColumns="False" ItemsSource="{Binding Tasks}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
-                <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="*"/>
-                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*"/>
-                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*"/>
-
-                <!-- Colonne pour les boutons Lancer et Supprimer -->
-                <DataGridTemplateColumn Header="Actions" Width="120">
+                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Source" Binding="{Binding SourceDirectory}" Width="*"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding TargetDirectory}" Width="*"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                <DataGridTemplateColumn Header="Actions" Width="250">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="Lancer" Width="50" Margin="5" />
-                                <Button Content="Supprimer" Width="50" Margin="5" />
+                                <Button Content="Lancer" Width="100" Margin="5" Click="ExecuteButton_Click"/>
+                                <Button Content="Supprimer" Width="100" Margin="5" Click="DeleteButton_Click"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        <Button Content="Execute" Click="ExecuteAllButton_Click" Margin="400,217,100,23" Grid.ColumnSpan="2" />
     </Grid>
 </Window>
-
-
-

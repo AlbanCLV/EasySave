@@ -1,19 +1,24 @@
-﻿using EasySave.Controllers;
-using EasySave.Models;
+﻿
 using System;
+using System.IO;        // Pour manipuler les fichiers et répertoires
+using Microsoft.Win32;  // Pour OpenFileDialog
 using System.Windows;
 using System.Windows.Controls;
+using EasySaveWPF.ModelsWPF;
+using EasySaveWPF.ViewModelsWPF;
+using System.Windows.Forms;
+using System.Collections.ObjectModel;
 
 namespace EasySaveWPF
 {
     public partial class MainWindow : Window
     {
-        private BackupJob_Controller backupController; // Instance du contrôleur
+        private Backup_VueModelsWPF Main; // Instance du contrôleur
 
         public MainWindow()
         {
             InitializeComponent();
-            backupController = BackupJob_Controller.Instance;  // Initialiser le contrôleur
+            Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -24,21 +29,114 @@ namespace EasySaveWPF
             string destination = DestinationTextBox.Text;
             string type = (TypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            // Vérifier que tous les champs sont remplis avant d'ajouter la tâche
-            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(type))
+            // Vérifier que tous les champs sont remplis
+            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(source) ||string.IsNullOrWhiteSpace(destination) ||string.IsNullOrWhiteSpace(type))
             {
-                MessageBox.Show("Tous les champs doivent être remplis.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("Tous les champs doivent être remplis.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (!Directory.Exists(source))
+            {
+                System.Windows.MessageBox.Show("Le chemin source n'existe pas ou n'est pas un dossier valide.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (!Directory.Exists(destination))
+            {
+                System.Windows.MessageBox.Show("Le chemin de destination n'existe pas ou n'est pas un dossier valide.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            string t = Main.CreateBackupTaskWPF(nom, source, destination, type);
+            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            ViewButton_Click(sender, e);
+
+
+        }
+
+        private void ViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            TasksDataGrid.ItemsSource = null;
+            TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+        }
+        
+        private void ExecuteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
+            string t = Main.ExecuteSpecificTasks(selectedTask);
+            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            TasksDataGrid.ItemsSource = null;
+            TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+
+        }
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
+            string t = Main.DeleteBackupTaskWPF(selectedTask);
+            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            TasksDataGrid.ItemsSource = null;
+            TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+        }
+        private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
+
+            if (tasks == null || !tasks.Any())
+            {
+                System.Windows.MessageBox.Show("La liste des tâches est vide ou invalide.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // Créer un objet de type BackupJob_Models à partir des informations saisies
-            BackupJob_Models newTask = new BackupJob_Models(nom, source, destination, type == "Choice 1" ? BackupType.Full : BackupType.Differential, true);
+            // Appeler la méthode ExecuteAllTask avec la liste des tâches
+            string result = Main.ExecuteALlTask(tasks);
 
-            // Utiliser le contrôleur pour créer la tâche
-            backupController.CreateBackupTask();  // Notez que la méthode CreateBackupTask du contrôleur va maintenant prendre l'objet newTask en paramètre
-            Taches.Add(newTask); // Ajouter à la liste observable des tâches affichées dans l'interface
+            // Afficher un message avec le résultat de l'exécution
+            System.Windows.MessageBox.Show(result, "Exécution Terminée", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // Autres méthodes comme DeleteButton_Click, ExecuteButton_Click, etc.
+
+
+
+
+
+
+
+
+        private void BrowseSourceButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    SourceTextBox.Text = dialog.SelectedPath;
+                }
+            }
+        }
+
+        private void BrowseDestinationButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    DestinationTextBox.Text = dialog.SelectedPath;
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
