@@ -1,50 +1,55 @@
 ﻿using System;
+using System.Linq;
+using System.Text;
 using EasySave.Models;
 using EasySave.Utilities;
 using Terminal.Gui;
-using EasySaveLog;
-using System.Xml.Linq;
 
 namespace EasySave.Views
 {
     /// <summary>
-    /// View class for managing user interactions with translations.
+    /// Vue qui gère les interactions utilisateur, l'affichage du menu et la saisie de données.
     /// </summary>
     public class BackupJob_View
     {
         private readonly LangManager lang;
 
-        /// <summary>
-        /// Initializes the view with a specified language.
-        /// </summary>
-        /// <param name="language">Language code (e.g., "en" or "fr").</param>
         public BackupJob_View()
-
         {
-            lang = new LangManager(Program.SelectedLanguage);
+            lang = LangManager.Instance;
         }
 
-        /// <summary>
-        /// Load and display the main menu in CLI.
-        /// </summary>
         public void DisplayMainMenu()
         {
             Console.Clear();
-            Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               \r\n| $$_____/                               /$$__  $$                              \r\n| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ \r\n| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$\r\n| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$\r\n| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/\r\n| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$\r\n|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/\r\n                               /$$  | $$                                        \r\n                              |  $$$$$$/                                        \r\n                               \\______/                                         \r\n");
+            Console.WriteLine("\r\n /$$$$$$$$                                /$$$$$$                               ");
+            Console.WriteLine("| $$_____/                               /$$__  $$                              ");
+            Console.WriteLine("| $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \\__/  /$$$$$$  /$$    /$$ /$$$$$$ ");
+            Console.WriteLine("| $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$");
+            Console.WriteLine("| $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \\____  $$  /$$$$$$$ \\  $$/$$/| $$$$$$$$");
+            Console.WriteLine("| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/");
+            Console.WriteLine("| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$");
+            Console.WriteLine("|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/");
+            Console.WriteLine("                               /$$  | $$                                        ");
+            Console.WriteLine("                              |  $$$$$$/                                        ");
+            Console.WriteLine("                               \\______/                                         ");
             Console.WriteLine($"1. {lang.Translate("CreateBackupTask")}");
             Console.WriteLine($"2. {lang.Translate("ExecuteBackupTask")}");
             Console.WriteLine($"3. {lang.Translate("ExecuteAllTasks")}");
             Console.WriteLine($"4. {lang.Translate("ViewAllTasks")}");
             Console.WriteLine($"5. {lang.Translate("DeleteTask")}");
             Console.WriteLine($"6. {lang.Translate("Choice_log_display")}");
-            Console.WriteLine($"7. {lang.Translate("Exit")}");
+            Console.WriteLine($"7. {lang.Translate("DecryptFile")}");
+            Console.WriteLine($"8. {lang.Translate("Exit")}");
             Console.Write($"\n{lang.Translate("SelectOption")}");
         }
+
         public void Get_Type_Log(string a)
         {
             Console.Clear();
             Console.WriteLine(lang.Translate("Type_Now") + $"{a}");
         }
+
         public string Type_File_Log()
         {
             Console.Write(lang.Translate("Choix_log"));
@@ -69,10 +74,7 @@ namespace EasySave.Views
             }
             return format;
         }
-        /// <summary>
-        /// Get backup details from the user.
-        /// </summary>
-        /// <returns>A new instance of <see cref="BackupJob_Models"/>.</returns>
+
         public BackupJob_Models GetBackupDetails()
         {
             Console.Clear();
@@ -97,7 +99,6 @@ namespace EasySave.Views
                 source = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
             Console.WriteLine(source);
-            Console.Write("");
 
             Console.WriteLine($"\n{lang.Translate("SelectTargetDir")}");
             Console.ReadKey();
@@ -108,7 +109,6 @@ namespace EasySave.Views
                 target = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
             }
             Console.WriteLine(target);
-            Console.Write("");
 
             Console.Write(lang.Translate("EnterBackupType"));
             int typeInput;
@@ -121,27 +121,11 @@ namespace EasySave.Views
             return new BackupJob_Models(name, source, target, type);
         }
 
-        /// <summary>
-        /// Display a translated message.
-        /// </summary>
-        /// <param name="key">Key for the message.</param>
-        /// 
-
-        
-
-
-
         public void DisplayMessage(string key)
         {
             Console.WriteLine(lang.Translate(key));
         }
 
-        /// <summary>
-        /// Browse and select a directory or file using a graphical interface.
-        /// </summary>
-        /// <param name="canChooseFiles">Whether files can be chosen.</param>
-        /// <param name="canChooseDirectories">Whether directories can be chosen.</param>
-        /// <returns>The selected path as a string.</returns>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
@@ -153,39 +137,102 @@ namespace EasySave.Views
             };
 
             Application.Run(dialog);
-
-            if (!string.IsNullOrEmpty(dialog.FilePath.ToString()))
-            {
-                Application.Shutdown();
-                return dialog.FilePath.ToString();
-            }
-
+            string result = dialog.FilePath.ToString();
             Application.Shutdown();
-            return null; // No path selected
+            return string.IsNullOrEmpty(result) ? null : result;
         }
 
-        /// <summary>
-        /// Displays a language selection menu and returns the selected language code.
-        /// </summary>
-       
         public string DisplayLangue()
         {
-            // Set console output encoding to UTF-8 to properly handle special characters
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            // Display the language selection prompt to the user
             Console.WriteLine("Choose a language / Choisissez une langue:");
             Console.WriteLine("1. English");
             Console.WriteLine("2. Français");
-
-            // Ask the user to enter their choice
             Console.Write("Enter your choice: ");
-
-            // Return the selected language code ("fr" for French, "en" for English)
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
 
+        public (bool encryptEnabled, string password, bool encryptAll, string[] selectedExtensions) GetEncryptionSettings()
+        {
+            Console.Clear();
+            string response = "";
+            while (true)
+            {
+                Console.WriteLine("Voulez-vous crypter les sauvegardes ? (O/N)");
+                response = Console.ReadLine()?.Trim().ToUpper();
+                if (string.IsNullOrEmpty(response))
+                {
+                    Console.WriteLine("Entrée vide. Veuillez répondre par O ou N.");
+                    
+                    continue;
+                }
+                if (response == "O" || response == "N")
+                    break;
+                else
+                    Console.WriteLine("Réponse invalide. Veuillez répondre par O ou N.");
+            }
+            if (response == "N")
+            {
+                return (false, "", false, new string[0]);
+            }
+            string option = "";
+            while (true)
+            {
+                Console.WriteLine("Choisissez l'option de chiffrement :");
+                Console.WriteLine("1. Chiffrer toutes les sauvegardes");
+                Console.WriteLine("3. Chiffrer seulement certaines extensions");
+                option = Console.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(option))
+                {
+                    Console.WriteLine("Entrée vide. Veuillez entrer 1, 2 ou 3.");
+                    continue;
+                }
+                if (option == "1" || option == "2" || option == "3")
+                    break;
+                else
+                    Console.WriteLine("Entrée invalide. Veuillez entrer 1, 2 ou 3.");
+            }
+            if (option == "2")
+            {
+                return (false, "", false, new string[0]);
+            }
+            bool encryptAll = option == "1";
+            string[] selectedExtensions = new string[0];
+            if (option == "3")
+            {
+                Console.WriteLine("Entrez les extensions à crypter, séparées par des virgules (ex : .txt, .docx) :");
+                string extensionsInput = Console.ReadLine();
+                while (string.IsNullOrEmpty(extensionsInput))
+                {
+                    Console.WriteLine("Aucune extension fournie. Veuillez entrer au moins une extension.");
+                    extensionsInput = Console.ReadLine();
+                }
+                selectedExtensions = extensionsInput.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                    .Select(e => e.Trim()).ToArray();
+            }
+            Console.WriteLine("Entrez le mot de passe pour le chiffrement (il ne sera pas affiché) :");
+            string password = ReadPassword();
+            while (string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Le mot de passe ne peut pas être vide. Veuillez réessayer :");
+                password = ReadPassword();
+            }
+            return (true, password, encryptAll, selectedExtensions);
+        }
 
+        public string ReadPassword()
+        {
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo key;
+            while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+            {
+                if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
+                    sb.Remove(sb.Length - 1, 1);
+                else if (!char.IsControl(key.KeyChar))
+                    sb.Append(key.KeyChar);
+            }
+            Console.WriteLine();
+            return sb.ToString();
+        }
     }
-
 }
