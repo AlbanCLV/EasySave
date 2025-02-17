@@ -57,7 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Log_Controllers.cs" />
+    <Compile Include="Log_ViewModels.cs" />
     <Compile Include="Log_Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using EasySave;
 
-namespace EasySave.Utilities
+namespace EasySaveConsole.Models
 {
     /// <summary>
     /// Manages translations for the application.
@@ -36,7 +37,7 @@ namespace EasySave.Utilities
             {
                 if (_instance == null)
                 {
-                    _instance = new LangManager("en"); // Default language, can be overridden
+                    _instance = new LangManager(Program.SelectedLanguage); // Default language, can be overridden
                 }
                 return _instance;
             }

@@ -8,18 +8,34 @@ namespace EasySaveLog
     /// Manages the interaction between the Log model and the view.
     /// </summary>
     /// 
-    public class Log_Controller
+    public class Log_ViewModels
     {
         private readonly Log_Models logModel; // Utilisation de l'instance Singleton
+        private static Log_ViewModels _instance;
+        private static readonly object _lock = new object();
 
         /// <summary>
         /// Constructor initializes the Log_Models instance.
         /// </summary>
-        public Log_Controller()
+        public Log_ViewModels()
         {
             logModel = Log_Models.Instance; // On récupère l'instance unique
         }
-
+        public static Log_ViewModels Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new Log_ViewModels();
+                    }
+                }
+                return _instance;
+            }
+        }
         /// <summary>
         /// Logs a backup action, including task details.
         /// </summary>

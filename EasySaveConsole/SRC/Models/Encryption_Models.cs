@@ -3,16 +3,34 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using EasySaveConsole.Controllers;
 
-namespace EasySave.Utilities
+namespace EasySaveConsole.Models
 {
     /// <summary>
     /// Utility for encrypting/decrypting files using AES in CBC mode with PKCS7 padding.
     /// This version uses a random IV for each file, which is written as the first 16 bytes
     /// of the encrypted file.
     /// </summary>
-    public class EncryptionUtility
+    public class Encryption_Models
     {
+        private static Encryption_Models _instance;
+        private static readonly object _lock = new object();
+        public static Encryption_Models Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new Encryption_Models();
+                    }
+                }
+                return _instance;
+            }
+        }
         private static string UserPassword;
         private static bool EncryptAll;
         private static string[] SelectedExtensions;
@@ -21,7 +39,7 @@ namespace EasySave.Utilities
         /// <summary>
         /// Configures encryption parameters.
         /// </summary>
-        public static void SetEncryptionSettings(string password, bool encryptAllSetting, string[] selectedExtensionsSetting, bool encryptEnabledSetting)
+        public void SetEncryptionSettings(string password, bool encryptAllSetting, string[] selectedExtensionsSetting, bool encryptEnabledSetting)
         {
             UserPassword = password;
             EncryptAll = encryptAllSetting;
@@ -158,7 +176,7 @@ namespace EasySave.Utilities
         /// <summary>
         /// Public method to decrypt a file and return the result.
         /// </summary>
-        public static bool DecryptFileWithResult(string filePath)
+        public  bool DecryptFileWithResult(string filePath)
         {
             string outputFile = filePath.Replace(".aes", "");
             return DecryptFile(filePath, outputFile);

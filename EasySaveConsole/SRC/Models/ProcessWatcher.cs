@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace EasySave.Utilities
+namespace EasySaveConsole.Models
 {
     class ProcessWatcher
     {

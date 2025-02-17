@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace EasySave.Utilities
+namespace EasySaveConsole.Models
 {
     public static class JsonHelper
     {

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
-using EasySave.Models;
-using EasySave.Utilities;
+using EasySaveConsole.Controllers;
+using EasySaveConsole.Models;
 using Terminal.Gui;
 
-namespace EasySave.Views
+namespace EasySaveConsole.Views
 {
     /// <summary>
     /// View that handles user interactions, displays the menu, and gathers input.
@@ -13,10 +14,27 @@ namespace EasySave.Views
     public class BackupJob_View
     {
         private readonly LangManager lang;
-
+        private static BackupJob_View _instance;
+        private static readonly object _lock = new object();
         public BackupJob_View()
         {
             lang = LangManager.Instance;
+
+        }
+        public static BackupJob_View Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new BackupJob_View();
+                    }
+                }
+                return _instance;
+            }
         }
 
         public void DisplayMainMenu()
@@ -51,7 +69,7 @@ namespace EasySave.Views
             Console.WriteLine(lang.Translate("Type_Now") + " " + a);
         }
 
-        public string Type_File_Log()
+        public string GET_Type_File_Log()
         {
             Console.Write(lang.Translate("Choix_log"));
             string format = Console.ReadLine();
@@ -144,10 +162,10 @@ namespace EasySave.Views
         public string DisplayLangue()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine(lang.Translate("ChooseLanguage")); // e.g., "Choose a language:"
+            Console.WriteLine("ChooseLanguage"); // e.g., "Choose a language:"
             Console.WriteLine("1. English");
             Console.WriteLine("2. Français");
-            Console.Write(lang.Translate("EnterChoice")); // e.g., "Enter your choice: "
+            Console.Write("EnterChoice : "); // e.g., "Enter your choice: "
             return Console.ReadLine()?.Trim() == "2" ? "fr" : "en";
         }
 
@@ -232,5 +250,55 @@ namespace EasySave.Views
             Console.WriteLine();
             return sb.ToString();
         }
+        public (string, string) GetDecryptFolder()
+        {
+            string password ;
+            string folderPath ;
+
+            while (true)
+            {
+                DisplayMessage("EnterDecryptionPassword");
+                password = ReadPassword();
+
+                if (string.IsNullOrEmpty(password))
+                {
+                    DisplayMessage("PasswordEmpty");
+                    Console.ReadKey();
+                    continue;  // Redemande le mot de passe
+                }
+
+                if (password.ToLower() == "exit")
+                {
+                    DisplayMessage("Exiting...");
+                    return ("KO", "KO");
+                }
+
+                break;  // Mot de passe correct
+            }
+
+            while (true)
+            {
+                DisplayMessage("DecryptFolderPrompt");
+                folderPath = BrowsePath(canChooseFiles: false, canChooseDirectories: true);
+
+                if (string.IsNullOrEmpty(folderPath))
+                {
+                    DisplayMessage("NoFolderSelected");
+                    Console.ReadKey();
+                    continue;  // Redemande le dossier
+                }
+
+                if (folderPath.ToLower() == "exit")
+                {
+                    DisplayMessage("Exiting...");
+                    return ("KO", "KO");
+                }
+
+                break;  // Dossier correct
+            }
+
+            return (password, folderPath);
+        }
+
     }
 }

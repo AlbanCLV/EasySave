@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using EasySaveLog;
 using EasySaveWPF;
 using EasySave.Models;
-using EasySave;
+using EasySaveConsole.Models;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -33,7 +33,7 @@ namespace EasySaveWPF.ModelsWPF
         private readonly Log_Models logger = new Log_Models();
         private readonly State_modelsWPF state = new State_modelsWPF();
         public const string SaveFilePath = "tasks.json";
-        private Log_Controller controller_log = new Log_Controller();
+        private Log_ViewModels controller_log = new Log_ViewModels();
         public List<Backup_ModelsWPF> Tasks { get; private set; } = new List<Backup_ModelsWPF>();
 
         // Instanciation du gestionnaire de langue (ici en français par défaut)

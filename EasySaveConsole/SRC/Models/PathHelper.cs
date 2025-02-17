@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace EasySave
+namespace EasySaveConsole.Models
 {
     /// <summary>
     /// Path helper to ensure path is correct

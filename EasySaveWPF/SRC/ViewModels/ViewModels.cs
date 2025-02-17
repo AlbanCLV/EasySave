@@ -21,7 +21,7 @@ namespace EasySaveWPF.ViewModelsWPF
         // Lock object for thread safety
         private static readonly object _lock = new object();
         private Backup_ModelsWPF backupModel;
-        private Log_Controller controller_log;
+        private Log_ViewModels controller_log;
         private Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace EasySaveWPF.ViewModelsWPF
         public Backup_VueModelsWPF()
         {
             backupModel = new Backup_ModelsWPF("", "", "", "Full", true); // Load tasks
-            controller_log = new Log_Controller();
+            controller_log = new Log_ViewModels();
             backupModel.LoadTasks();
         }
         /// <summary>

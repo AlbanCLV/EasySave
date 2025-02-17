@@ -2,17 +2,35 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using EasySave.Models;
 using Newtonsoft.Json;
 using EasySaveLog;
+using EasySaveConsole.Controllers;
 
-namespace EasySave.Models
+namespace EasySaveConsole.Models
+
 {
     public class State_models
     {
         Log_Models LogModels = new Log_Models();
         private readonly string logDirectoryState; // Directory to store log files.
+        private static State_models _instance;
+        private static readonly object _lock = new object();
 
+        public static State_models Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new State_models();
+                    }
+                }
+                return _instance;
+            }
+        }
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
@@ -54,7 +72,7 @@ namespace EasySave.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void SatetEnd(BackupJob_Models task, string lasth, string desti)
+        public void StatEnd(BackupJob_Models task, string lasth, string desti)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
