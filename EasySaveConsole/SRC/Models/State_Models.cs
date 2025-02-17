@@ -1,135 +1,152 @@
 using System;
 using System.IO;
-using System.Xml.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+using EasySave.Models;
 using Newtonsoft.Json;
+using EasySaveLog;
 
-namespace EasySaveLog
+namespace EasySave.Models
 {
-    /// <summary>
-    /// Log_Models est une classe singleton qui gère la journalisation des actions et erreurs
-    /// des tâches de sauvegarde, au format JSON (et potentiellement XML).
-    /// </summary>
-    public class Log_Models
+    public class State_models
     {
-        private static Log_Models _instance;
-        private static readonly object _lock = new object();
-        private readonly string logDirectory; // Répertoire où les logs seront sauvegardés
-
-        // Format de log par défaut ("json" ou "xml")
-        public string Type_File { get; set; } = "json";
+        Log_Models LogModels = new Log_Models();
+        private readonly string logDirectoryState; // Directory to store log files.
 
         /// <summary>
-        /// Constructeur privé pour empêcher l'instanciation externe.
+        /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
-        /// <param name="logDirectory">Le répertoire de sauvegarde des logs (par défaut "Logs").</param>
-        private Log_Models(string logDirectory = "Logs")
+        /// <param name="logDirectory">The directory where logs will be saved.</param>
+
+
+        public State_models(string logDirectoryState = "States")
         {
-            this.logDirectory = logDirectory;
+            this.logDirectoryState = logDirectoryState; // Initializes the log directory.
+
         }
 
-        /// <summary>
-        /// Accède à l'instance unique de Log_Models.
-        /// Utilisez Log_Models.Instance pour obtenir l'instance.
-        /// </summary>
-        public static Log_Models Instance
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    if (_instance == null)
-                        _instance = new Log_Models();
-                    return _instance;
-                }
-            }
-        }
 
-        /// <summary>
-        /// Enregistre une action de sauvegarde au format JSON.
-        /// </summary>
-        /// <param name="name">Nom de la tâche.</param>
-        /// <param name="source">Répertoire source.</param>
-        /// <param name="target">Répertoire de destination.</param>
-        /// <param name="time">Durée de l'opération.</param>
-        /// <param name="action">Action réalisée (par ex. "Create Task").</param>
-        public void LogAction(string name, string source, string target, string time, string action)
+        public void StateUpdate(BackupJob_Models task, string lasth, string desti)
         {
-            long fileSize = GetDirectorySize(new DirectoryInfo(source));
-            double fileSizeInKB = fileSize / 1024.0;
-            var logEntry = new
+
+            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+            var StateEntry = new
             {
-                Action = action,
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                TaskName = "Backup_" + name,
-                SourceFile = source,
-                TargetFile = target,
-                FileSizeKB = fileSizeInKB,
-                TransferTimeMs = time
+                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name, // Name of the backup task.
+                HeureLastAction = lasth, // Format to show only date and time.
+                Etat = "Active",
+                TotalFile = CountFilesInDirectory(task.SourceDirectory),
+                TotalSize = GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0,
+                Progress = $"{((GetDirectorySize(new DirectoryInfo(desti)) / 1024.0) * 100) / (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0)} %",
+                RemainingFiles = CountFilesInDirectory(task.SourceDirectory) - CountFilesInDirectory(desti),
+                RemainingSize = (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0) - (GetDirectorySize(new DirectoryInfo(desti)) / 1024.0),
+                CurrentSourceFile = task.SourceDirectory,
+                CurrentDestinationFiles = desti
             };
 
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
-            Directory.CreateDirectory(logDirectory);
-            File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
-        }
+            // Create the log file path based on the current date.
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
 
-        /// <summary>
-        /// Enregistre une erreur de sauvegarde au format JSON.
-        /// </summary>
-        /// <param name="name">Nom de la tâche.</param>
-        /// <param name="baseAction">Action de base ayant provoqué l'erreur.</param>
-        /// <param name="error">Message d'erreur.</param>
-        public void LogErreur(string name, string baseAction, string error)
+            // Ensure that the log directory exists, create it if necessary.
+            Directory.CreateDirectory(logDirectoryState);
+
+            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
+            File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
+        }
+        public void SatetEnd(BackupJob_Models task, string lasth, string desti)
         {
-            var logEntry = new
+
+            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+            var StateEntry = new
             {
-                Action = baseAction,
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                TaskName = "Backup_" + name,
-                TransferTimeMs = -1,
-                Error = error
+                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name, // Name of the backup task.
+                HeureLastAction = lasth, // Format to show only date and time.
+                Etat = "Completed",
+                TotalFileSource = CountFilesInDirectory(task.SourceDirectory),
+                TotalFileTarget = CountFilesInDirectory(desti),
+                TotalSizeSource = GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0,
+                TotalSizeTarget = GetDirectorySize(new DirectoryInfo(desti)) / 1024.0,
+                Progress = $"100 %",
+                RemainingFiles = CountFilesInDirectory(task.SourceDirectory) - CountFilesInDirectory(desti),
+                RemainingSize = (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0) - (GetDirectorySize(new DirectoryInfo(desti)) / 1024.0),
+                CurrentSourceFile = task.SourceDirectory,
+                CurrentDestinationFiles = desti
             };
 
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
-            Directory.CreateDirectory(logDirectory);
-            File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
-        }
+            // Create the log file path based on the current date.
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
 
-        /// <summary>
-        /// Méthode publique pour enregistrer une erreur au format JSON.
-        /// Elle est appelée par Log_Controller.
-        /// </summary>
-        public void LogErreurJSON(string name, string baseAction, string error)
+            // Ensure that the log directory exists, create it if necessary.
+            Directory.CreateDirectory(logDirectoryState);
+
+            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
+            File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
+        }
+        public void StateError(BackupJob_Models task, string lasth, string error, string desti)
         {
-            LogErreur(name, baseAction, error);
+            var StateEntry = new
+            {
+                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name, // Name of the backup task.
+                HeureLastAction = lasth,
+                Etat = "Error",
+                Error = error,
+            };
+
+            // Create the log file path based on the current date.
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+
+            // Ensure that the log directory exists, create it if necessary.
+            Directory.CreateDirectory(logDirectoryState);
+
+            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
+            File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
 
-        /// <summary>
-        /// Définit le format de log à utiliser (xml ou json).
-        /// </summary>
-        /// <param name="input">Le format désiré.</param>
-        public void TypeFile(string input)
-        {
-            if (input.ToLower() == "xml" || input.ToLower() == "json")
-                this.Type_File = input;
-        }
 
-        /// <summary>
-        /// Calcule la taille totale de tous les fichiers d'un répertoire (y compris les sous-répertoires).
-        /// </summary>
-        /// <param name="directory">Le répertoire cible.</param>
-        /// <returns>La taille totale en octets.</returns>
+
         private long GetDirectorySize(DirectoryInfo directory)
         {
             if (!directory.Exists)
             {
-                LogErreur("Error", "GetDirectorySize", "Folder not found");
+                LogModels.LogErreurJSON("Error", "try to delete a task", "Folder not found");
                 Environment.Exit(0);
             }
 
             long size = 0;
+
+            // Iterate through all files in the directory and subdirectories.
             foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
-                size += file.Length;
-            return size;
+            {
+                size += file.Length; // Add the file size to the total.
+            }
+
+            return size; // Return the total size.
         }
+        static int CountFilesInDirectory(string path)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                    return files.Length;
+                }
+                else
+                {
+                    Console.WriteLine("Le dossier n'existe pas.");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Une erreur est survenue : {ex.Message}");
+                return 0;
+            }
+        }
+
+
     }
 }

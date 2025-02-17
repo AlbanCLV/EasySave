@@ -22,7 +22,7 @@
             <StackPanel Orientation="Horizontal">
                 <TextBox Name="NomTextBox" Width="300" Margin="0,5" />
             </StackPanel>
-            
+
             <TextBlock Text="Source" />
             <StackPanel Orientation="Horizontal">
                 <TextBox Name="SourceTextBox" Width="300" Margin="0,5" />

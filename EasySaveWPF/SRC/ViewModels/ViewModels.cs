@@ -6,7 +6,6 @@ using EasySaveWPF.ModelsWPF;
 using EasySaveWPF;
 using EasySaveLog;
 using EasySave.Models;
-using EasySave.Log;
 
 namespace EasySaveWPF.ViewModelsWPF
 {

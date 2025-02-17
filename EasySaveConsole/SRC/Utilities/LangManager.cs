@@ -6,45 +6,42 @@ using Newtonsoft.Json;
 namespace EasySave.Utilities
 {
     /// <summary>
-    /// Gère les traductions de l'application via des fichiers JSON.
+    /// Manages translations for the application.
     /// </summary>
     public class LangManager
     {
         private Dictionary<string, string> translations;
+
         private readonly string langDirectory;
+
         private static LangManager _instance;
 
-        // Constructeur privé pour le singleton.
-        private LangManager(string language)
+        // Private constructor to prevent instantiation
+        public LangManager(string language)
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            // Remonter jusqu'au répertoire racine du projet
             string projectRoot = Path.GetFullPath(Path.Combine(basePath, "..", "..", ".."));
+
+            // Ensure we go to the correct SRC/Lang directory
             langDirectory = Path.Combine(projectRoot, "SRC", "Lang");
 
             SetLanguage(language);
             Console.WriteLine($"LangManager initialized with language: {language}");
         }
 
-        /// <summary>
-        /// Accède à l'instance unique du LangManager.
-        /// Par défaut, la langue est "en".
-        /// </summary>
+        // Singleton pattern for LangManager
         public static LangManager Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new LangManager("en");
+                    _instance = new LangManager("en"); // Default language, can be overridden
                 }
                 return _instance;
             }
         }
 
-        /// <summary>
-        /// Charge les traductions depuis le fichier JSON correspondant à la langue.
-        /// </summary>
         public void SetLanguage(string language)
         {
             string filePath = Path.Combine(langDirectory, $"{language}.json");
@@ -54,8 +51,7 @@ namespace EasySave.Utilities
                 try
                 {
                     string json = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
-                    translations = JsonConvert.DeserializeObject<Dictionary<string, string>>(json)
-                                   ?? new Dictionary<string, string>();
+                    translations = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
                 }
                 catch
                 {
@@ -68,14 +64,9 @@ namespace EasySave.Utilities
             }
         }
 
-        /// <summary>
-        /// Retourne la traduction associée à une clé.
-        /// </summary>
         public string Translate(string key)
         {
-            return translations != null && translations.ContainsKey(key)
-                ? translations[key]
-                : $"[Missing translation: {key}]";
+            return translations.ContainsKey(key) ? translations[key] : $"[Missing translation: {key}]";
         }
     }
 }

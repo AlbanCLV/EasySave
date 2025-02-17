@@ -8,7 +8,6 @@ using EasySaveLog;
 using EasySaveWPF;
 using EasySave.Models;
 using EasySave;
-using EasySave.Log;
 
 namespace EasySaveWPF.ModelsWPF
 {

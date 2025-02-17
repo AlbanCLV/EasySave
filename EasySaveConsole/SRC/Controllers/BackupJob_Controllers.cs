@@ -1,54 +1,79 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using EasySave.Models;
 using EasySave.Views;
 using EasySaveLog;
-using EasySave.Utilities;
-using Terminal.Gui;  // Assurez-vous d'inclure le namespace pour LangManager
+using EasySave.Utilities;  // Assurez-vous d'inclure le namespace pour LangManager
+
 
 namespace EasySave.Controllers
 {
     /// <summary>
-    /// Main controller that handles backup tasks (creation, execution, deletion)
-    /// and integrates logging and state updates.
+    /// Controller class for managing interactions between the BackupJob model and view.
+    /// This class handles the creation, execution, and management of backup tasks.
     /// </summary>
     public class BackupJob_Controller
     {
+        // Singleton instance
         private static BackupJob_Controller _instance;
+
+        // Lock object for thread safety
         private static readonly object _lock = new object();
+        private BackupJob_Models backupModel;
         private BackupJob_View backupView;
         private Log_Controller controller_log;
         private State_Controller controller_state;
         private Stopwatch stopwatch = new Stopwatch();
 
-        // Private constructor for the singleton pattern.
-        private BackupJob_Controller()
+        /// <summary>
+        /// Private constructor to prevent direct instantiation.
+        /// </summary>
+        public BackupJob_Controller()
         {
             backupView = new BackupJob_View();
-            BackupJob_Models.LoadTasks();
+            backupModel = new BackupJob_Models("", "", "", BackupType.Full, true); // Load tasks
             controller_log = new Log_Controller();
-            controller_state = State_Controller.Instance;
+            controller_state = new State_Controller();
+            backupModel.LoadTasks();
         }
-
+        /// <summary>
+        /// Gets the singleton instance of the BackupJob_Controller class.
+        /// </summary>
         public static BackupJob_Controller Instance
         {
             get
             {
+                // Use double-check locking to ensure thread-safety
                 if (_instance == null)
                 {
                     lock (_lock)
                     {
                         if (_instance == null)
+                        {
                             _instance = new BackupJob_Controller();
+                        }
                     }
                 }
                 return _instance;
             }
         }
+        /// <summary>
+        /// Displays the language selection screen and returns the chosen language.
+        /// </summary>
+        public string DisplayLangue()
+        {
+            return backupView.DisplayLangue();
 
-        public string DisplayLangue() => backupView.DisplayLangue();
 
-        public void PauseAndReturn()
+        }
+
+        /// <summary>
+        /// Pauses execution and waits for the user to press a key before returning to the menu.
+        /// This is used for user interaction after an operation is complete.
+        /// </summary>
+        private void PauseAndReturn()
         {
             backupView.DisplayMessage("PressKeyToReturn");
             Console.ReadKey();
@@ -56,33 +81,19 @@ namespace EasySave.Controllers
 
         public void Choice_Type_File_Log()
         {
-            try
-            {
-                string typeNow = controller_log.Get_Type_File();
-                backupView.Get_Type_Log(typeNow);
-                string reponse = backupView.Type_File_Log();
-                controller_log.Type_File_Log(reponse);
-                PauseAndReturn();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error choosing log type: " + ex.Message);
-            }
+            string Type_Now = controller_log.Get_Type_File();
+            backupView.Get_Type_Log(Type_Now);
+
+            string reponse = backupView.Type_File_Log();
+            controller_log.Type_File_Log(reponse);
+            backupModel.Type_Log(reponse);
+            PauseAndReturn();
         }
 
         /// <summary>
-        /// Configures encryption settings based on user input.
+        /// Creates a backup task based on the user's input.
+        /// Records the time taken to create the task and logs the action.
         /// </summary>
-        public void ConfigureEncryption()
-        {
-            var encryptionSettings = backupView.GetEncryptionSettings();
-            EncryptionUtility.SetEncryptionSettings(
-                encryptionSettings.password,
-                encryptionSettings.encryptAll,
-                encryptionSettings.selectedExtensions,
-                encryptionSettings.encryptEnabled);
-        }
-
         public void CreateBackupTask()
         {
             BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
@@ -95,6 +106,10 @@ namespace EasySave.Controllers
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
+        /// <summary>
+        /// Deletes a backup task.
+        /// The user is prompted to view tasks before deleting one, and the action is logged.
+        /// </summary>
         public void DeleteTask()
         {
             backupView.DisplayMessage("DeleteTask");
@@ -109,119 +124,52 @@ namespace EasySave.Controllers
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
+        /// <summary>
+        /// Displays all available backup tasks.
+        /// Allows the user to review existing tasks.
+        /// </summary>
         public void ViewTasks()
         {
-            try
-            {
-                BackupJob_Models.ViewTasks();
-                Console.ReadKey();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error viewing tasks: " + ex.Message);
-            }
+            backupModel.ViewTasks();  // Display all tasks
+            Console.ReadKey();  // Wait for user input before proceeding
         }
 
+        /// <summary>
+        /// Executes a specific backup task selected by the user.
+        /// The task execution time is logged, and a message is displayed based on the type of backup.
+        /// </summary>
         public void ExecuteSpecificTask()
         {
             Console.Clear();  // Clear the screen for a clean display
             backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
-
-            if (ProcessWatcher.IsBusinessApplicationRunning())
-            {
-                return;
-            }
-
             stopwatch.Start();
-
-            List<BackupJob_Models> tasks = backupModel.ExecuteSpecificTask();  // Execute the selected backup tasks
-            if (tasks == null || tasks.Count == 0) { return; }
-
+            BackupJob_Models task = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
             stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
 
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
             PauseAndReturn();  // Wait for user input before returning to the menu
         }
 
+        /// <summary>
+        /// Executes all backup tasks sequentially.
+        /// Logs each task's execution and the total time taken.
+        /// </summary>
         public void ExecuteAllTasks()
         {
-            try
-            {
-                Console.Clear();
-                backupView.DisplayMessage("ExecuteAllTasks");
-                // Configure encryption before executing the backup.
-                ConfigureEncryption();
-                stopwatch.Restart();
-                BackupJob_Models.ExecuteAllTasks();
-                stopwatch.Stop();
-                PauseAndReturn();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error executing all tasks: " + ex.Message);
-            }
-        }
+            backupView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
+            stopwatch.Start();
 
-        public void DecryptFolder()
-        {
-            try
+            List<BackupJob_Models> executedTasks = backupModel.ExecuteAllTasks();  // Execute all tasks
+            stopwatch.Stop();
+
+            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+            string t = controller_log.Get_Type_File();
+            foreach (var task in executedTasks)
             {
-                backupView.DisplayMessage("EnterDecryptionPassword");
-                string password = backupView.ReadPassword();
-                if (string.IsNullOrEmpty(password))
-                {
-                    backupView.DisplayMessage("PasswordEmpty");
-                    PauseAndReturn();
-                    return;
-                }
-                backupView.DisplayMessage("DecryptFolderPrompt");
-                string folderPath = backupView.BrowsePath(canChooseFiles: false, canChooseDirectories: true);
-                if (string.IsNullOrEmpty(folderPath))
-                {
-                    backupView.DisplayMessage("NoFolderSelected");
-                    PauseAndReturn();
-                    return;
-                }
-                EncryptionUtility.SetEncryptionSettings(password, true, new string[0], true);
-                string[] encryptedFiles = System.IO.Directory.GetFiles(folderPath, "*.aes", System.IO.SearchOption.AllDirectories);
-                bool errorOccurred = false;
-                foreach (string file in encryptedFiles)
-                {
-                    bool success = EncryptionUtility.DecryptFileWithResult(file);
-                    if (!success)
-                        errorOccurred = true;
-                }
-                if (errorOccurred)
-                    backupView.DisplayMessage("DecryptionError");
-                else
-                    backupView.DisplayMessage("FolderDecrypted");
-                PauseAndReturn();
-            }
-            catch (Exception ex)
-            {
-                if (ProcessWatcher.IsBusinessApplicationRunning())
-                {
-                    Console.WriteLine($"Logiciel métier détecté ! La sauvegarde '{task.Name}' est suspendue.");
-                    break; // Arrêter la sauvegarde après la tâche en cours
-                }
-                else {
                 controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
-                }
             }
-
             PauseAndReturn();  // Wait for user input before returning to the menu
-        }
-
-        public void AddBusinessApplication()
-        {
-            Console.Clear();
-            backupModel.DisplayExistingApplications();
-            Console.Write("Entrez le nom de l'application métier à surveiller : ");
-            string appName = Console.ReadLine()?.Trim();
-
-            backupModel.AddBusinessApplication(appName);
         }
 
         /// <summary>
@@ -230,12 +178,16 @@ namespace EasySave.Controllers
         /// </summary>
         public void ErreurChoix()
         {
-            backupView.DisplayMessage("InvalidOption");
+            backupView.DisplayMessage("InvalidOption");  // Display error message for invalid input
         }
 
+        /// <summary>
+        /// Displays the main menu for the user to interact with.
+        /// Allows the user to choose different operations.
+        /// </summary>
         public void DisplayMainMenu()
         {
-            backupView.DisplayMainMenu();
+            backupView.DisplayMainMenu();  // Show the main menu to the user
         }
     }
 }
