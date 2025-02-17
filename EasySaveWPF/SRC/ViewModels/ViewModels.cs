@@ -6,6 +6,7 @@ using EasySaveWPF.ModelsWPF;
 using EasySaveWPF;
 using EasySaveLog;
 using EasySave.Models;
+using EasySave.Log;
 
 namespace EasySaveWPF.ViewModelsWPF
 {
@@ -54,7 +55,7 @@ namespace EasySaveWPF.ViewModelsWPF
                 return _instance;
             }
         }
-        
+
 
         /// <summary>
         /// Creates a backup task based on the user's input.

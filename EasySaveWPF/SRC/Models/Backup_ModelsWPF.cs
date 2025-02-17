@@ -8,6 +8,7 @@ using EasySaveLog;
 using EasySaveWPF;
 using EasySave.Models;
 using EasySave;
+using EasySave.Log;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -112,7 +113,7 @@ namespace EasySaveWPF.ModelsWPF
             }
             Tasks.Add(task);
             return SaveTasks();
-          
+
         }
         public string DeleteTaskWPF(Backup_ModelsWPF task)
         {
@@ -158,7 +159,7 @@ namespace EasySaveWPF.ModelsWPF
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
             if (!Directory.Exists(targetPath))
-            { 
+            {
                 PerformFullBackup(task);
             }
             CopyModifiedFiles(task.SourceDirectory, targetPath, task);

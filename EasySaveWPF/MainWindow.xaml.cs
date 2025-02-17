@@ -30,7 +30,7 @@ namespace EasySaveWPF
             string type = (TypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
             // Vérifier que tous les champs sont remplis
-            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(source) ||string.IsNullOrWhiteSpace(destination) ||string.IsNullOrWhiteSpace(type))
+            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(type))
             {
                 System.Windows.MessageBox.Show("Tous les champs doivent être remplis.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -57,7 +57,7 @@ namespace EasySaveWPF
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
-        
+
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
