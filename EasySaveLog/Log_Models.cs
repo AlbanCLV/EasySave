@@ -40,44 +40,59 @@ namespace EasySaveLog
                 }
             }
         }
-        public void LogAction(string name, string source, string target, string time, string act)
+        public void LogAction(string name, string source, string target, string time, string act, string encryptTime)
         {
             if (Type_File.ToLower() == "json")
-                LogActionJSON(name, source, target, time, act);
+                LogActionJSON(name, source, target, time, act, encryptTime);
             else
-                LogActionXML(name, source, target, time, act);
+                LogActionXML(name, source, target, time, act, encryptTime);
         }
-        public void LogErreur(string task, string baseAction, string erreur)
+        public void LogErreur(string task, string baseAction, string erreur, string encryptTime)
         {
             if (Type_File.ToLower() == "json")
-                LogErreurJSON(task, baseAction, erreur);
+                LogErreurJSON(task, baseAction, erreur, encryptTime);
             else
-                LogErreurXML(task, baseAction, erreur);
+                LogErreurXML(task, baseAction, erreur, encryptTime);
         }
         /// <summary>
         /// Creates a new log entry for a backup action, with details about the task, source, and destination.
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogActionJSON(string name, string source, string target, string time, string act)
+        public void LogActionJSON(string name, string source, string target, string time, string act, string encryptTime)
         {
-            // Initialize variable to store the file size (default is 0).
-            long fileSize = 0;
+           
+          
+            var logEntry = new object(); // Déclaration de la variable
 
-            // calculate the total size of files within it (including subdirectories).
-            fileSize = GetDirectorySize(new DirectoryInfo(source));
-            double fileSizeInKB = fileSize / 1024.0;
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
-            var logEntry = new
+            if (act == "View Task")
             {
-                Action = act, // The action performed (e.g., "Backup Started").
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
-                TaskName = "Backup_" + name, // Name of the backup task.
-                SourceFile = source, // Path of the source file or directory.
-                TargetFile = target, // Path of the target file or directory.
-                FileSize = fileSizeInKB, // Size of the source file/directory.
-                TimeMS = time // Placeholder for transfer time (currently not used).
-            };
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                };
+            }
+            else
+            {
+                // Initialize variable to store the file size (default is 0).
+                long fileSize = 0;            // calculate the total size of files within it (including subdirectories).
+                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+                // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = "Backup_" + name, // Name of the backup task.
+                    SourceFile = source, // Path of the source file or directory.
+                    TargetFile = target, // Path of the target file or directory.
+                    FileSize = fileSizeInKB, // Size of the source file/directory.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+                    encryptTime = encryptTime, // Placeholder for transfer time (currently not used).
+
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -85,7 +100,7 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreurJSON(string task, string Base, string Erreur)
+        public void LogErreurJSON(string task, string Base, string Erreur, string encryptTime)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -104,19 +119,12 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogActionXML(string name, string source, string target, string time, string act)
+        public void LogActionXML(string name, string source, string target, string time, string act, string encryptTime)
         {
-            // Initialiser la variable pour stocker la taille du fichier (par défaut à 0)
-            long fileSize = 0;
+            
 
-            // Calculer la taille totale des fichiers dans le répertoire source
-            fileSize = GetDirectorySize(new DirectoryInfo(source));
-            double fileSizeInKB = fileSize / 1024.0;
-
-            // Définir le chemin du fichier log XML basé sur la date actuelle
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
 
-            // Vérifier si le fichier existe, sinon créer un nouveau document XML
             XDocument xmlDoc;
             if (File.Exists(logPath))
             {
@@ -127,27 +135,40 @@ namespace EasySaveLog
                 xmlDoc = new XDocument(new XElement("Logs"));
             }
 
-            // Créer une nouvelle entrée de log
-            XElement logEntry = new XElement("Log",
-                new XElement("Action", act),
-                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
-                new XElement("TaskName", "Backup_" + name),
-                new XElement("SourceFile", source),
-                new XElement("TargetFile", target),
-                new XElement("FileSize", fileSizeInKB),
-                new XElement("TimeMs", time)
-            );
+            XElement logEntry; // Déclare logEntry ici
 
-            // Ajouter l'entrée au document XML
+            if (act == "View Task")
+            {
+                logEntry = new XElement("Log",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                );
+            }
+            else
+            {
+                long fileSize = 0;
+                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+                logEntry = new XElement("Log",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", "Backup_" + name),
+                    new XElement("SourceFile", source),
+                    new XElement("TargetFile", target),
+                    new XElement("FileSize", fileSizeInKB),
+                    new XElement("TimeMs", time),
+                    new XElement("encryptTime", encryptTime)
+
+                );
+            }
+
             xmlDoc.Root?.Add(logEntry);
 
-            // S'assurer que le répertoire existe
             Directory.CreateDirectory(logDirectory);
-
-            // Sauvegarder le fichier XML
             xmlDoc.Save(logPath);
         }
-        public void LogErreurXML(string task, string baseAction, string erreur)
+
+        public void LogErreurXML(string task, string baseAction, string erreur, string encryptTime)
         {
             // Définir le chemin du fichier log XML basé sur la date actuelle
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
@@ -199,7 +220,7 @@ namespace EasySaveLog
         {
             if (!directory.Exists)
             {
-                LogErreurJSON("Error", "Error", "Folder not found");
+                LogErreurJSON("Error", "Error", "Folder not found", "-1");
                 Environment.Exit(0);
             }
 

@@ -41,14 +41,14 @@ namespace EasySaveLog
         /// </summary>
         /// <param name="task">The backup job task that is being logged.</param>
         /// <param name="action">The action (event) that is being performed (e.g., start, complete).</param>
-        public void LogBackupAction(string name, string source, string target, string time, string action)
+        public void LogBackupAction(string name, string source, string target, string time, string action, string encryptTime)
         {
-            logModel.LogAction(name, source, target, time, action);
+            logModel.LogAction(name, source, target, time, action, encryptTime);
         }
 
-        public void LogBackupErreur(string nom, String Base, String Erreur)
+        public void LogBackupErreur(string nom, string Base, string Erreur, string encryptTime)
         {
-            logModel.LogErreur(nom, Base, Erreur);
+            logModel.LogErreur(nom, Base, Erreur, encryptTime);
         }
 
         public void Type_File_Log(string type)
