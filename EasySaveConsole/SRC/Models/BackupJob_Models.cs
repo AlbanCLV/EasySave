@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Threading;
 using Newtonsoft.Json;
 using EasySaveLog;
@@ -13,11 +14,7 @@ namespace EasySaveConsole.Models
     /// <summary>
     /// Enumeration representing the type of backup.
     /// </summary>
-    public enum BackupType
-    {
-        Full,
-        Differential
-    }
+
 
     /// <summary>
     /// Model class representing a backup job.
@@ -27,10 +24,11 @@ namespace EasySaveConsole.Models
         public string Name { get; set; }
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }
-        public BackupType Type { get; set; }
+        public string Type { get; set; }
 
         private static BackupJob_Models _instance;
         private static readonly object _lock = new object();
+        private Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
         /// List of backup tasks.
@@ -48,7 +46,7 @@ namespace EasySaveConsole.Models
         /// Constructor for creating a backup job.
         /// </summary>
 
-        public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, BackupType type, bool loadTasks = false)
+        public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, string type, bool loadTasks = false)
         {
             Name = name;
             SourceDirectory = sourceDirectory;
@@ -74,7 +72,7 @@ namespace EasySaveConsole.Models
                     {
                         if (_instance == null)
                         {
-                            _instance = new BackupJob_Models("","","", BackupType.Full, true);
+                            _instance = new BackupJob_Models("","","", "Full", true);
                         }
                     }
                 }
@@ -144,7 +142,7 @@ namespace EasySaveConsole.Models
             Console.WriteLine($"{lang.Translate("task_name")}: {task.Name}");
             Console.WriteLine($"{lang.Translate("source_directory")}: {task.SourceDirectory}");
             Console.WriteLine($"{lang.Translate("target_directory")}: {task.TargetDirectory}");
-            Console.WriteLine($"{lang.Translate("backup_type")}: {(task.Type == BackupType.Full ? lang.Translate("full_backup") : lang.Translate("differential_backup"))}");
+            Console.WriteLine($"{lang.Translate("backup_type")}: {(task.Type == "Full" ? lang.Translate("full_backup") : lang.Translate("differential_backup"))}");
             Console.WriteLine($"\n{lang.Translate("confirm_task_creation")}");
 
             string confirmation = Console.ReadLine()?.ToUpper();
@@ -190,12 +188,12 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Deletes a backup task.
         /// </summary>
-        public (BackupJob_Models, string ) DeleteTask()
+        public (BackupJob_Models, string , string) DeleteTask()
         {
             if (Tasks.Count == 0)
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_delete"));
-                return (null, "0Task");
+                return (null, "0Task", "-1");
             }
             BackupJob_Models deletedTask = null;
 
@@ -204,20 +202,22 @@ namespace EasySaveConsole.Models
                 Console.Write(lang.Translate("enter_task_number_to_delete"));
                 if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
                 {
+                    stopwatch.Start();
                     deletedTask = Tasks[taskNumber - 1];
                     Console.WriteLine(string.Format(lang.Translate("deleting_task"), deletedTask.Name));
                     Tasks.RemoveAt(taskNumber - 1);
                     Console.WriteLine(lang.Translate("task_deleted_successfully"));
                     SaveTasks();
-                    break;
+                    stopwatch.Stop();
+                    string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+                    return (deletedTask, "OK", formattedTime);
                 }
                 else
                 {
                     Console.WriteLine(lang.Translate("invalid_task_number"));
-                    return (null, "invalid");
+                    return (null, "invalid", "-1");
                 }
             }
-            return (deletedTask, "ge");
         }
 
         /// <summary>
@@ -385,11 +385,11 @@ namespace EasySaveConsole.Models
 
         private string ExecuteBackup(BackupJob_Models task)
         {
-            if (task.Type == BackupType.Full)
+            if (task.Type == "Full")
             {
                 return PerformFullBackup(task);
             }
-            else if (task.Type == BackupType.Differential)
+            else if (task.Type == "Differential")
             {
                 return ExecuteDifferentialBackup(task);
             }

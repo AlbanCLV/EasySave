@@ -135,7 +135,7 @@ namespace EasySaveConsole.Views
             {
                 Console.WriteLine(lang.Translate("InvalidBackupType"));
             }
-            BackupType type = typeInput == 1 ? BackupType.Full : BackupType.Differential;
+            string type = typeInput == 1 ? "Full" : "Differential";
 
             return new BackupJob_Models(name, source, target, type);
         }

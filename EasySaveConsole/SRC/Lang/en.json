@@ -55,6 +55,7 @@
   "differential_backup_canceled": "Differential backup canceled.",
   "executing_full_backup": "Executing full backup: {0}",
   "full_backup_completed": "Full backup '{0}' completed successfully.",
+  "EnterExtensions": "Please enter extansion (.txt, .pdf, .docx, .jpg )",
   "InvalidInput": "Invalid input. Please try again.",
   "EmptyInput": "Input cannot be empty.",
   "EncryptPrompt": "Do you want to encrypt backups? (Y/N)",

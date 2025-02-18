@@ -7,6 +7,7 @@
   "Choice_log_display": "Changer le format des journaux",
   "DecryptFile": "Décrypter un dossier",
   "Exit": "Quitter",
+  "EnterExtensions": "Veuillez entrer l''extansion (.txt, .pdf, .docx, .jpg )",
   "Type_Now": "Format actuel du fichier journal :",
   "Choix_log": "Veuillez entrer le format du fichier (json ou xml) ou taper 'exit' pour annuler :",
   "No_Change_Type_Log": "Format invalide. Veuillez entrer 'json' ou 'xml', ou taper 'exit' pour annuler.",

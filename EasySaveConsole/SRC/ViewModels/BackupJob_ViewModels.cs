@@ -99,11 +99,8 @@ namespace EasySaveConsole.ViewModels
             try
             {
                 var encryptionSettings = backupView.GetEncryptionSettings();
-                EncryptionModels.SetEncryptionSettings(
-                    encryptionSettings.password,
-                    encryptionSettings.encryptAll,
-                    encryptionSettings.selectedExtensions,
-                    encryptionSettings.encryptEnabled);
+                EncryptionModels.SetEncryptionSettings(encryptionSettings.password, encryptionSettings.encryptAll, encryptionSettings.selectedExtensions, encryptionSettings.encryptEnabled);
+
                 return encryptionSettings.encryptEnabled;
             }
             catch (Exception ex)
@@ -166,11 +163,8 @@ namespace EasySaveConsole.ViewModels
         {
             Console.Clear();
             ViewTasks();  // Display current tasks for the user to select from
-            stopwatch.Start();
-            (BackupJob_Models task , string cond) = backupModel.DeleteTask();  // Delete the selected task
-            stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-
+            (BackupJob_Models task , string cond, string e) = backupModel.DeleteTask();  // Delete the selected task
+            string formattedTime = e;  // Format elapsed time
             if (cond == "OTask")
                 {
                 try
@@ -216,8 +210,6 @@ namespace EasySaveConsole.ViewModels
             try
             {
                 string cond = backupModel.ViewTasks();  // Display all tasks
-                Console.WriteLine(cond);
-                Console.ReadKey();  // Wait for user input before proceeding
                 if (cond == "OTask")
                 {
                     try
@@ -240,6 +232,8 @@ namespace EasySaveConsole.ViewModels
                         Console.WriteLine("Error during log: " + ex.Message);
                     }
                 }
+                Console.ReadKey();  // Wait for user input before proceeding
+
             }
             catch (Exception ex)
             {
@@ -356,14 +350,14 @@ namespace EasySaveConsole.ViewModels
                 (List<BackupJob_Models> executedTasks, List<string> logMessages) = backupModel.ExecuteAllTasks();  // Execute all tasks
                 stopwatch.Stop();
                 string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-
+                Console.WriteLine(logMessages);
                 for (int i = 0; i < executedTasks.Count; i++)
                 {
                     if (logMessages[i] == "0Task")
                     {
                         try
                         {
-                            Log_VM.LogBackupErreur("Error", "Execute_Specific_Task_attempt", "No_tasks", EncryptionTime);
+                            Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", EncryptionTime);
                         }
                         catch (Exception ex)
                         {
@@ -374,7 +368,7 @@ namespace EasySaveConsole.ViewModels
                     {
                         try
                         {
-                            Log_VM.LogBackupErreur("Error", "Execute_Specific_Task_attempt", "Invalid_Task_Number", EncryptionTime);
+                            Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "Invalid_Task_Number", EncryptionTime);
                         }
                         catch (Exception ex)
                         {
@@ -385,7 +379,7 @@ namespace EasySaveConsole.ViewModels
                     {
                         try
                         {
-                            Log_VM.LogBackupErreur(executedTasks[i].Name, "execute_task_attempt", "source_directory_not_exist", EncryptionTime);
+                            Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_All_Task_attempt", "source_directory_not_exist", EncryptionTime);
                         }
                         catch (Exception ex)
                         {
@@ -396,7 +390,7 @@ namespace EasySaveConsole.ViewModels
                     {
                         try
                         {
-                            Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, formattedTime, "execute specific Task", EncryptionTime);  // Log the action
+                            Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, formattedTime, "execute ALL Task", EncryptionTime);  // Log the action
                         }
                         catch (Exception ex)
                         {
@@ -408,7 +402,7 @@ namespace EasySaveConsole.ViewModels
                     {
                         try
                         {
-                            Log_VM.LogBackupErreur(executedTasks[i].Name, "execute_task_attempt", "Canceled", EncryptionTime);
+                            Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_All_Task_attempt", "Canceled", EncryptionTime);
                         }
                         catch (Exception ex)
                         {
