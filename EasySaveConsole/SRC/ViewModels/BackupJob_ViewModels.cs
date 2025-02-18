@@ -25,6 +25,7 @@ namespace EasySaveConsole.ViewModels
         private State_models StateModels;
         private Stopwatch stopwatch = new Stopwatch();
         private Encryption_Models EncryptionModels;
+        private ProcessWatcher processWatcher;
 
         /// <summary>
         /// Private constructor to prevent direct instantiation.
@@ -36,6 +37,7 @@ namespace EasySaveConsole.ViewModels
             Log_VM = Log_ViewModels.Instance;
             StateModels = State_models.Instance;
             EncryptionModels = Encryption_Models.Instance;
+            processWatcher = ProcessWatcher.Instance;
 
             backupModel.LoadTasks();
         }
@@ -65,7 +67,14 @@ namespace EasySaveConsole.ViewModels
         /// </summary>
         public string DisplayLangue() => backupView.DisplayLangue();
 
-
+        public void StartWatch()
+        {
+            processWatcher.StartWatching();
+        }
+        public void StopWatching()
+        {
+            processWatcher.StopWatching();
+        }
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
         /// This is used for user interaction after an operation is complete.
@@ -249,6 +258,10 @@ namespace EasySaveConsole.ViewModels
         {
             try
             {
+                if (processWatcher.IsBusinessApplicationRunning())
+                {
+                    return;
+                }
                 stopwatch.Start();
                 bool cond2 = ConfigureEncryption();
                 stopwatch.Stop();
@@ -353,6 +366,11 @@ namespace EasySaveConsole.ViewModels
                 Console.WriteLine(logMessages);
                 for (int i = 0; i < executedTasks.Count; i++)
                 {
+                    if (processWatcher.IsBusinessApplicationRunning())
+                    {
+                        Console.WriteLine($"Logiciel métier détecté ! La sauvegarde '{executedTasks[i].Name}' est suspendue.");
+                        break; // Arrêter la sauvegarde après la tâche en cours
+                    }
                     if (logMessages[i] == "0Task")
                     {
                         try
@@ -474,6 +492,17 @@ namespace EasySaveConsole.ViewModels
             {
                 Console.WriteLine("Error decrypting folder: " + ex.Message);
             }
+        }
+
+
+        public void AddBusinessApplication()
+        {
+            Console.Clear();
+            processWatcher.DisplayExistingApplications();
+            Console.Write("Entrez le nom de l'application métier à surveiller : ");
+            string appName = Console.ReadLine()?.Trim();
+
+            processWatcher.AddBusinessApplication(appName);
         }
 
 

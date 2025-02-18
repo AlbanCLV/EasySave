@@ -23,11 +23,12 @@ namespace EasySave
             {
                 BackupJob_ViewModels ViewModels1 = new BackupJob_ViewModels();
                 Console.Clear();  // Clear the console for a fresh display
-
+                Console.WriteLine("Démarrage du ProcessWatcher");
+                
                 SelectedLanguage = ViewModels1.DisplayLangue();  // Store the selected language
                 LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
                 BackupJob_ViewModels ViewModels = new BackupJob_ViewModels();
-
+                ViewModels.StartWatch();
                 MenuInvoker invoker = new MenuInvoker();
                 invoker.SetCommand("1", new CreateBackupTaskCommand(ViewModels));
                 invoker.SetCommand("2", new ExecuteSpecificTaskCommand(ViewModels));
@@ -36,6 +37,8 @@ namespace EasySave
                 invoker.SetCommand("5", new DeleteTaskCommand(ViewModels));
                 invoker.SetCommand("6", new ChoiceFileLogCommand(ViewModels));
                 invoker.SetCommand("7", new DecryptFolderCommand(ViewModels));
+                invoker.SetCommand("8", new AddBusinessApplicationCommand(ViewModels));
+
                 // L'option "8" permet de quitter
 
                 ViewModels.Choice_Type_File_Log();
@@ -46,8 +49,10 @@ namespace EasySave
                     ViewModels.DisplayMainMenu();
 
                     string input = Console.ReadLine()?.Trim();
-                    if (input == "8")
-                        break;
+                    if (input == "9")
+                    {
+                        ViewModels.StopWatching ();
+                    }
 
                     invoker.InvokeCommand(input);
                 }
@@ -135,10 +140,7 @@ namespace EasySave
     public class Choice_Langue : ICommand
     {
         private readonly BackupJob_ViewModels _ViewModels;
-        public Choice_Langue(BackupJob_ViewModels ViewModels)
-        {
-            _ViewModels = ViewModels;
-        }
+        public Choice_Langue(BackupJob_ViewModels ViewModels)  {   _ViewModels = ViewModels; }
         public void Execute()
         {
             string SelectedLanguage = _ViewModels.DisplayLangue();  // Store the selected language
@@ -151,6 +153,12 @@ namespace EasySave
         private readonly BackupJob_ViewModels _ViewModels;
         public DecryptFolderCommand(BackupJob_ViewModels ViewModels) { _ViewModels = ViewModels; }
         public void Execute() => _ViewModels.DecryptFolder();
+    }
+    public class AddBusinessApplicationCommand : ICommand
+    {
+        private readonly BackupJob_ViewModels _ViewModels;
+        public AddBusinessApplicationCommand(BackupJob_ViewModels ViewModels) { _ViewModels = ViewModels; }
+        public void Execute() => _ViewModels.AddBusinessApplication();
     }
     public class MenuInvoker
     {

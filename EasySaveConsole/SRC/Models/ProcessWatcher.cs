@@ -6,16 +6,32 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Collections.Generic;
+using EasySaveLog;
 
 namespace EasySaveConsole.Models
 {
-    class ProcessWatcher
+    public class ProcessWatcher
     {
+        private static ProcessWatcher _instance;
+        private static readonly object _lock = new object();
+        public static ProcessWatcher Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                        _instance = new ProcessWatcher();
+                    return _instance;
+                }
+            }
+        }
         private static bool _running = true;
         private static readonly string ConfigFilePath = "business_apps.txt";
         private static bool _wasBusinessAppRunning = false;
 
-        public static void StartWatching()
+        public  void StartWatching()
         {
             Thread watcherThread = new Thread(() =>
             {
@@ -43,7 +59,7 @@ namespace EasySaveConsole.Models
             watcherThread.Start();
         }
 
-        public static bool IsBusinessApplicationRunning()
+        public  bool IsBusinessApplicationRunning()
         {
             if (!File.Exists(ConfigFilePath))
                 return false;
@@ -73,9 +89,55 @@ namespace EasySaveConsole.Models
             return false;
         }
 
-        public static void StopWatching()
+        public  void StopWatching()
         {
             _running = false;
+        }
+        public void DisplayExistingApplications()
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+                    .Select(line => line.Trim())
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToList();
+
+                Console.WriteLine("\n📋 Applications métier déjà enregistrées :");
+                if (existingApps.Count > 0)
+                {
+                    foreach (var app in existingApps)
+                    {
+                        Console.WriteLine("- " + app);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("(Aucune application enregistrée pour l'instant.)");
+                }
+                Console.WriteLine();
+            }
+        }
+        public void AddBusinessApplication(string appName)
+        {
+            if (string.IsNullOrWhiteSpace(appName)) return;
+
+            List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+            .Select(line => line.Trim().ToLower()) // Normalisation
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+            // Vérifier si l'application existe déjà
+            if (existingApps.Contains(appName.ToLower())) // Comparaison insensible à la casse
+            {
+                Console.WriteLine($"{appName} est déjà dans la liste des logiciels métier.");
+            }
+            else
+            {
+                File.AppendAllText(ConfigFilePath, appName + Environment.NewLine);
+                Console.WriteLine($"{appName} ajouté à la liste des logiciels métier.");
+            }
+            Console.WriteLine("\nAppuyez sur une touche pour revenir au menu...");
+            Console.ReadKey(); // Pause pour laisser le temps à l'utilisateur de voir le message
         }
     }
 }
