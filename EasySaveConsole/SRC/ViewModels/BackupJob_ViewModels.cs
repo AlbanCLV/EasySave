@@ -7,7 +7,7 @@ using EasySaveConsole.Views;
 using EasySaveLog;
 
 
-namespace EasySaveConsole.Controllers
+namespace EasySaveConsole.ViewModels
 {
     /// <summary>
     /// Controller class for managing interactions between the BackupJob model and view.
@@ -31,7 +31,7 @@ namespace EasySaveConsole.Controllers
         /// </summary>
         public BackupJob_ViewModels( )
         {
-            backupView = new BackupJob_View();
+            backupView = BackupJob_View.Instance;
             backupModel = BackupJob_Models.Instance;  // Initialiser le contrôleur
             Log_VM = Log_ViewModels.Instance;
             StateModels = State_models.Instance;
@@ -96,12 +96,19 @@ namespace EasySaveConsole.Controllers
         /// </summary>
         public void ConfigureEncryption()
         {
-            var encryptionSettings = backupView.GetEncryptionSettings();
-            EncryptionModels.SetEncryptionSettings(
-                encryptionSettings.password,
-                encryptionSettings.encryptAll,
-                encryptionSettings.selectedExtensions,
-                encryptionSettings.encryptEnabled);
+            try
+            {
+                var encryptionSettings = backupView.GetEncryptionSettings();
+                EncryptionModels.SetEncryptionSettings(
+                    encryptionSettings.password,
+                    encryptionSettings.encryptAll,
+                    encryptionSettings.selectedExtensions,
+                    encryptionSettings.encryptEnabled);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error ConfigureEncryption: " + ex.Message);
+            }
         }
         /// <summary>
         /// Creates a backup task based on the user's input.
@@ -140,17 +147,7 @@ namespace EasySaveConsole.Controllers
                         Console.WriteLine("Error during log: " + ex.Message);
                     }
                 }
-                else if (cond == "KO5")
-                {
-                    try
-                    {
-                        Log_VM.LogBackupErreur(task.Name, "create_task_attempt", "Already 5 tasks");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error during log: " + ex.Message);
-                    }
-                }
+
             }
             catch (Exception ex)
             {
@@ -255,8 +252,6 @@ namespace EasySaveConsole.Controllers
         {
             try
             {
-                Console.Clear();  // Clear the screen for a clean display
-                backupView.DisplayMessage("ExecuteSpecificTask");  // Inform the user that the task will be executed
                 stopwatch.Start();
                 ConfigureEncryption();
                 stopwatch.Stop();

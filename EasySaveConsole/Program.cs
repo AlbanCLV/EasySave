@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using EasySaveConsole.Controllers;
+using EasySaveConsole.ViewModels;
 using EasySaveConsole.Models;
 
 namespace EasySave
@@ -21,29 +21,29 @@ namespace EasySave
         {
             try
             {
-                BackupJob_ViewModels controller1 = new BackupJob_ViewModels();
+                BackupJob_ViewModels ViewModels1 = new BackupJob_ViewModels();
                 Console.Clear();  // Clear the console for a fresh display
 
-                SelectedLanguage = controller1.DisplayLangue();  // Store the selected language
+                SelectedLanguage = ViewModels1.DisplayLangue();  // Store the selected language
                 LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
-                BackupJob_ViewModels controller = new BackupJob_ViewModels();
+                BackupJob_ViewModels ViewModels = new BackupJob_ViewModels();
 
                 MenuInvoker invoker = new MenuInvoker();
-                invoker.SetCommand("1", new CreateBackupTaskCommand(controller));
-                invoker.SetCommand("2", new ExecuteSpecificTaskCommand(controller));
-                invoker.SetCommand("3", new ExecuteAllTasksCommand(controller));
-                invoker.SetCommand("4", new ViewTasksCommand(controller));
-                invoker.SetCommand("5", new DeleteTaskCommand(controller));
-                invoker.SetCommand("6", new ChoiceFileLogCommand(controller));
-                invoker.SetCommand("7", new DecryptFolderCommand(controller));
+                invoker.SetCommand("1", new CreateBackupTaskCommand(ViewModels));
+                invoker.SetCommand("2", new ExecuteSpecificTaskCommand(ViewModels));
+                invoker.SetCommand("3", new ExecuteAllTasksCommand(ViewModels));
+                invoker.SetCommand("4", new ViewTasksCommand(ViewModels));
+                invoker.SetCommand("5", new DeleteTaskCommand(ViewModels));
+                invoker.SetCommand("6", new ChoiceFileLogCommand(ViewModels));
+                invoker.SetCommand("7", new DecryptFolderCommand(ViewModels));
                 // L'option "8" permet de quitter
 
-                controller.Choice_Type_File_Log();
+                ViewModels.Choice_Type_File_Log();
 
                 while (true)
                 {
                     LangManager.Instance.SetLanguage(SelectedLanguage);
-                    controller.DisplayMainMenu();
+                    ViewModels.DisplayMainMenu();
 
                     string input = Console.ReadLine()?.Trim();
                     if (input == "8")
@@ -68,89 +68,89 @@ namespace EasySave
     }
     public class CreateBackupTaskCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
+        private readonly BackupJob_ViewModels _ViewModels;
 
-        public CreateBackupTaskCommand(BackupJob_ViewModels controller)
+        public CreateBackupTaskCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
 
-        public void Execute() => _controller.CreateBackupTask();
+        public void Execute() => _ViewModels.CreateBackupTask();
 
     }
     public class ExecuteSpecificTaskCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
+        private readonly BackupJob_ViewModels _ViewModels;
 
-        public ExecuteSpecificTaskCommand(BackupJob_ViewModels controller)
+        public ExecuteSpecificTaskCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
-        public void Execute() => _controller.ExecuteSpecificTask();
+        public void Execute() => _ViewModels.ExecuteSpecificTask();
 
     }
     public class ExecuteAllTasksCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
+        private readonly BackupJob_ViewModels _ViewModels;
 
-        public ExecuteAllTasksCommand(BackupJob_ViewModels controller)
+        public ExecuteAllTasksCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
-        public void Execute() => _controller.ExecuteAllTasks();
+        public void Execute() => _ViewModels.ExecuteAllTasks();
 
     }
     public class ViewTasksCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
+        private readonly BackupJob_ViewModels _ViewModels;
 
-        public ViewTasksCommand(BackupJob_ViewModels controller)
+        public ViewTasksCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
-        public void Execute() => _controller.ViewTasks();
+        public void Execute() => _ViewModels.ViewTasks();
     }
     public class ChoiceFileLogCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
+        private readonly BackupJob_ViewModels _ViewModels;
 
-        public ChoiceFileLogCommand(BackupJob_ViewModels controller)
+        public ChoiceFileLogCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
-        public void Execute() => _controller.Choice_Type_File_Log();
+        public void Execute() => _ViewModels.Choice_Type_File_Log();
 
 
     }
     public class DeleteTaskCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
-        public DeleteTaskCommand(BackupJob_ViewModels controller)
+        private readonly BackupJob_ViewModels _ViewModels;
+        public DeleteTaskCommand(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
-        public void Execute() => _controller.DeleteTask();
+        public void Execute() => _ViewModels.DeleteTask();
 
     }
     public class Choice_Langue : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
-        public Choice_Langue(BackupJob_ViewModels controller)
+        private readonly BackupJob_ViewModels _ViewModels;
+        public Choice_Langue(BackupJob_ViewModels ViewModels)
         {
-            _controller = controller;
+            _ViewModels = ViewModels;
         }
         public void Execute()
         {
-            string SelectedLanguage = _controller.DisplayLangue();  // Store the selected language
+            string SelectedLanguage = _ViewModels.DisplayLangue();  // Store the selected language
             LangManager.Instance.SetLanguage(SelectedLanguage);  // Met à jour la langue
         }
     }
 
     public class DecryptFolderCommand : ICommand
     {
-        private readonly BackupJob_ViewModels _controller;
-        public DecryptFolderCommand(BackupJob_ViewModels controller) { _controller = controller; }
-        public void Execute() => _controller.DecryptFolder();
+        private readonly BackupJob_ViewModels _ViewModels;
+        public DecryptFolderCommand(BackupJob_ViewModels ViewModels) { _ViewModels = ViewModels; }
+        public void Execute() => _ViewModels.DecryptFolder();
     }
     public class MenuInvoker
     {

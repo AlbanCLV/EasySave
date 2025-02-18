@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using EasySaveLog;
-using EasySaveConsole.Controllers;
+using EasySaveConsole.ViewModels;
 
 namespace EasySaveConsole.Models
 
@@ -13,6 +13,7 @@ namespace EasySaveConsole.Models
     {
         Log_Models LogModels = new Log_Models();
         private readonly string logDirectoryState; // Directory to store log files.
+        private readonly LangManager lang;
         private static State_models _instance;
         private static readonly object _lock = new object();
 
@@ -40,7 +41,7 @@ namespace EasySaveConsole.Models
         public State_models(string logDirectoryState = "States")
         {
             this.logDirectoryState = logDirectoryState; // Initializes the log directory.
-
+            lang = LangManager.Instance;
         }
 
 

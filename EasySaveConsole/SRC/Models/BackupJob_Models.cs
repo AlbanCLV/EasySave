@@ -5,7 +5,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using EasySaveLog;
 using System.Threading.Tasks;
-using EasySaveConsole.Controllers;
+using EasySaveConsole.ViewModels;
 using EasySave;
 
 namespace EasySaveConsole.Models
@@ -137,20 +137,7 @@ namespace EasySaveConsole.Models
         /// </summary>
         public string CreateBackupTask(BackupJob_Models task)
         {
-            if (Tasks.Count >= 5)
-            {
-                Console.WriteLine(lang.Translate("max_tasks_error"));
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, lang.Translate("create_task_attempt"), lang.Translate("max_tasks_error"));  // Log the action
-                Console.WriteLine(lang.Translate("app_closing_in"));
-                for (int i = 5; i > 0; i--)
-                {
-                    Console.WriteLine(i);
-                    Thread.Sleep(1000);
-                }
-                Environment.Exit(0);
-                return "KO5";
-            }
+            
             // Resume and confirmation
             Console.Clear();
             Console.WriteLine(lang.Translate("task_summary"));

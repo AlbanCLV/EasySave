@@ -76,7 +76,7 @@ namespace EasySaveLog
                 SourceFile = source, // Path of the source file or directory.
                 TargetFile = target, // Path of the target file or directory.
                 FileSize = fileSizeInKB, // Size of the source file/directory.
-                TransferTimeMs = time // Placeholder for transfer time (currently not used).
+                TimeMS = time // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
@@ -94,7 +94,7 @@ namespace EasySaveLog
                 Action = Base, // The action performed (e.g., "Backup Started").
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
                 TaskName = "Backup_" + task, // Name of the backup task.
-                TransferTimeMs = -1, // Placeholder for transfer time (currently not used).
+                TimeMs = -1, // Placeholder for transfer time (currently not used).
                 Error = Erreur // Placeholder for transfer time (currently not used).
             };
             // Create the log file path based on the current date.
@@ -135,7 +135,7 @@ namespace EasySaveLog
                 new XElement("SourceFile", source),
                 new XElement("TargetFile", target),
                 new XElement("FileSize", fileSizeInKB),
-                new XElement("TransferTimeMs", time)
+                new XElement("TimeMs", time)
             );
 
             // Ajouter l'entrée au document XML
@@ -168,7 +168,7 @@ namespace EasySaveLog
                 new XElement("Action", baseAction),
                 new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
                 new XElement("TaskName", "Backup_" + task),
-                new XElement("TransferTimeMs", -1),
+                new XElement("TimeMs", -1),
                 new XElement("Error", erreur)
             );
 

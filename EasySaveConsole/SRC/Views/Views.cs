@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
-using EasySaveConsole.Controllers;
+using EasySaveConsole.ViewModels;
 using EasySaveConsole.Models;
 using Terminal.Gui;
 

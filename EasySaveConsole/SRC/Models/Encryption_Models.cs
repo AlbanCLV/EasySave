@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using EasySaveConsole.Controllers;
+using EasySaveConsole.ViewModels;
 
 namespace EasySaveConsole.Models
 {
@@ -16,6 +16,8 @@ namespace EasySaveConsole.Models
     {
         private static Encryption_Models _instance;
         private static readonly object _lock = new object();
+        private readonly LangManager lang;
+
         public static Encryption_Models Instance
         {
             get
@@ -36,6 +38,10 @@ namespace EasySaveConsole.Models
         private static string[] SelectedExtensions;
         private static bool EncryptEnabled;
 
+        public Encryption_Models()
+        {
+            lang = LangManager.Instance;
+        }
         /// <summary>
         /// Configures encryption parameters.
         /// </summary>
