@@ -38,7 +38,7 @@ namespace EasySaveConsole.Models
         private const string SaveFilePath = "tasks.json";
         private Log_ViewModels controller_log = new Log_ViewModels();
         private State_models _state_models = new State_models();
-
+        private ProcessWatcher processWatcher;
         // Instanciation du gestionnaire de langue (ici en français par défaut)
         private readonly LangManager lang ;
 
@@ -54,7 +54,7 @@ namespace EasySaveConsole.Models
             Type = type;
 
             lang = LangManager.Instance;
-
+            processWatcher = ProcessWatcher.Instance;
 
             if (loadTasks)  // Load tasks if necessary
             {
@@ -278,6 +278,11 @@ namespace EasySaveConsole.Models
         {
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
+                if (processWatcher.IsBusinessApplicationRunning()) 
+                {
+                    _state_models.StateError(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "BusinessApllicationRunning");
+                    return; 
+                }
                 _state_models.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
@@ -286,6 +291,11 @@ namespace EasySaveConsole.Models
 
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
+                if (processWatcher.IsBusinessApplicationRunning())
+                {
+                    _state_models.StateError(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "BusinessApllicationRunning");
+                    return;
+                }
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
@@ -304,6 +314,11 @@ namespace EasySaveConsole.Models
         {
             foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
+                if (processWatcher.IsBusinessApplicationRunning()) 
+                {
+                    _state_models.StateError(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "BusinessApllicationRunning");
+                    return; 
+                }
                 _state_models.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
                 // Get relative path of source directory
                 string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);

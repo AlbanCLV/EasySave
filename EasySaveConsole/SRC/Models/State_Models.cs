@@ -48,6 +48,7 @@ namespace EasySaveConsole.Models
         public void StateUpdate(BackupJob_Models task, string lasth, string desti)
         {
 
+
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
             var StateEntry = new
             {
@@ -65,7 +66,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -95,7 +96,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -103,7 +104,7 @@ namespace EasySaveConsole.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void StateError(BackupJob_Models task, string lasth, string error, string desti)
+        public void StateError(BackupJob_Models task, string lasth, string error)
         {
             var StateEntry = new
             {
@@ -115,7 +116,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);

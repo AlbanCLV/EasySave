@@ -259,10 +259,7 @@ namespace EasySaveConsole.ViewModels
         {
             try
             {
-                if (processWatcher.IsBusinessApplicationRunning())
-                {
-                    return;
-                }
+                if (processWatcher.IsBusinessApplicationRunning()){return;}
                 stopwatch.Start();
                 bool cond2 = ConfigureEncryption();
                 stopwatch.Stop();
