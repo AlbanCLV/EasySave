@@ -117,6 +117,17 @@ namespace EasySaveConsole.Models
                 Console.WriteLine();
             }
         }
+        public string  GetChoiceMetier()
+        {
+            Console.WriteLine("=== Gestion des Applications Métier ===");
+            Console.WriteLine("1. Ajouter une application métier");
+            Console.WriteLine("2. Supprimer une application métier");
+            Console.WriteLine("3. Retour au menu principal");
+            Console.Write("\nChoisissez une option : ");
+
+            string choix = Console.ReadLine();
+            return choix;
+        }
         public void AddBusinessApplication(string appName)
         {
             if (string.IsNullOrWhiteSpace(appName)) return;
@@ -138,6 +149,56 @@ namespace EasySaveConsole.Models
             }
             Console.WriteLine("\nAppuyez sur une touche pour revenir au menu...");
             Console.ReadKey(); // Pause pour laisser le temps à l'utilisateur de voir le message
+        }
+
+        public void RemoveBusinessApplication()
+        {
+            if (!File.Exists(ConfigFilePath) || File.ReadAllLines(ConfigFilePath).Length == 0)
+            {
+                Console.WriteLine("\n❌ Aucune application à supprimer. Retour au menu précédent.");
+                Console.WriteLine("\nAppuyez sur une touche pour continuer...");
+                Console.ReadKey();
+            }
+
+            List<string> existingApps = File.ReadAllLines(ConfigFilePath)
+                .Select(line => line.Trim())
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .ToList();
+
+            Console.WriteLine("\n📋 Applications métier enregistrées :");
+            for (int i = 0; i < existingApps.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {existingApps[i]}");
+            }
+
+            Console.Write("\nEntrez le numéro de l'application à supprimer : ");
+            if (int.TryParse(Console.ReadLine(), out int choix) && choix > 0 && choix <= existingApps.Count)
+            {
+                string applicationSupprimee = existingApps[choix - 1];
+
+                // Demander confirmation
+                Console.Write($"\n⚠️ Êtes-vous sûr de vouloir supprimer \"{applicationSupprimee}\" ? (O/N) : ");
+                string confirmation = Console.ReadLine().Trim().ToLower();
+
+                if (confirmation == "o" || confirmation == "oui")
+                {
+                    existingApps.RemoveAt(choix - 1);
+                    File.WriteAllLines(ConfigFilePath, existingApps);
+
+                    Console.WriteLine($"\n✅ L'application \"{applicationSupprimee}\" a été supprimée !");
+                }
+                else
+                {
+                    Console.WriteLine("\n❌ Suppression annulée.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\n❌ Numéro invalide.");
+            }
+
+            Console.WriteLine("\nAppuyez sur une touche pour continuer...");
+            Console.ReadKey();
         }
     }
 }

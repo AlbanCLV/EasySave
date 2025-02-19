@@ -107,7 +107,7 @@ namespace EasySaveWPF.ModelsWPF
             if (Tasks.Count >= 5)
             {
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "create_task_attempt", "max_tasks_error");  // Log the action
+                controller_log.LogBackupErreur(task.Name, "create_task_attempt", "max_tasks_error", "-1");  // Log the action
                 return "Max Tasks Error";
             }
             Tasks.Add(task);
@@ -137,7 +137,7 @@ namespace EasySaveWPF.ModelsWPF
         {
             if (!Directory.Exists(task.SourceDirectory))
             {
-                controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist");
+                controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
                 return $"Le dossier Source n'est pas disponible ou n'éxiste pas : {task.SourceDirectory} ";
             }
 
@@ -152,7 +152,7 @@ namespace EasySaveWPF.ModelsWPF
             if (!Directory.Exists(task.SourceDirectory))
             {
                 string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist");
+                controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
                 return $"Le dossier Source n'est pas disponible ou n'éxiste pas : {task.SourceDirectory} ";
             }
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));

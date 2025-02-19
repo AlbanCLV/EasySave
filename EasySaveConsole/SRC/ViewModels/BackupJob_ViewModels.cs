@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EasySaveConsole.Models;
 using EasySaveConsole.Views;
 using EasySaveLog;
+using System.IO;
 
 
 namespace EasySaveConsole.ViewModels
@@ -495,6 +496,28 @@ namespace EasySaveConsole.ViewModels
         }
 
 
+        public void ManageBusinessApplication()
+        {
+            Console.Clear();
+            processWatcher.DisplayExistingApplications();
+            string condition = processWatcher.GetChoiceMetier();
+            switch (condition)
+            {
+                case "1":
+                    AddBusinessApplication();
+                    break;
+                case "2":
+                    RemoveBusinessApplication();
+                    break;
+                case "3":
+                    return;  // Sortir du sous-menu et revenir au menu principal
+                default:
+                    Console.WriteLine("\n❌ Option invalide. Appuyez sur une touche pour continuer...");
+                    Console.ReadKey();
+                    break;
+            }
+            
+        }
         public void AddBusinessApplication()
         {
             Console.Clear();
@@ -505,6 +528,10 @@ namespace EasySaveConsole.ViewModels
             processWatcher.AddBusinessApplication(appName);
         }
 
-
+        public void RemoveBusinessApplication()
+        {
+            Console.Clear();
+            processWatcher.RemoveBusinessApplication();
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace EasySave
                 invoker.SetCommand("5", new DeleteTaskCommand(ViewModels));
                 invoker.SetCommand("6", new ChoiceFileLogCommand(ViewModels));
                 invoker.SetCommand("7", new DecryptFolderCommand(ViewModels));
-                invoker.SetCommand("8", new AddBusinessApplicationCommand(ViewModels));
+                invoker.SetCommand("8", new ManageBusinessApplicationCommand(ViewModels));
 
                 // L'option "8" permet de quitter
 
@@ -154,12 +154,38 @@ namespace EasySave
         public DecryptFolderCommand(BackupJob_ViewModels ViewModels) { _ViewModels = ViewModels; }
         public void Execute() => _ViewModels.DecryptFolder();
     }
+
+    public class ManageBusinessApplicationCommand : ICommand
+    {
+        private readonly BackupJob_ViewModels _ViewModels;
+
+        public ManageBusinessApplicationCommand(BackupJob_ViewModels ViewModels)
+        {
+            _ViewModels = ViewModels;
+        }
+
+        public void Execute() => _ViewModels.ManageBusinessApplication();
+    }
+
     public class AddBusinessApplicationCommand : ICommand
     {
         private readonly BackupJob_ViewModels _ViewModels;
         public AddBusinessApplicationCommand(BackupJob_ViewModels ViewModels) { _ViewModels = ViewModels; }
         public void Execute() => _ViewModels.AddBusinessApplication();
     }
+
+    public class RemoveBusinessApplicationCommand : ICommand
+    {
+        private readonly BackupJob_ViewModels _ViewModels;
+
+        public RemoveBusinessApplicationCommand(BackupJob_ViewModels ViewModels)
+        {
+            _ViewModels = ViewModels;
+        }
+
+        public void Execute() => _ViewModels.RemoveBusinessApplication();
+    }
+
     public class MenuInvoker
     {
         private readonly Dictionary<string, ICommand> _commands = new Dictionary<string, ICommand>();

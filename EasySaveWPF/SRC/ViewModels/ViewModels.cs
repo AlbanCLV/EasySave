@@ -68,7 +68,7 @@ namespace EasySaveWPF.ViewModelsWPF
             if (r == "Max Tasks Error") { return r; }
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task");  // Log the action
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task", "-1");  // Log the action
             return r;
         }
         public List<Backup_ModelsWPF> ViewTasksWPF()
@@ -82,7 +82,7 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.DeleteTaskWPF(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task");  // Log the action
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
             return r;
         }
 
@@ -92,7 +92,7 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.ExecuteSpecificTasks(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task");  // Log the action
+            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task", "-1");  // Log the action
 
             return r;
         }
@@ -109,7 +109,7 @@ namespace EasySaveWPF.ViewModelsWPF
             string t = controller_log.Get_Type_File();
             foreach (var task in executedTasks)
             {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task");  // Log the action
+                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task", "-1");  // Log the action
             }
 
             return "Toutes les taches ont été éxécuter";
