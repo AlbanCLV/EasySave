@@ -60,11 +60,17 @@ namespace EasySaveConsole.Views
         /// </summary>
         /// <returns></returns>
         public void DisplayMainMenu() => BackupView.DisplayMainMenu();
-        public Backup_Models GetBackupDetails() { return BackupView.GetBackupDetails();  }
+        public (Backup_Models, string) GetBackupDetails() { return BackupView.GetBackupDetails();  }
+        public int GetDeleteTask()
+        {
+            return BackupView.GetDeleteTask();
+        }
+        public int GetExecuteTasks()
+        {
+            return BackupView.GetExecuteTasks();
+        }
 
-        
 
-       
         /// <summary>
         /// Langue
         /// </summary>

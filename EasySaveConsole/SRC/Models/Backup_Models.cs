@@ -131,19 +131,8 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Creates a new backup task.
         /// </summary>
-        public string CreateBackupTask(Backup_Models task)
-        {
-            
-            // Resume and confirmation
-            Console.Clear();
-            Console.WriteLine(lang.Translate("task_summary"));
-            Console.WriteLine($"{lang.Translate("task_name")}: {task.Name}");
-            Console.WriteLine($"{lang.Translate("source_directory")}: {task.SourceDirectory}");
-            Console.WriteLine($"{lang.Translate("target_directory")}: {task.TargetDirectory}");
-            Console.WriteLine($"{lang.Translate("backup_type")}: {(task.Type == "Full" ? lang.Translate("full_backup") : lang.Translate("differential_backup"))}");
-            Console.WriteLine($"\n{lang.Translate("confirm_task_creation")}");
-
-            string confirmation = Console.ReadLine()?.ToUpper();
+        public string CreateBackupTask(Backup_Models task, string confirmation)
+        {          
             if (confirmation == "Y" || confirmation == "O")
             {
                 Tasks.Add(task);
@@ -186,61 +175,42 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Deletes a backup task.
         /// </summary>
-        public (Backup_Models, string , string) DeleteTask()
+        public (Backup_Models, string , string) DeleteTask(int taskNumber)
         {
             if (Tasks.Count == 0)
             {
-                Console.WriteLine(lang.Translate("no_tasks_to_delete"));
                 return (null, "0Task", "-1");
             }
             Backup_Models deletedTask = null;
-
-            while (true)
-            {
-                Console.Write(lang.Translate("enter_task_number_to_delete"));
-                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
-                {
-                    stopwatch.Start();
-                    deletedTask = Tasks[taskNumber - 1];
-                    Console.WriteLine(string.Format(lang.Translate("deleting_task"), deletedTask.Name));
-                    Tasks.RemoveAt(taskNumber - 1);
-                    Console.WriteLine(lang.Translate("task_deleted_successfully"));
-                    SaveTasks();
-                    stopwatch.Stop();
-                    string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-                    return (deletedTask, "OK", formattedTime);
-                }
-                else
-                {
-                    Console.WriteLine(lang.Translate("invalid_task_number"));
-                    return (null, "invalid", "-1");
-                }
-            }
+            if (taskNumber >= Tasks.Count) { return (deletedTask, "Invalid", "0"); }
+           stopwatch.Start();
+           deletedTask = Tasks[taskNumber - 1];
+           Tasks.RemoveAt(taskNumber - 1);
+           SaveTasks();
+           stopwatch.Stop();
+           string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+           return (deletedTask, "OK", formattedTime);
+               
+        
         }
+
+        
 
         /// <summary>
         /// Execute a specific task from number
         /// </summary>
-        public (Backup_Models, string) ExecuteSpecificTask()
+        public (Backup_Models, string) ExecuteSpecificTask(int taskNumber)
         {
             ViewTasks();
             if (Tasks.Count == 0)
             {
-                Console.WriteLine(lang.Translate("no_tasks_to_execute"));
                 return (null, "0Task");
             }
-            Console.Write(lang.Translate("enter_task_number_to_execute"));
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
-            {
-                Backup_Models selectedTask = Tasks[taskNumber - 1];
-                string e = ExecuteBackup(selectedTask);
-                return (selectedTask, e);
-            }
-             else
-             {
-                Console.WriteLine(lang.Translate("invalid_task_number"));
-                return (null, "Invalid");
-             }
+           
+            if (taskNumber >= Tasks.Count) { return (null, "Invalid"); }
+           Backup_Models selectedTask = Tasks[taskNumber - 1];
+           string e = ExecuteBackup(selectedTask);
+           return (selectedTask, e);
            
         }
 

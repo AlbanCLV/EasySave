@@ -61,7 +61,7 @@ namespace EasySaveConsole.Views
         }
 
 
-        public Backup_Models GetBackupDetails()
+        public (Backup_Models , string) GetBackupDetails()
         {
             Console.Clear();
             Console.WriteLine($"=== {lang.Translate("CreateBackupTask")} ===");
@@ -103,8 +103,18 @@ namespace EasySaveConsole.Views
                 Console.WriteLine(lang.Translate("InvalidBackupType"));
             }
             string type = typeInput == 1 ? "Full" : "Differential";
+            // Resume and confirmation
+            Console.Clear();
+            Console.WriteLine(lang.Translate("task_summary"));
+            Console.WriteLine($"{lang.Translate("task_name")}: {name}");
+            Console.WriteLine($"{lang.Translate("source_directory")}: {source}");
+            Console.WriteLine($"{lang.Translate("target_directory")}: {target}");
+            Console.WriteLine($"{lang.Translate("backup_type")}: {(type == "Full" ? lang.Translate("full_backup") : lang.Translate("differential_backup"))}");
+            Console.WriteLine($"\n{lang.Translate("confirm_task_creation")}");
 
-            return new Backup_Models(name, source, target, type);
+            string confirmation = Console.ReadLine()?.ToUpper();
+
+            return (new Backup_Models(name, source, target, type), confirmation);
         }
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
@@ -118,6 +128,33 @@ namespace EasySaveConsole.Views
             string result = dialog.FilePath.ToString();
             Application.Shutdown();
             return string.IsNullOrEmpty(result) ? null : result;
+        }
+        public int GetDeleteTask()
+        {
+            while (true)
+            {
+                Console.Write(lang.Translate("enter_task_number_to_delete"));
+                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 )
+                {
+                    return taskNumber;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+        public int GetExecuteTasks()
+        {
+            Console.Write(lang.Translate("enter_task_number_to_execute"));
+            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 )
+            {
+                return taskNumber;
+            }
+            else
+            {
+                return -1;
+            }
         }
 
 

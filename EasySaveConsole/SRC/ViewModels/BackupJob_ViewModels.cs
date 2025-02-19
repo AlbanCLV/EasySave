@@ -27,6 +27,7 @@ namespace EasySaveConsole.ViewModels
         private Stopwatch stopwatch = new Stopwatch();
         private Encryption_Models EncryptionModels;
         private ProcessWatcher processWatcher;
+        private LangManager lang;
 
         /// <summary>
         /// Private constructor to prevent direct instantiation.
@@ -39,7 +40,7 @@ namespace EasySaveConsole.ViewModels
             StateModels = State_models.Instance;
             EncryptionModels = Encryption_Models.Instance;
             processWatcher = ProcessWatcher.Instance;
-
+            lang = LangManager.Instance;
             backupModel.LoadTasks();
         }
         /// <summary>
@@ -121,9 +122,9 @@ namespace EasySaveConsole.ViewModels
         {
             try
             {
-                Backup_Models task = MainView.GetBackupDetails();  // Get task details from user
+                (Backup_Models task, string con) = MainView.GetBackupDetails();  // Get task details from user
                 stopwatch.Start();
-                string cond = backupModel.CreateBackupTask(task);  // Create the backup task
+                string cond = backupModel.CreateBackupTask(task, con);  // Create the backup task
                 stopwatch.Stop();
                 string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
            
@@ -167,12 +168,14 @@ namespace EasySaveConsole.ViewModels
         {
             Console.Clear();
             ViewTasks();  // Display current tasks for the user to select from
-            (Backup_Models task , string cond, string e) = backupModel.DeleteTask();  // Delete the selected task
+            int taskdelete = MainView.GetDeleteTask();
+            (Backup_Models task , string cond, string e) = backupModel.DeleteTask(taskdelete);  // Delete the selected task
             string formattedTime = e;  // Format elapsed time
             if (cond == "OTask")
                 {
                 try
                 {
+                    MainView.DisplayMessage("no_tasks_to_delete");
                     Log_VM.LogBackupErreur("Error", "delete_task_attempt", "no_tasks_to_delete", "-1");
                 }
                 catch (Exception ex)
@@ -184,6 +187,7 @@ namespace EasySaveConsole.ViewModels
                 {
                 try
                 {
+                    MainView.DisplayMessage("invalid_task_number");
                     Log_VM.LogBackupErreur("Error", "delete_task_attempt","invalid_task_number", "-1");  // Log the action
                 }
                 catch (Exception ex)
@@ -195,6 +199,8 @@ namespace EasySaveConsole.ViewModels
             {
                 try
                 {
+                    MainView.DisplayMessage("deleting_task");
+                    MainView.DisplayMessage("task_deleted_successfully");
                     Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
                 }
                 catch (Exception ex)
@@ -262,8 +268,9 @@ namespace EasySaveConsole.ViewModels
                 { 
                     EncryptionTime = "0"; 
                 }
+                int c = MainView.GetExecuteTasks();
                 stopwatch.Start();
-                (Backup_Models task, string cond) = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
+                (Backup_Models task, string cond) = backupModel.ExecuteSpecificTask(c);  // Execute the selected backup task
                 stopwatch.Stop();
 
                 string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
@@ -271,6 +278,7 @@ namespace EasySaveConsole.ViewModels
                 {
                     try
                     {
+                        MainView.DisplayMessage("no_tasks_to_execute");
                         Log_VM.LogBackupErreur("Error", "Execute_Specific_Task_attempt", "No_tasks", EncryptionTime);
                     }
                     catch (Exception ex)
@@ -282,6 +290,7 @@ namespace EasySaveConsole.ViewModels
                 {
                     try
                     {
+                        MainView.DisplayMessage("invalid_task_number");
                         Log_VM.LogBackupErreur("Error", "Execute_Specific_Task_attempt", "Invalid_Task_Number", EncryptionTime);
                     }
                     catch (Exception ex)
