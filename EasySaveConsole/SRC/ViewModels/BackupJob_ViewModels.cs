@@ -20,8 +20,8 @@ namespace EasySaveConsole.ViewModels
         private static BackupJob_ViewModels _instance;
         private static readonly object _lock = new object();
 
-        private BackupJob_Models backupModel; // Instance du contrôleur
-        private BackupJob_View backupView;
+        private Backup_Models backupModel; // Instance du contrôleur
+        private MainView MainView;
         private Log_ViewModels Log_VM;
         private State_models StateModels;
         private Stopwatch stopwatch = new Stopwatch();
@@ -33,8 +33,8 @@ namespace EasySaveConsole.ViewModels
         /// </summary>
         public BackupJob_ViewModels( )
         {
-            backupView = BackupJob_View.Instance;
-            backupModel = BackupJob_Models.Instance;  // Initialiser le contrôleur
+            MainView = MainView.Instance;
+            backupModel = Backup_Models.Instance;  // Initialiser le contrôleur
             Log_VM = Log_ViewModels.Instance;
             StateModels = State_models.Instance;
             EncryptionModels = Encryption_Models.Instance;
@@ -66,23 +66,17 @@ namespace EasySaveConsole.ViewModels
         /// <summary>
         /// Displays the language selection screen and returns the chosen language.
         /// </summary>
-        public string DisplayLangue() => backupView.DisplayLangue();
+        public string DisplayLangue() => MainView.DisplayLangue();
 
-        public void StartWatch()
-        {
-            processWatcher.StartWatching();
-        }
-        public void StopWatching()
-        {
-            processWatcher.StopWatching();
-        }
+        public void StartWatch() =>   processWatcher.StartWatching();
+        public void StopWatching() =>  processWatcher.StopWatching();
         /// <summary>
         /// Pauses execution and waits for the user to press a key before returning to the menu.
         /// This is used for user interaction after an operation is complete.
         /// </summary>
         public void PauseAndReturn()
         {
-            backupView.DisplayMessage("PressKeyToReturn");
+            MainView.DisplayMessage("PressKeyToReturn");
             Console.ReadKey();
         }
 
@@ -91,8 +85,8 @@ namespace EasySaveConsole.ViewModels
             try
             {
                 string Type_Now = Log_VM.Get_Type_File();
-                backupView.Get_Type_Log(Type_Now);
-                string reponse = backupView.GET_Type_File_Log();
+                MainView.Get_Type_Log(Type_Now);
+                string reponse = MainView.GET_Type_File_Log();
                 Log_VM.Type_File_Log(reponse);
                 PauseAndReturn();
             }
@@ -108,7 +102,7 @@ namespace EasySaveConsole.ViewModels
         {
             try
             {
-                var encryptionSettings = backupView.GetEncryptionSettings();
+                var encryptionSettings = MainView.GetEncryptionSettings();
                 EncryptionModels.SetEncryptionSettings(encryptionSettings.password, encryptionSettings.encryptAll, encryptionSettings.selectedExtensions, encryptionSettings.encryptEnabled);
 
                 return encryptionSettings.encryptEnabled;
@@ -127,7 +121,7 @@ namespace EasySaveConsole.ViewModels
         {
             try
             {
-                BackupJob_Models task = backupView.GetBackupDetails();  // Get task details from user
+                Backup_Models task = MainView.GetBackupDetails();  // Get task details from user
                 stopwatch.Start();
                 string cond = backupModel.CreateBackupTask(task);  // Create the backup task
                 stopwatch.Stop();
@@ -138,7 +132,7 @@ namespace EasySaveConsole.ViewModels
                     try
                     {
                         Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task", "-1");
-                        backupView.DisplayMessage("TaskCreated");  // Notify user of task creation
+                        MainView.DisplayMessage("TaskCreated");  // Notify user of task creation
                     }
                     catch (Exception ex)
                     {
@@ -173,7 +167,7 @@ namespace EasySaveConsole.ViewModels
         {
             Console.Clear();
             ViewTasks();  // Display current tasks for the user to select from
-            (BackupJob_Models task , string cond, string e) = backupModel.DeleteTask();  // Delete the selected task
+            (Backup_Models task , string cond, string e) = backupModel.DeleteTask();  // Delete the selected task
             string formattedTime = e;  // Format elapsed time
             if (cond == "OTask")
                 {
@@ -269,7 +263,7 @@ namespace EasySaveConsole.ViewModels
                     EncryptionTime = "0"; 
                 }
                 stopwatch.Start();
-                (BackupJob_Models task, string cond) = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
+                (Backup_Models task, string cond) = backupModel.ExecuteSpecificTask();  // Execute the selected backup task
                 stopwatch.Stop();
 
                 string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
@@ -356,9 +350,9 @@ namespace EasySaveConsole.ViewModels
                 {
                     EncryptionTime = "0";
                 }
-                backupView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
+                MainView.DisplayMessage("ExecuteAllTasks");  // Notify the user that all tasks will be executed
                 stopwatch.Start();
-                (List<BackupJob_Models> executedTasks, List<string> logMessages) = backupModel.ExecuteAllTasks();  // Execute all tasks
+                (List<Backup_Models> executedTasks, List<string> logMessages) = backupModel.ExecuteAllTasks();  // Execute all tasks
                 stopwatch.Stop();
                 string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
                 Console.WriteLine(logMessages);
@@ -442,7 +436,7 @@ namespace EasySaveConsole.ViewModels
         /// </summary>
         public void ErreurChoix()
         {
-            backupView.DisplayMessage("InvalidOption");  // Display error message for invalid input
+            MainView.DisplayMessage("InvalidOption");  // Display error message for invalid input
         }
 
         /// <summary>
@@ -451,14 +445,14 @@ namespace EasySaveConsole.ViewModels
         /// </summary>
         public void DisplayMainMenu()
         {
-            backupView.DisplayMainMenu();  // Show the main menu to the user
+            MainView.DisplayMainMenu();  // Show the main menu to the user
         }
 
         public void DecryptFolder()
         {
             try
             {
-                (string password, string folderPath) = backupView.GetDecryptFolder();
+                (string password, string folderPath) = MainView.GetDecryptFolder();
                 if (password == "KO" || folderPath == "KO") 
                 { 
                     Log_VM.LogBackupErreur("Decrypt Folder", "Decrypt Folder", "Candeled", "-1"); 
@@ -474,12 +468,12 @@ namespace EasySaveConsole.ViewModels
                         errorOccurred = true;
                 }
                 if (errorOccurred) {
-                    backupView.DisplayMessage("DecryptionError");
+                    MainView.DisplayMessage("DecryptionError");
                     Log_VM.LogBackupErreur("Decrypt Folder", "Decrypt Folder", "DecryptionError", "-1");
                 }
                 else 
                 {
-                    backupView.DisplayMessage("FolderDecrypted");
+                    MainView.DisplayMessage("FolderDecrypted");
                     stopwatch.Stop();
                     string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
                     Log_VM.LogBackupAction("....", "....", "....", formattedTime, "FolderDecrypted", "-1");

@@ -8,6 +8,7 @@ using EasySaveLog;
 using System.Threading.Tasks;
 using EasySaveConsole.ViewModels;
 using EasySave;
+using EasySaveConsole.Views;
 
 namespace EasySaveConsole.Models
 {
@@ -19,14 +20,14 @@ namespace EasySaveConsole.Models
     /// <summary>
     /// Model class representing a backup job.
     /// </summary>
-    public class BackupJob_Models
+    public class Backup_Models
     {
         public string Name { get; set; }
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }
         public string Type { get; set; }
 
-        private static BackupJob_Models _instance;
+        private static Backup_Models _instance;
         private static readonly object _lock = new object();
         private Stopwatch stopwatch = new Stopwatch();
 
@@ -34,7 +35,7 @@ namespace EasySaveConsole.Models
         /// List of backup tasks.
         /// </summary>
         [JsonIgnore]
-        public List<BackupJob_Models> Tasks { get; } = new List<BackupJob_Models>();
+        public List<Backup_Models> Tasks { get; } = new List<Backup_Models>();
         private const string SaveFilePath = "tasks.json";
         private Log_ViewModels controller_log = new Log_ViewModels();
         private State_models _state_models = new State_models();
@@ -46,7 +47,7 @@ namespace EasySaveConsole.Models
         /// Constructor for creating a backup job.
         /// </summary>
 
-        public BackupJob_Models(string name, string sourceDirectory, string targetDirectory, string type, bool loadTasks = false)
+        public Backup_Models(string name, string sourceDirectory, string targetDirectory, string type, bool loadTasks = false)
         {
             Name = name;
             SourceDirectory = sourceDirectory;
@@ -61,7 +62,7 @@ namespace EasySaveConsole.Models
                 LoadTasks();
             }
         }
-        public static BackupJob_Models Instance
+        public static Backup_Models Instance
         {
             get
             {
@@ -72,7 +73,7 @@ namespace EasySaveConsole.Models
                     {
                         if (_instance == null)
                         {
-                            _instance = new BackupJob_Models("","","", "Full", true);
+                            _instance = new Backup_Models("","","", "Full", true);
                         }
                     }
                 }
@@ -94,7 +95,7 @@ namespace EasySaveConsole.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{lang.Translate("error_saving_tasks")}: {ex.Message}");
+               Console.WriteLine($"{lang.Translate("error_saving_tasks")}: {ex.Message}");
             }
         }
 
@@ -108,7 +109,7 @@ namespace EasySaveConsole.Models
                 if (File.Exists(SaveFilePath))
                 {
                     string json = File.ReadAllText(SaveFilePath);
-                    var loadedTasks = JsonConvert.DeserializeObject<List<BackupJob_Models>>(json);
+                    var loadedTasks = JsonConvert.DeserializeObject<List<Backup_Models>>(json);
 
                     if (loadedTasks != null)
                     {
@@ -130,7 +131,7 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Creates a new backup task.
         /// </summary>
-        public string CreateBackupTask(BackupJob_Models task)
+        public string CreateBackupTask(Backup_Models task)
         {
             
             // Resume and confirmation
@@ -185,14 +186,14 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Deletes a backup task.
         /// </summary>
-        public (BackupJob_Models, string , string) DeleteTask()
+        public (Backup_Models, string , string) DeleteTask()
         {
             if (Tasks.Count == 0)
             {
                 Console.WriteLine(lang.Translate("no_tasks_to_delete"));
                 return (null, "0Task", "-1");
             }
-            BackupJob_Models deletedTask = null;
+            Backup_Models deletedTask = null;
 
             while (true)
             {
@@ -220,7 +221,7 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Execute a specific task from number
         /// </summary>
-        public (BackupJob_Models, string) ExecuteSpecificTask()
+        public (Backup_Models, string) ExecuteSpecificTask()
         {
             ViewTasks();
             if (Tasks.Count == 0)
@@ -231,7 +232,7 @@ namespace EasySaveConsole.Models
             Console.Write(lang.Translate("enter_task_number_to_execute"));
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 && taskNumber <= Tasks.Count)
             {
-                BackupJob_Models selectedTask = Tasks[taskNumber - 1];
+                Backup_Models selectedTask = Tasks[taskNumber - 1];
                 string e = ExecuteBackup(selectedTask);
                 return (selectedTask, e);
             }
@@ -246,9 +247,9 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Execute all tasks sequentially
         /// </summary>
-        public (List<BackupJob_Models>, List<string>) ExecuteAllTasks()
+        public (List<Backup_Models>, List<string>) ExecuteAllTasks()
         {
-            List<BackupJob_Models> executedTasks = new List<BackupJob_Models>();
+            List<Backup_Models> executedTasks = new List<Backup_Models>();
             List<string> logMessages = new List<string>();
 
             foreach (var task in Tasks)
@@ -274,7 +275,7 @@ namespace EasySaveConsole.Models
 
             return Path.Combine(destinationPath, uniqueName);
         }
-        private void CopyDirectoryContent(string sourceDir, string targetDir, BackupJob_Models task)
+        private void CopyDirectoryContent(string sourceDir, string targetDir, Backup_Models task)
         {
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
@@ -291,12 +292,11 @@ namespace EasySaveConsole.Models
 
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
-                if (processWatcher.IsBusinessApplicationRunning())
+if (processWatcher.IsBusinessApplicationRunning()) 
                 {
                     _state_models.StateError(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "BusinessApllicationRunning");
-                    return;
-                }
-                string directoryName = Path.GetFileName(directory);
+                    return; 
+                }                string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
                 CopyDirectoryContent(directory, destinationSubDir, task); // Recursive call to copy all subfolders
@@ -310,7 +310,7 @@ namespace EasySaveConsole.Models
         /// </summary>
         /// <param name="sourceDir">Source directory from which files will be copied</param>
         /// <param name="destDir">Destination directory where files will be copied</param>
-        private void CopyModifiedFiles(string sourceDir, string destDir, BackupJob_Models task)
+        private void CopyModifiedFiles(string sourceDir, string destDir, Backup_Models task)
         {
             foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
@@ -338,7 +338,7 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Execute single backup task (differential or full).
         /// </summary>
-        private string ExecuteDifferentialBackup(BackupJob_Models task)
+        private string ExecuteDifferentialBackup(Backup_Models task)
         {
             Console.WriteLine(string.Format(lang.Translate("executing_differential_backup"), task.Name));
 
@@ -377,7 +377,7 @@ namespace EasySaveConsole.Models
         /// <summary>
         /// Execute full backup.
         /// </summary>
-        private string PerformFullBackup(BackupJob_Models task)
+        private string PerformFullBackup(Backup_Models task)
         {
             Console.WriteLine(string.Format(lang.Translate("executing_full_backup"), task.Name));
 
@@ -395,7 +395,7 @@ namespace EasySaveConsole.Models
             return "OK";
         }
 
-        private string ExecuteBackup(BackupJob_Models task)
+        private string ExecuteBackup(Backup_Models task)
         {
             if (task.Type == "Full")
             {

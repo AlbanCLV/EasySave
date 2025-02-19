@@ -45,7 +45,7 @@ namespace EasySaveConsole.Models
         }
 
 
-        public void StateUpdate(BackupJob_Models task, string lasth, string desti)
+        public void StateUpdate(Backup_Models task, string lasth, string desti)
         {
 
 
@@ -74,7 +74,7 @@ namespace EasySaveConsole.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void StatEnd(BackupJob_Models task, string lasth, string desti)
+        public void StatEnd(Backup_Models task, string lasth, string desti)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -104,7 +104,7 @@ namespace EasySaveConsole.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void StateError(BackupJob_Models task, string lasth, string error)
+        public void StateError(Backup_Models task, string lasth, string error)
         {
             var StateEntry = new
             {
