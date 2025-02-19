@@ -45,8 +45,9 @@ namespace EasySaveWPF
                 System.Windows.MessageBox.Show("Le chemin de destination n'existe pas ou n'est pas un dossier valide.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
             string t = Main.CreateBackupTaskWPF(nom, source, destination, type);
-            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
             ViewButton_Click(sender, e);
 
 
@@ -62,7 +63,7 @@ namespace EasySaveWPF
         {
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
             string t = Main.ExecuteSpecificTasks(selectedTask);
-            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
 
@@ -71,7 +72,7 @@ namespace EasySaveWPF
         {
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
             string t = Main.DeleteBackupTaskWPF(selectedTask);
-            System.Windows.MessageBox.Show(t, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
@@ -86,10 +87,10 @@ namespace EasySaveWPF
             }
 
             // Appeler la méthode ExecuteAllTask avec la liste des tâches
-            string result = Main.ExecuteALlTask(tasks);
+            string t = Main.ExecuteALlTask(tasks);
 
             // Afficher un message avec le résultat de l'exécution
-            System.Windows.MessageBox.Show(result, "Exécution Terminée", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
 
