@@ -143,7 +143,7 @@ namespace EasySaveConsole.Models
             Console.WriteLine($"\n{lang.Translate("confirm_task_creation")}");
 
             string confirmation = Console.ReadLine()?.ToUpper();
-            if (confirmation == "Y")
+            if (confirmation == "Y" || confirmation == "O")
             {
                 Tasks.Add(task);
                 SaveTasks();

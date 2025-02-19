@@ -52,6 +52,7 @@ namespace EasySave
                     if (input == "9")
                     {
                         ViewModels.StopWatching ();
+                        Environment.Exit(0);
                     }
 
                     invoker.InvokeCommand(input);
