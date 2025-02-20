@@ -68,7 +68,6 @@ namespace EasySaveConsole.ViewModels
         /// Displays the language selection screen and returns the chosen language.
         /// </summary>
         public string DisplayLangue() => MainView.DisplayLangue();
-
         public void StartWatch() =>   processWatcher.StartWatching();
         public void StopWatching() =>  processWatcher.StopWatching();
         /// <summary>

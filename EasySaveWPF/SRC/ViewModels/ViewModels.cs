@@ -21,7 +21,7 @@ namespace EasySaveWPF.ViewModelsWPF
         // Lock object for thread safety
         private static readonly object _lock = new object();
         private Backup_ModelsWPF backupModel;
-        private Log_ViewModels controller_log;
+        private Log_ViewModels LogViewModels;
         private Stopwatch stopwatch = new Stopwatch();
 
         /// <summary>
@@ -29,8 +29,8 @@ namespace EasySaveWPF.ViewModelsWPF
         /// </summary>
         public Backup_VueModelsWPF()
         {
-            backupModel = new Backup_ModelsWPF("", "", "", "Full", true); // Load tasks
-            controller_log = new Log_ViewModels();
+            backupModel = Backup_ModelsWPF.Instance; // Load tasks
+            LogViewModels = Log_ViewModels.Instance;
             backupModel.LoadTasks();
         }
         /// <summary>
@@ -60,16 +60,14 @@ namespace EasySaveWPF.ViewModelsWPF
         /// Creates a backup task based on the user's input.
         /// Records the time taken to create the task and logs the action.
         /// </summary>
-        public string CreateBackupTaskWPF(string n, string s, string d, string t)
+        public (string, string) CreateBackupTaskWPF(string n, string s, string d, string t)
         {
             Backup_ModelsWPF task = new Backup_ModelsWPF(n, s, d, t); // Get task details from user
             stopwatch.Start();
             string r = backupModel.CreateBackupTask(task);  // Create the backup task
-            if (r == "Max Tasks Error") { return r; }
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Create Task", "-1");  // Log the action
-            return r;
+            return (r, formattedTime);
         }
         public List<Backup_ModelsWPF> ViewTasksWPF()
         {
@@ -82,40 +80,34 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.DeleteTaskWPF(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
+            LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
             return r;
         }
 
-        public string ExecuteSpecificTasks(Backup_ModelsWPF task)
+        public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
             stopwatch.Start();
             string r = backupModel.ExecuteSpecificTasks(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "execute specific Task", "-1");  // Log the action
-
-            return r;
+            return (r, formattedTime);
         }
 
 
-        public string ExecuteALlTask(List<Backup_ModelsWPF> taskList)
+        public (List<Backup_ModelsWPF>, List<string>, string) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
         {
             stopwatch.Start();
-
-            List<Backup_ModelsWPF> executedTasks = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
+            (List<Backup_ModelsWPF> executedTasks, List< string > logMessages) = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
             stopwatch.Stop();
-
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            string t = controller_log.Get_Type_File();
-            foreach (var task in executedTasks)
-            {
-                controller_log.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Execute all Task", "-1");  // Log the action
-            }
-
-            return "Toutes les taches ont été éxécuter";
+            return (executedTasks, logMessages, formattedTime);
 
         }
 
+        public void SetFichierLog(string type)
+        {
+            LogViewModels.Type_File_Log(type);
+        }
 
     }
 }

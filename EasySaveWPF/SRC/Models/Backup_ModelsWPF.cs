@@ -26,6 +26,8 @@ namespace EasySaveWPF.ModelsWPF
         public string TargetDirectory { get; set; }
         public string Type { get; set; }
 
+        private static Backup_ModelsWPF _instance;
+        private static readonly object _lock = new object();
         /// <summary>
         /// List of backup tasks.
         /// </summary>
@@ -55,7 +57,24 @@ namespace EasySaveWPF.ModelsWPF
                 LoadTasks();
             }
         }
-
+        public static Backup_ModelsWPF Instance
+        {
+            get
+            {
+                // Use double-check locking to ensure thread-safety
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new Backup_ModelsWPF("", "", "", "Full", true);
+                        }
+                    }
+                }
+                return _instance;
+            }
+        }
         /// <summary>
         /// Saves tasks to a JSON file.
         /// </summary>
@@ -65,11 +84,11 @@ namespace EasySaveWPF.ModelsWPF
             {
                 string json = JsonConvert.SerializeObject(Tasks, Formatting.Indented);
                 File.WriteAllText(SaveFilePath, json);
-                return "The task has been created and saved.";
+                return "OK";
             }
             catch (Exception ex)
             {
-                return $"Error Saving Task(s): {ex.Message}";
+                return "KO";
             }
         }
 
@@ -104,12 +123,6 @@ namespace EasySaveWPF.ModelsWPF
         /// </summary>
         public string CreateBackupTask(Backup_ModelsWPF task)
         {
-            if (Tasks.Count >= 5)
-            {
-                string t = controller_log.Get_Type_File();
-                controller_log.LogBackupErreur(task.Name, "create_task_attempt", "max_tasks_error", "-1");  // Log the action
-                return "Max Tasks Error";
-            }
             Tasks.Add(task);
             return SaveTasks();
 
@@ -138,14 +151,14 @@ namespace EasySaveWPF.ModelsWPF
             if (!Directory.Exists(task.SourceDirectory))
             {
                 controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
-                return $"Le dossier Source n'est pas disponible ou n'éxiste pas : {task.SourceDirectory} ";
+                return "KO SOURCE";
             }
 
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
             Directory.CreateDirectory(targetPath);
             CopyDirectoryContent(task.SourceDirectory, targetPath, task);
-            return $"La tache à Bien été éxécuter : {task.Name}";
+            return "OK";
         }
         public string ExecuteDifferentialBackup(Backup_ModelsWPF task)
         {
@@ -153,7 +166,7 @@ namespace EasySaveWPF.ModelsWPF
             {
                 string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
-                return $"Le dossier Source n'est pas disponible ou n'éxiste pas : {task.SourceDirectory} ";
+                return "KO SOURCE";
             }
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
@@ -163,7 +176,7 @@ namespace EasySaveWPF.ModelsWPF
             }
             CopyModifiedFiles(task.SourceDirectory, targetPath, task);
 
-            return $"La tache à Bien été éxécuter : {task.Name}";
+            return "OK";
         }
 
         private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
@@ -218,16 +231,20 @@ namespace EasySaveWPF.ModelsWPF
 
         }
 
-        public List<Backup_ModelsWPF> ExecuteAllTasks(List<Backup_ModelsWPF> tasks)
+
+        public (List<Backup_ModelsWPF>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks)
         {
             List<Backup_ModelsWPF> executedTasks = new List<Backup_ModelsWPF>();
+            List<string> logMessages = new List<string>();
 
             foreach (var task in tasks)
             {
-                ExecuteSpecificTasks(task);
+                string log = ExecuteSpecificTasks(task);
                 executedTasks.Add(task);
+                logMessages.Add(log);  // Store log message
             }
-            return executedTasks;
+
+            return (executedTasks, logMessages);  // Return both lists
         }
     }
 }
