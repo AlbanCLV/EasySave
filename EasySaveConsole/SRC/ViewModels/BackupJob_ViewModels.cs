@@ -88,6 +88,7 @@ namespace EasySaveConsole.ViewModels
                 MainView.Get_Type_Log(Type_Now);
                 string reponse = MainView.GET_Type_File_Log();
                 Log_VM.Type_File_Log(reponse);
+                Log_VM.LogBackupAction("", Type_Now, reponse, "", "ChooseFileLog", "");
                 PauseAndReturn();
             }
             catch (Exception ex)

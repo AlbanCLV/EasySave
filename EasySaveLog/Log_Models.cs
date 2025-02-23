@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;  // Pour utiliser Stopwatch
 using Newtonsoft.Json;
 using System.Xml.Linq;
+using System.Security.Cryptography;
 
 namespace EasySaveLog
 {
@@ -65,7 +66,7 @@ namespace EasySaveLog
           
             var logEntry = new object(); // Déclaration de la variable
 
-            if (act == "View Task")
+            if (act == "View Task" || act == "DisplayExistingApplications")
             {
                 logEntry = new
                 {
@@ -73,7 +74,34 @@ namespace EasySaveLog
                     Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
                 };
             }
-            else
+            else if (act == "Create Task" || act == "Deleting_task")
+            {
+                long fileSize = 0;            // calculate the total size of files within it (including subdirectories).
+                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName =  name, // Name of the backup task.
+                    SourceFile = source, // Path of the source file or directory.
+                    TargetFile = target, // Path of the target file or directory.
+                    FileSize = fileSizeInKB, // Size of the source file/directory.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "ChooseFileLog")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Old_log_files = source,
+                    New_log_files = target
+                };
+            }
+            else if (act == "execute specific Task" || act == "execute ALL Task")
             {
                 // Initialize variable to store the file size (default is 0).
                 long fileSize = 0;            // calculate the total size of files within it (including subdirectories).
@@ -93,6 +121,28 @@ namespace EasySaveLog
 
                 };
             }
+            else if (act == "FolderDecrypted")
+            {
+               
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "AddBusinessApplication"|| act == "RemoveBusinessApplication")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    AppName = name,
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -102,17 +152,54 @@ namespace EasySaveLog
         }
         public void LogErreurJSON(string task, string Base, string Erreur, string encryptTime)
         {
+            var logEntry = new object(); // Déclaration de la variable
 
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
-            var logEntry = new
+            if (Base == "create_task_attempt"|| Base == "View_task_attempt" || Base == "delete_task_attempt")
             {
-                Action = Base, // The action performed (e.g., "Backup Started").
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
-                TaskName = "Backup_" + task, // Name of the backup task.
-                TimeMs = -1, // Placeholder for transfer time (currently not used).
-                Error = Erreur // Placeholder for transfer time (currently not used).
-            };
-            // Create the log file path based on the current date.
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = task, // Name of the backup task.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "ChoiceMetier")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "Execute_Task_attempt")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = task, // Name of the backup task.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    EncryptTime = encryptTime,
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "Decrypt Folder")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+
+                // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
