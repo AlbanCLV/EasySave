@@ -208,88 +208,146 @@ namespace EasySaveLog
         }
         public void LogActionXML(string name, string source, string target, string time, string act, string encryptTime)
         {
-            
+            XElement logEntry;
 
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
-
-            XDocument xmlDoc;
-            if (File.Exists(logPath))
+            if (act == "View Task" || act == "DisplayExistingApplications")
             {
-                xmlDoc = XDocument.Load(logPath);
-            }
-            else
-            {
-                xmlDoc = new XDocument(new XElement("Logs"));
-            }
-
-            XElement logEntry; // Déclare logEntry ici
-
-            if (act == "View Task")
-            {
-                logEntry = new XElement("Log",
+                logEntry = new XElement("LogEntry",
                     new XElement("Action", act),
                     new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
                 );
             }
-            else
+            else if (act == "Create Task" || act == "Deleting_task")
             {
-                long fileSize = 0;
-                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                long fileSize = GetDirectorySize(new DirectoryInfo(source));
                 double fileSizeInKB = fileSize / 1024.0;
-                logEntry = new XElement("Log",
+
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", name),
+                    new XElement("SourceFile", source),
+                    new XElement("TargetFile", target),
+                    new XElement("FileSizeKB", fileSizeInKB),
+                    new XElement("TimeMS", time)
+                );
+            }
+            else if (act == "ChooseFileLog")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("OldLogFiles", source),
+                    new XElement("NewLogFiles", target)
+                );
+            }
+            else if (act == "execute specific Task" || act == "execute ALL Task")
+            {
+                long fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+
+                logEntry = new XElement("LogEntry",
                     new XElement("Action", act),
                     new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
                     new XElement("TaskName", "Backup_" + name),
                     new XElement("SourceFile", source),
                     new XElement("TargetFile", target),
-                    new XElement("FileSize", fileSizeInKB),
-                    new XElement("TimeMs", time),
-                    new XElement("encryptTime", encryptTime)
-
+                    new XElement("FileSizeKB", fileSizeInKB),
+                    new XElement("TimeMS", time),
+                    new XElement("EncryptTime", encryptTime)
+                );
+            }
+            else if (act == "FolderDecrypted")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", time)
+                );
+            }
+            else if (act == "AddBusinessApplication" || act == "RemoveBusinessApplication")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("AppName", name),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", time)
                 );
             }
 
-            xmlDoc.Root?.Add(logEntry);
-
-            Directory.CreateDirectory(logDirectory);
-            xmlDoc.Save(logPath);
-        }
-
-        public void LogErreurXML(string task, string baseAction, string erreur, string encryptTime)
-        {
-            // Définir le chemin du fichier log XML basé sur la date actuelle
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
+            Directory.CreateDirectory(logDirectory);
 
-            // Vérifier si le fichier existe, sinon créer un nouveau document XML
-            XDocument xmlDoc;
-            if (File.Exists(logPath))
+            if (!File.Exists(logPath))
             {
-                xmlDoc = XDocument.Load(logPath);
+                new XDocument(new XElement("Logs", logEntry)).Save(logPath);
             }
             else
             {
-                xmlDoc = new XDocument(new XElement("Logs"));
+                XDocument doc = XDocument.Load(logPath);
+                doc.Root.Add(logEntry);
+                doc.Save(logPath);
             }
-
-            // Créer une nouvelle entrée de log
-            XElement logEntry = new XElement("Log",
-                new XElement("Action", baseAction),
-                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
-                new XElement("TaskName", "Backup_" + task),
-                new XElement("TimeMs", -1),
-                new XElement("Error", erreur)
-            );
-
-            // Ajouter l'entrée au document XML
-            xmlDoc.Root?.Add(logEntry);
-
-            // S'assurer que le répertoire existe
-            Directory.CreateDirectory(logDirectory);
-
-            // Sauvegarder le fichier XML
-            xmlDoc.Save(logPath);
         }
 
+        public void LogErreurXML(string task, string Base, string Erreur, string encryptTime)
+        {
+            XElement logEntry;
+
+            if (Base == "create_task_attempt" || Base == "View_task_attempt" || Base == "delete_task_attempt")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", task),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "ChoiceMetier")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "Execute_Task_attempt")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", task),
+                    new XElement("TimeMS", -1),
+                    new XElement("EncryptTime", encryptTime),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "Decrypt Folder")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
+
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
+            Directory.CreateDirectory(logDirectory);
+
+            if (!File.Exists(logPath))
+            {
+                new XDocument(new XElement("Logs", logEntry)).Save(logPath);
+            }
+            else
+            {
+                XDocument doc = XDocument.Load(logPath);
+                doc.Root.Add(logEntry);
+                doc.Save(logPath);
+            }
+        }
 
         public void TypeFile(string Input)
         {
