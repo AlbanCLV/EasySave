@@ -146,6 +146,7 @@ namespace EasySaveConsole.Views
         }
         public int GetExecuteTasks()
         {
+            
             Console.Write(lang.Translate("enter_task_number_to_execute"));
             if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 )
             {

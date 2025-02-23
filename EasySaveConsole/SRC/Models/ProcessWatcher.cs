@@ -109,6 +109,7 @@ namespace EasySaveConsole.Models
                     {
                         Console.WriteLine("- " + app);
                     }
+
                 }
                 else
                 {
@@ -151,7 +152,7 @@ namespace EasySaveConsole.Models
             Console.ReadKey(); // Pause pour laisser le temps à l'utilisateur de voir le message
         }
 
-        public void RemoveBusinessApplication()
+        public string RemoveBusinessApplication()
         {
             if (!File.Exists(ConfigFilePath) || File.ReadAllLines(ConfigFilePath).Length == 0)
             {
@@ -186,19 +187,20 @@ namespace EasySaveConsole.Models
                     File.WriteAllLines(ConfigFilePath, existingApps);
 
                     Console.WriteLine($"\n✅ L'application \"{applicationSupprimee}\" a été supprimée !");
+                    return applicationSupprimee;
                 }
                 else
                 {
                     Console.WriteLine("\n❌ Suppression annulée.");
+                    return "canceled";
                 }
             }
             else
             {
                 Console.WriteLine("\n❌ Numéro invalide.");
+                return "Invalid_Number";
             }
 
-            Console.WriteLine("\nAppuyez sur une touche pour continuer...");
-            Console.ReadKey();
         }
 
 

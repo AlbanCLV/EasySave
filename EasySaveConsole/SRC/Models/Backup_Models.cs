@@ -182,7 +182,7 @@ namespace EasySaveConsole.Models
                 return (null, "0Task", "-1");
             }
             Backup_Models deletedTask = null;
-            if (taskNumber >= Tasks.Count) { return (deletedTask, "Invalid", "0"); }
+            if (taskNumber > Tasks.Count) { return (deletedTask, "Invalid", "0"); }
            stopwatch.Start();
            deletedTask = Tasks[taskNumber - 1];
            Tasks.RemoveAt(taskNumber - 1);
@@ -206,8 +206,8 @@ namespace EasySaveConsole.Models
             {
                 return (null, "0Task");
             }
-           
-            if (taskNumber >= Tasks.Count) { return (null, "Invalid"); }
+
+            if (taskNumber > Tasks.Count) { return (null, "Invalid"); }
            Backup_Models selectedTask = Tasks[taskNumber - 1];
            string e = ExecuteBackup(selectedTask);
            return (selectedTask, e);

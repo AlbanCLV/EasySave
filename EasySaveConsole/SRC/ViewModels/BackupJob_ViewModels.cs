@@ -201,7 +201,7 @@ namespace EasySaveConsole.ViewModels
                 {
                     MainView.DisplayMessage("deleting_task");
                     MainView.DisplayMessage("task_deleted_successfully");
-                    Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
+                    Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", "-1");  // Log the action
                 }
                 catch (Exception ex)
                 {
@@ -268,6 +268,7 @@ namespace EasySaveConsole.ViewModels
                 { 
                     EncryptionTime = "0"; 
                 }
+                ViewTasks();
                 int c = MainView.GetExecuteTasks();
                 stopwatch.Start();
                 (Backup_Models task, string cond) = backupModel.ExecuteSpecificTask(c);  // Execute the selected backup task
@@ -354,7 +355,7 @@ namespace EasySaveConsole.ViewModels
                 stopwatch.Start();
                 bool cond2 = ConfigureEncryption();
                 stopwatch.Stop();
-                string EncryptionTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+                string EncryptionTime = stopwatch.ElapsedMilliseconds.ToString(); // Temps écoulé en millisecondes
                 if (cond2 == false)
                 {
                     EncryptionTime = "0";
@@ -504,34 +505,49 @@ namespace EasySaveConsole.ViewModels
             switch (condition)
             {
                 case "1":
-                    AddBusinessApplication();
+                    string a = AddBusinessApplication();
+                    Log_VM.LogBackupAction(a, "", "", "", "AddBusinessApplication", "");
                     break;
                 case "2":
-                    RemoveBusinessApplication();
+                    string b = RemoveBusinessApplication();
+                    if (b == "canceled")
+                    {
+                        Log_VM.LogBackupErreur("", "ManageBusinessApplication", "Canceled", "");
+                    }
+                    else if (b == "Invalid_Number") 
+                    {
+                        Log_VM.LogBackupErreur("", "ManageBusinessApplication", "Invalid Number", "");
+
+                    }
+                    Log_VM.LogBackupAction(b, "", "", "", "RemoveBusinessApplication", "");
+
                     break;
                 case "3":
                     return;  // Sortir du sous-menu et revenir au menu principal
                 default:
                     Console.WriteLine("\n❌ Option invalide. Appuyez sur une touche pour continuer...");
                     Console.ReadKey();
+                    Log_VM.LogBackupErreur("", "ManageBusinessApplication", "Invalid Number", "");
                     break;
             }
             
         }
-        public void AddBusinessApplication()
+        public string AddBusinessApplication()
         {
             Console.Clear();
             processWatcher.DisplayExistingApplications();
+            Log_VM.LogBackupAction("", "", "", "", "DisplayExistingApplications", "");
             Console.Write("Entrez le nom de l'application métier à surveiller : ");
             string appName = Console.ReadLine()?.Trim();
 
             processWatcher.AddBusinessApplication(appName);
+            return appName;
         }
 
-        public void RemoveBusinessApplication()
+        public string  RemoveBusinessApplication()
         {
             Console.Clear();
-            processWatcher.RemoveBusinessApplication();
+            return processWatcher.RemoveBusinessApplication();
         }
     }
 }
