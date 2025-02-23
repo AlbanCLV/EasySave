@@ -208,7 +208,10 @@ namespace EasySaveLog
         }
         public void LogActionXML(string name, string source, string target, string time, string act, string encryptTime)
         {
-            XElement logEntry;
+            XElement logEntry = new XElement("LogEntry",
+                new XElement("Action", "Unknown"),
+                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+            );
 
             if (act == "View Task" || act == "DisplayExistingApplications")
             {
@@ -292,7 +295,11 @@ namespace EasySaveLog
 
         public void LogErreurXML(string task, string Base, string Erreur, string encryptTime)
         {
-            XElement logEntry;
+            XElement logEntry = new XElement("LogEntry",
+                new XElement("Action", "Unknown"),
+                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                new XElement("Error", "No error specified")
+            );
 
             if (Base == "create_task_attempt" || Base == "View_task_attempt" || Base == "delete_task_attempt")
             {
