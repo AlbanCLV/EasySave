@@ -143,6 +143,15 @@ namespace EasySaveLog
 
                 };
             }
+            else if (act == "change language")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    New_Language_files = source,
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -242,6 +251,14 @@ namespace EasySaveLog
                     new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
                     new XElement("OldLogFiles", source),
                     new XElement("NewLogFiles", target)
+                );
+            }
+            else if (act == "change language")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("OldLogFiles", source)
                 );
             }
             else if (act == "execute specific Task" || act == "execute ALL Task")

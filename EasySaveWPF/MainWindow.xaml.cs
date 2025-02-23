@@ -13,6 +13,9 @@ using EasySaveConsole.Views;
 using EasySaveLog;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using ButtonWPF = System.Windows.Controls.Button;
+using ButtonWinForms = System.Windows.Forms.Button;
+
 
 namespace EasySaveWPF
 {
@@ -21,15 +24,17 @@ namespace EasySaveWPF
         private Backup_VueModelsWPF Main; // Instance du contrôleur
         public static string SelectedLanguage { get; private set; } = "en";
         private LangManager lang;
-        private Log_ViewModels LogViewModels;
+        private Log_ViewModels Log_VM;
 
         public MainWindow()
         {
             InitializeComponent();
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
             lang = LangManager.Instance;
-            LogViewModels = Log_ViewModels.Instance;
+            Log_VM = Log_ViewModels.Instance;
             lang.SetLanguage(SelectedLanguage);
+            SetColumnHeaders();
+
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -39,119 +44,156 @@ namespace EasySaveWPF
             string source = SourceTextBox.Text;
             string destination = DestinationTextBox.Text;
             string type = (TypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
-
             // Vérifier que tous les champs sont remplis
             if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(type))
             {
-                System.Windows.MessageBox.Show(lang.Translate("WPFtaskEmpty"), "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                LogViewModels.LogBackupErreur(nom, "create task", "Not all fields are filled in.", "-1");
+                System.Windows.MessageBox.Show(lang.Translate("WPFtaskEmpty"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                Log_VM.LogBackupErreur(nom, "create_task_attempt", "Not all fields are filled in.", "-1");
                 return;
             }
             if (!Directory.Exists(source))
             {
-                System.Windows.MessageBox.Show(lang.Translate("SourceDirEmpty"), "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                LogViewModels.LogBackupErreur(nom, "create task", "The source folder could not be found.", "-1");
+                System.Windows.MessageBox.Show(lang.Translate("SourceDirEmpty"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                Log_VM.LogBackupErreur(nom, "create_task_attempt", "The source folder could not be found.", "-1");
 
                 return;
             }
             if (!Directory.Exists(destination))
             {
                 System.Windows.MessageBox.Show(lang.Translate("SelectTargetDir"), "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                LogViewModels.LogBackupErreur(nom, "create task", "The destination folder could not be found.", "-1");
+                Log_VM.LogBackupErreur(nom, "create_task_attempt", "The destination folder could not be found.", "-1");
                 return;
             }
+            var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmADD"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                
 
-            (string reponse, string time)  = Main.CreateBackupTaskWPF(nom, source, destination, type);
-            if (reponse == "OK") 
-            {
-                LogViewModels.LogBackupAction(nom, source, destination, time, "Create Task", "0");
+                (string reponse, string time) = Main.CreateBackupTaskWPF(nom, source, destination, type);
+                if (reponse == "OK")
+                {
+                    Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", "0");
+                }
+                else if (reponse == "KO")
+                {
+                    Log_VM.LogBackupErreur(nom, "create_task_attempt", "Error Saving Tasks", "-1");
+                }
+                System.Windows.MessageBox.Show(lang.Translate("TaskCreated"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+
             }
-            else if (reponse == "KO")
+            else
             {
-                LogViewModels.LogBackupErreur(nom, "create tasks", "Error Saving Tasks", "-1");
+                Log_VM.LogBackupErreur(nom, "create_task_attempt", "Select NO during confirmation", "-1");
             }
-            System.Windows.MessageBox.Show(lang.Translate("TaskCreated"), " ", MessageBoxButton.OK, MessageBoxImage.None);
 
             ViewButton_Click(sender, e);
 
 
         }
-
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+            Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
         }
-
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
-            (string réponse, string time) = Main.ExecuteSpecificTasks(selectedTask);
-            if (réponse == "OK")
+
+            var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
             {
-                System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
-                LogViewModels.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", "-1");  // Log the action
+                (string réponse, string time) = Main.ExecuteSpecificTasks(selectedTask);
+                if (réponse == "OK")
+                {
+                    System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+                    Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", "-1");  // Log the action
+                }
+                else if (réponse == "KO SOURCE")
+                {
+                    Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "The source folder could not be found.", "-1");
+                    System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), " ", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-            else if (réponse == "KO SOURCE")
+            else
             {
-                LogViewModels.LogBackupErreur(selectedTask.Name, "execute specific Task", "The source folder could not be found.", "-1");
-                System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), " ", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "select NO during confirmation", "-1");
             }
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
 
-        }
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
-            string t = Main.DeleteBackupTaskWPF(selectedTask);
-            System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
-            TasksDataGrid.ItemsSource = null;
-            TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
         private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
 
-            if (tasks == null || !tasks.Any())
+            var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmAllExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
             {
-                System.Windows.MessageBox.Show(lang.Translate("no_tasks_to_execute"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
-                LogViewModels.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", "-1");
-                return;
-            }
 
-            (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time) = Main.ExecuteALlTask(tasks);
-            for (int i = 0; i < executedTasks.Count; i++)
-            {
-                if (logMessages[i] == "KO SOURCE")
+                if (tasks == null || !tasks.Any())
                 {
-                    LogViewModels.LogBackupErreur(executedTasks[i].Name, "Execute_All_Task_attempt", "source_directory_not_exist", "EncryptionTime");
-                    System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), executedTasks[i].Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(lang.Translate("no_tasks_to_execute"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+                    Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", "-1");
                     return;
                 }
-                else if (logMessages[i] == "OK")
+
+                (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time) = Main.ExecuteALlTask(tasks);
+                for (int i = 0; i < executedTasks.Count; i++)
                 {
-                    LogViewModels.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, time, "execute ALL Task", "EncryptionTime");  // Log the action
+                    if (logMessages[i] == "KO SOURCE")
+                    {
+                        Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_Task_attempt", "source_directory_not_exist", "EncryptionTime");
+                        System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), executedTasks[i].Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    else if (logMessages[i] == "OK")
+                    {
+                        Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, time, "execute ALL Task", "EncryptionTime");  // Log the action
+                    }
                 }
+                // Afficher un message avec le résultat de l'exécution
+                System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+
             }
-            // Afficher un message avec le résultat de l'exécution
-            System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), "succès", MessageBoxButton.OK, MessageBoxImage.None);
+            else
+            {
+                Log_VM.LogBackupErreur("All Tasks", "Execute_Task_attempt", "select NO during confirmation.", "-1");
+
+            }
         }
 
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmDelete"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
 
+            if (result == MessageBoxResult.Yes)
+            {
+                string t = Main.DeleteBackupTaskWPF(selectedTask);
+                System.Windows.MessageBox.Show(t, lang.Translate("success"), MessageBoxButton.OK, MessageBoxImage.None);
+                TasksDataGrid.ItemsSource = null;
+                TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+            }
+            else
+            {
+                Log_VM.LogBackupErreur(selectedTask.Name, "delete_task_attempt", "Select NO during confirmation", "-1");
+            }
+        }
         private void LangueExecute(object sender, RoutedEventArgs e)
         {
             string langue = LangueTextBox.Text.ToLower();
             if (string.IsNullOrWhiteSpace(langue))
             {
-                LogViewModels.LogBackupErreur("-1", "Change Language", "Langue Empty", "-1");
-                System.Windows.MessageBox.Show(lang.Translate("LangueEmpty"), "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log_VM.LogBackupErreur("-1", "Change Language", "Langue Empty", "-1");
+                System.Windows.MessageBox.Show(lang.Translate("LangueEmpty"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             lang.SetLanguage(langue);
-            LogViewModels.LogBackupAction("-1", "-1", "-1", "-1", "change language", "-1");
-            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") +" " + langue, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+            Log_VM.LogBackupAction("-1", langue, "-1", "-1", "change language", "-1");
+            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") +" " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
+            SetColumnHeaders();
 
         }
         private void FichierLogExecute(object sender, RoutedEventArgs e)
@@ -159,18 +201,13 @@ namespace EasySaveWPF
             string FichierLog = FichierLogTextBox.Text.ToLower();
             if (string.IsNullOrWhiteSpace(FichierLog))
             {
-                System.Windows.MessageBox.Show(lang.Translate("FichierLogEmpty"), "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(lang.Translate("FichierLogEmpty"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             Main.SetFichierLog(FichierLog);
-            System.Windows.MessageBox.Show(lang.Translate("NewLog") + FichierLog, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
-
+            System.Windows.MessageBox.Show(lang.Translate("NewLog") + FichierLog, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+            Log_VM.LogBackupAction("-1", "Unknow", FichierLog, "-1", "ChooseFileLog", "-1");
         }
-
-
-
-
-
         private void BrowseSourceButton_Click(object sender, RoutedEventArgs e)
         {
             using (var dialog = new FolderBrowserDialog())
@@ -181,7 +218,6 @@ namespace EasySaveWPF
                 }
             }
         }
-
         private void BrowseDestinationButton_Click(object sender, RoutedEventArgs e)
         {
             using (var dialog = new FolderBrowserDialog())
@@ -195,6 +231,26 @@ namespace EasySaveWPF
 
 
 
+
+        private void SetColumnHeaders()
+        {
+            // Exemple pour le DataGrid
+            TasksDataGrid.Columns[0].Header = lang.Translate("task_name"); // Traduction de "Nom"
+            TasksDataGrid.Columns[1].Header = lang.Translate("source_directory"); // Traduction de "Source"
+            TasksDataGrid.Columns[2].Header = lang.Translate("target_directory"); // Traduction de "Destination"
+            TasksDataGrid.Columns[3].Header = lang.Translate("backup_type"); // Traduction de "Type"
+            TaskNameTextBlock.Text = lang.Translate("task_name"); // Traduction de "Nom"
+            SourceTextBlock.Text = lang.Translate("source_directory"); // Traduction de "Nom"
+            DestinationTextBlock.Text = lang.Translate("target_directory"); // Traduction de "Nom"
+            TypeTextBLock.Text = lang.Translate("backup_type"); // Traduction de "Nom"
+            Boutton_ADD.Content = lang.Translate("Create");
+            Boutton_View.Content = lang.Translate("View");
+            Boutton_execute_All.Content = lang.Translate("ExeAll");
+            Boutton_Log_app.Content = lang.Translate("App");
+            Boutton_Langue_app.Content = lang.Translate("App");
+            LangueTextBlock.Text = lang.Translate("Langue");
+            FichierLogTextBlock.Text = lang.Translate("FileLog");
+        }
 
 
 

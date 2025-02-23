@@ -9,49 +9,72 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Ligne pour les formulaires -->
             <RowDefinition Height="*"/>
+            <!-- Ligne pour le DataGrid -->
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="390"/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="*" />
+            <!-- Colonne gauche pour les formulaires -->
+            <ColumnDefinition Width="*" />
+            <!-- Colonne droite pour les autres éléments -->
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="10,0,10,0" Height="260">
-            <TextBlock Text="Nom" FontWeight="Bold" />
+        <!-- Formulaire gauche -->
+        <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="10" >
+            <TextBlock Name="TaskNameTextBlock" Text="Nom" FontWeight="Bold" Margin="0,10"/>
+            <TextBox Name="NomTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>
+
+            <TextBlock Name="SourceTextBlock" Text="Source" FontWeight="Bold" Margin="0,10"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Name="NomTextBox" Width="300" Margin="0,5" />
+                <TextBox Name="SourceTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>
+                <Button Content="..." Width="30" Margin="5,0" Click="BrowseSourceButton_Click"/>
             </StackPanel>
 
-            <TextBlock Text="Source"  FontWeight="Bold"/>
+            <TextBlock Name="DestinationTextBlock" Text="Destination" FontWeight="Bold" Margin="0,10"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Name="SourceTextBox" Width="300" Margin="0,5" />
-                <Button Content="..." Width="30" Margin="5,0" Click="BrowseSourceButton_Click" />
+                <TextBox Name="DestinationTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>
+                <Button Content="..." Width="30" Margin="5,0" Click="BrowseDestinationButton_Click"/>
             </StackPanel>
 
-            <TextBlock Text="Destination"  FontWeight="Bold"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBox Name="DestinationTextBox" Width="300" Margin="0,5" />
-                <Button Content="..." Width="30" Margin="5,0" Click="BrowseDestinationButton_Click" />
-            </StackPanel>
-
-            <TextBlock Text="Type" FontWeight="Bold" />
+            <TextBlock Name="TypeTextBLock" Text="Type" FontWeight="Bold" Margin="0,10"/>
             <ComboBox Name="TypeComboBox" Width="300" Margin="0,5" HorizontalAlignment="Left">
-                <ComboBoxItem Content="Full" />
-                <ComboBoxItem Content="Differential" />
+                <ComboBoxItem Content="Full"/>
+                <ComboBoxItem Content="Differential"/>
             </ComboBox>
 
-            <Button Content="Add" Width="300" Margin="0,10" Click="AddButton_Click" HorizontalAlignment="Left" />
-            <Button Content="View" Width="300" Click="ViewButton_Click" Margin="0,10" HorizontalAlignment="Left" />
+            <Button Name="Boutton_ADD" Content="Add" Width="300" Margin="10,10" Click="AddButton_Click" HorizontalAlignment="Left"/>
+            <Button Name="Boutton_View" Content="View" Width="300" Click="ViewButton_Click" Margin="10,10" HorizontalAlignment="Left"/>
         </StackPanel>
 
-        <DataGrid Name="TasksDataGrid" Grid.Row="1" Grid.ColumnSpan="2" Margin="10,10,10,10" AutoGenerateColumns="False" ItemsSource="{Binding Tasks}">
+        <!-- Formulaire droit avec options Langue et Log -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="50,10">
+            <TextBlock x:Name="LangueTextBlock" Text="Langue" FontWeight="Bold" Margin="0,10"/>
+            <ComboBox Name="LangueTextBox" Margin="0,10">
+                <ComboBoxItem Content="En"/>
+                <ComboBoxItem Content="Fr"/>
+            </ComboBox>
+            <Button Name="Boutton_Langue_app" Content="Appliquer" Click="LangueExecute" Margin="0,10"/>
+
+            <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,30"/>
+            <ComboBox Name="FichierLogTextBox" Margin="0,10">
+                <ComboBoxItem Content="En"/>
+                <ComboBoxItem Content="Fr"/>
+            </ComboBox>
+            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,10"/>
+
+            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,10"/>
+        </StackPanel>
+
+        <!-- DataGrid -->
+        <DataGrid Name="TasksDataGrid" Grid.Row="1" Grid.ColumnSpan="2" Margin="10" AutoGenerateColumns="False" ItemsSource="{Binding Tasks}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Source" Binding="{Binding SourceDirectory}" Width="*"/>
-                <DataGridTextColumn Header="Destination" Binding="{Binding TargetDirectory}" Width="*"/>
-                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
-                <DataGridTemplateColumn Header="Actions" Width="250">
+                <DataGridTextColumn Header="{Binding Path=Name, Mode=OneWay}" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="{Binding Path=SourceDirectory, Mode=OneWay}" Binding="{Binding SourceDirectory}" Width="*" />
+                <DataGridTextColumn Header="{Binding Path=TargetDirectory, Mode=OneWay}" Binding="{Binding TargetDirectory}" Width="*" />
+                <DataGridTextColumn Header="{Binding Path=Type, Mode=OneWay}" Binding="{Binding Type}" Width="*" />
+                <DataGridTemplateColumn Header="{Binding Path=Actions, Mode=OneWay}" Width="250">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -63,23 +86,5 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-
-        <TextBlock Text="Langue" Margin="50,0,50,209" Grid.Column="1" FontWeight="Bold" />
-        <ComboBox Name="LangueTextBox"  Margin="50,22,50,227" Grid.Column="1" >
-            <ComboBoxItem Content="En" />
-            <ComboBoxItem Content="Fr" />
-        </ComboBox>
-        <Button Content="Appliquer" Click="LangueExecute" Margin="50,50,50,190" Grid.Column="1" />
-        
-        <TextBlock Text="Type de fichier log" Margin="50,85,50,165" Grid.Column="1" FontWeight="Bold"/>
-        <ComboBox Name="FichierLogTextBox"  Margin="50,110,50,140" Grid.Column="1" >
-            <ComboBoxItem Content="json" />
-            <ComboBoxItem Content="xml" />
-        </ComboBox>
-        <Button Content="Appliquer" Click="FichierLogExecute" Margin="50,140,50, 100" Grid.Column="1" />
-
-        <Button Content="Execute" Click="ExecuteAllButton_Click" Margin="25,230,25,10" Grid.Column="1" />
-
-
     </Grid>
 </Window>

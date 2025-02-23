@@ -80,7 +80,7 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.DeleteTaskWPF(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Delete Task", "-1");  // Log the action
+            LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", "-1");  // Log the action
             return r;
         }
 

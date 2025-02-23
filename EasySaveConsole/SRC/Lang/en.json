@@ -1,4 +1,18 @@
 {
+
+  "task_name": "Name",
+  "source_directory": "Source",
+  "target_directory": "Destination",
+  "backup_type": "Type",
+  "TypeLog": "Log file type",
+  "Create": "Add",
+  "View": "View",
+  "ExeAll": "Execute all",
+  "App": "Apply",
+  "Langue": "Language",
+  "FileLog": "Log file type",
+
+
   "CreateBackupTask": "Create a backup task",
   "ExecuteBackupTask": "Execute a backup task",
   "ExecuteAllTasks": "Execute all backup tasks",
@@ -17,6 +31,10 @@
   "LangueEmpty": "The Language field must be filled in.",
   "FichierLogEmpty": "The FileLog field must be filled in.",
   "NewLanguage": "New Language :",
+  "ConfirmExecute": "Would you really like to execute this task?",
+  "ConfirmAllExecute": "Would you really like to execute all task?",
+  "ConfirmADD": "Would you really like to create this task?",
+  "ConfirmDelete": "Would you really like to delete this task?",
   "NewLog": "New log file extension : ",
   "WPFtaskEmpty": "All fields (name, source, destination, type) must be filled in.",
   "TaskNameEmpty": "Task name cannot be empty. Please enter a valid name.",
@@ -60,6 +78,8 @@
   "differential_backup_canceled": "Differential backup canceled.",
   "executing_full_backup": "Executing full backup: {0}",
   "full_backup_completed": "Full backup completed successfully.",
+  "Success": "success",
+  "Error": "Error",
   "EnterExtensions": "Please enter extansion (.txt, .pdf, .docx, .jpg )",
   "InvalidInput": "Invalid input. Please try again.",
   "EmptyInput": "Input cannot be empty.",
