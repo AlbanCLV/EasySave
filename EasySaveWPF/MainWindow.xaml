@@ -86,5 +86,6 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        <Button Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="50,187,50,53" Grid.Column="1" />
     </Grid>
 </Window>

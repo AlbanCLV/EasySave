@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;        // Pour manipuler les fichiers et répertoires
 using Microsoft.Win32;  // Pour OpenFileDialog
 using System.Windows;
@@ -126,17 +125,16 @@ namespace EasySaveWPF
         private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
-
+            if (tasks == null || !tasks.Any())
+            {
+                System.Windows.MessageBox.Show(lang.Translate("no_tasks_to_execute"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+                Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", "-1");
+                return;
+            }
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmAllExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
 
-                if (tasks == null || !tasks.Any())
-                {
-                    System.Windows.MessageBox.Show(lang.Translate("no_tasks_to_execute"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
-                    Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", "-1");
-                    return;
-                }
 
                 (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time) = Main.ExecuteALlTask(tasks);
                 for (int i = 0; i < executedTasks.Count; i++)
@@ -251,7 +249,11 @@ namespace EasySaveWPF
             LangueTextBlock.Text = lang.Translate("Langue");
             FichierLogTextBlock.Text = lang.Translate("FileLog");
         }
-
+        private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
+        {
+            BusinessAppsWindow window = new BusinessAppsWindow();
+            window.ShowDialog(); // Ouvre la fenêtre en mode modal
+        }
 
 
 
