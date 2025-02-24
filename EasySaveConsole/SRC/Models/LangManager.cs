@@ -25,7 +25,7 @@ namespace EasySaveConsole.Models
             DirectoryInfo dir = new DirectoryInfo(basePath);
 
             // Remonter jusqu'à trouver "Cesi-AlbanCalvo"
-            while (dir != null && dir.Name != "Cesi-AlbanCalvo")
+            while (dir != null && dir.Name != "EasySave")
             {
                 dir = dir.Parent;
             }
@@ -36,7 +36,7 @@ namespace EasySaveConsole.Models
             }
 
             // Construire le chemin final
-            langDirectory = Path.Combine(dir.FullName, "EasySave", "EasySaveConsole", "SRC", "Lang");
+            langDirectory = Path.Combine(dir.FullName, "EasySaveConsole", "SRC", "Lang");
 
             SetLanguage(language);
             Console.WriteLine($"LangManager initialized with language: {language}");
