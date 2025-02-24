@@ -13,29 +13,29 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="490"/>
+            <ColumnDefinition Width="390"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="10,0,10,0" Height="260">
-            <TextBlock Text="Nom" />
+            <TextBlock Text="Nom" FontWeight="Bold" />
             <StackPanel Orientation="Horizontal">
                 <TextBox Name="NomTextBox" Width="300" Margin="0,5" />
             </StackPanel>
 
-            <TextBlock Text="Source" />
+            <TextBlock Text="Source"  FontWeight="Bold"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox Name="SourceTextBox" Width="300" Margin="0,5" />
                 <Button Content="..." Width="30" Margin="5,0" Click="BrowseSourceButton_Click" />
             </StackPanel>
 
-            <TextBlock Text="Destination" />
+            <TextBlock Text="Destination"  FontWeight="Bold"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox Name="DestinationTextBox" Width="300" Margin="0,5" />
                 <Button Content="..." Width="30" Margin="5,0" Click="BrowseDestinationButton_Click" />
             </StackPanel>
 
-            <TextBlock Text="Type" />
+            <TextBlock Text="Type" FontWeight="Bold" />
             <ComboBox Name="TypeComboBox" Width="300" Margin="0,5" HorizontalAlignment="Left">
                 <ComboBoxItem Content="Full" />
                 <ComboBoxItem Content="Differential" />
@@ -63,6 +63,17 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Button Content="Execute" Click="ExecuteAllButton_Click" Margin="400,217,100,23" Grid.ColumnSpan="2" />
+
+        <TextBox x:Name="LangueTextBox" Margin="50,22,50,230" Grid.Column="1" />
+        <TextBlock Text="Langue" Margin="50,0,50,209" Grid.Column="1" FontWeight="Bold" />
+        <Button Content="Appliquer" Click="LangueExecute" Margin="50,50,50,190" Grid.Column="1" />
+        <TextBlock Text="Type de fichier log" Margin="50,85,50,165" Grid.Column="1" FontWeight="Bold"/>
+        <TextBox x:Name="FichierLogTextBox" Margin="50,110,50,140" Grid.Column="1" />
+        <Button Content="Appliquer" Click="FichierLogExecute" Margin="50,140,50, 100" Grid.Column="1" />
+
+        <Button Content="Execute" Click="ExecuteAllButton_Click" Margin="25,230,25,10" Grid.Column="1" />
+        <Button Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="50,187,50,53" Grid.Column="1" />
+
+
     </Grid>
 </Window>

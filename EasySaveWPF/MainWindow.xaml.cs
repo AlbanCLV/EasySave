@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;        // Pour manipuler les fichiers et répertoires
 using Microsoft.Win32;  // Pour OpenFileDialog
 using System.Windows;
@@ -8,17 +7,22 @@ using EasySaveWPF.ModelsWPF;
 using EasySaveWPF.ViewModelsWPF;
 using System.Windows.Forms;
 using System.Collections.ObjectModel;
-
+using EasySaveConsole.Models;
+using EasySaveWPF.Views;
 namespace EasySaveWPF
 {
     public partial class MainWindow : Window
     {
         private Backup_VueModelsWPF Main; // Instance du contrôleur
+        public static string SelectedLanguage { get; private set; } = "fr";
+        private LangManager lang;
 
         public MainWindow()
         {
             InitializeComponent();
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
+            lang = LangManager.Instance;
+            lang.SetLanguage(SelectedLanguage);
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -48,6 +52,8 @@ namespace EasySaveWPF
 
             string t = Main.CreateBackupTaskWPF(nom, source, destination, type);
             System.Windows.MessageBox.Show(t, "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+            System.Windows.MessageBox.Show(lang.Translate("Choice_log_display"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+
             ViewButton_Click(sender, e);
 
 
@@ -94,10 +100,19 @@ namespace EasySaveWPF
         }
 
 
+        private void LangueExecute(object sender, RoutedEventArgs e)
+        {
+            string langue = LangueTextBox.Text;
+            System.Windows.MessageBox.Show(lang.Translate("Choice_log_display"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
+            System.Windows.MessageBox.Show(lang.Translate("EnterTaskName"), "Succès", MessageBoxButton.OK, MessageBoxImage.None);
 
 
+        }
+        private void FichierLogExecute(object sender, RoutedEventArgs e)
+        {
+            string FichierLog = FichierLogTextBox.Text;
 
-
+        }
 
 
 
@@ -122,20 +137,11 @@ namespace EasySaveWPF
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
+        {
+            BusinessAppsWindow window = new BusinessAppsWindow();
+            window.ShowDialog(); // Ouvre la fenêtre en mode modal
+        }
 
 
 
