@@ -1,16 +1,20 @@
-﻿using System;
+﻿using System.Configuration;
+using System.Data;
 using System.Windows;
+using EasySaveWPF.ModelsWPF;
 
 namespace EasySaveWPF
 {
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
     public partial class App : Application
     {
-        [STAThread]
-        public static void Main()
+        protected override void OnStartup(StartupEventArgs e)
         {
-            var app = new App();
-            app.InitializeComponent();
-            app.Run(new MainWindow());
+            base.OnStartup(e);
+            _ = ProcessWatcherWPF.Instance; // Initialisation au démarrage
         }
     }
+
 }
