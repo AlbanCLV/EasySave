@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using ButtonWPF = System.Windows.Controls.Button;
 using ButtonWinForms = System.Windows.Forms.Button;
+using EasySaveWPF.Views;
 
 
 namespace EasySaveWPF

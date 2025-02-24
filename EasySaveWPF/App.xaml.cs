@@ -3,7 +3,7 @@ using System.Data;
 using System.Windows;
 using EasySaveWPF.ModelsWPF;
 
-namespace EasySaveWPF
+namespace EasySaveWPF.Views
 {
     /// <summary>
     /// Interaction logic for App.xaml
