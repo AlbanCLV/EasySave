@@ -11,6 +11,8 @@
   "App": "Appliquer",
   "Langue": "Langue",
   "FileLog": "Type de fichier log",
+  "businesssoftware": "Logiciel Métier",
+
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",
   "ExecuteBackupTask": "Exécuter une tâche de sauvegarde",
@@ -54,10 +56,6 @@
   "error_loading_tasks": "Erreur lors du chargement des tâches",
   "max_tasks_error": "Vous ne pouvez pas créer plus de 5 tâches de sauvegarde.",
   "task_summary": "=== Résumé des tâches ===",
-  "task_name": "Nom de la tâche",
-  "source_directory": "Répertoire source",
-  "target_directory": "Répertoire de destination",
-  "backup_type": "Type de sauvegarde",
   "full_backup": "Complète",
   "differential_backup": "Différentielle",
   "confirm_task_creation": "Confirmer la création de la tâche ? (O/N) : ",

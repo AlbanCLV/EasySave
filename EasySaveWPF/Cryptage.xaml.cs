@@ -4,20 +4,21 @@ using EasySaveWPF.ViewModelsWPF;
 
 namespace EasySaveWPF.Views
 {
-    public partial class BusinessAppsWindow : Window
+    public partial class CryptageWPF : Window
     {
-        private LangManager lang;
+        private static CryptageWPF _instance;
         public static string SelectedLanguage { get; private set; } = "en";
-        private static BusinessAppsWindow _instance;
         private static readonly object _lock = new object();
-        public BusinessAppsWindow()
+        private LangManager lang;
+
+        public CryptageWPF()
         {
+            InitializeComponent();
             lang = LangManager.Instance;
             lang.SetLanguage(SelectedLanguage);
-            InitializeComponent();
             DataContext = new BusinessApps_ViewModel(); // Lier la fenêtre au ViewModel
         }
-        public static BusinessAppsWindow Instance
+        public static CryptageWPF Instance
         {
             get
             {
@@ -28,16 +29,17 @@ namespace EasySaveWPF.Views
                     {
                         if (_instance == null)
                         {
-                            _instance = new BusinessAppsWindow();
+                            _instance = new CryptageWPF();
                         }
                     }
                 }
                 return _instance;
             }
         }
-        private void CloseWindow(object sender, RoutedEventArgs e)
+        private void FichierLogExecute(object sender, RoutedEventArgs e)
         {
-            this.Close(); // Ferme la fenêtre
+
         }
+
     }
 }

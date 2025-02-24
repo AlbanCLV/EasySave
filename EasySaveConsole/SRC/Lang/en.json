@@ -11,6 +11,7 @@
   "App": "Apply",
   "Langue": "Language",
   "FileLog": "Log file type",
+  "businesssoftware": "business software",
 
 
   "CreateBackupTask": "Create a backup task",
@@ -54,10 +55,7 @@
   "error_loading_tasks": "Error loading tasks",
   "max_tasks_error": "You cannot create more than 5 backup tasks.",
   "task_summary": "=== Task Summary ===",
-  "task_name": "Task Name",
-  "source_directory": "Source Directory",
-  "target_directory": "Destination Directory",
-  "backup_type": "Backup Type",
+ 
   "full_backup": "Full",
   "differential_backup": "Differential",
   "confirm_task_creation": "Confirm task creation? (Y/N): ",

@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\EasySaveConsole\EasySaveConsole.csproj" />
     <ProjectReference Include="..\EasySaveLog\EasySaveLog.csproj" />
   </ItemGroup>

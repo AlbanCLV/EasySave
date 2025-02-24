@@ -25,13 +25,16 @@ namespace EasySaveWPF
         public static string SelectedLanguage { get; private set; } = "en";
         private LangManager lang;
         private Log_ViewModels Log_VM;
-
+        private BusinessAppsWindow Business;
+        private CryptageWPF Cryptage;
         public MainWindow()
         {
             InitializeComponent();
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
             lang = LangManager.Instance;
             Log_VM = Log_ViewModels.Instance;
+            Business = BusinessAppsWindow.Instance;
+            Cryptage = CryptageWPF.Instance;
             lang.SetLanguage(SelectedLanguage);
             SetColumnHeaders();
 
@@ -249,11 +252,12 @@ namespace EasySaveWPF
             Boutton_Langue_app.Content = lang.Translate("App");
             LangueTextBlock.Text = lang.Translate("Langue");
             FichierLogTextBlock.Text = lang.Translate("FileLog");
+            Boutton_Metier.Content = lang.Translate("businesssoftware");
         }
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
         {
-            BusinessAppsWindow window = new BusinessAppsWindow();
-            window.ShowDialog(); // Ouvre la fenêtre en mode modal
+            Business.ShowDialog(); // Ouvre la fenêtre en mode modal
+
         }
 
 

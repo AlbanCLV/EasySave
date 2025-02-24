@@ -56,15 +56,18 @@
                 <ComboBoxItem Content="Fr"/>
             </ComboBox>
             <Button Name="Boutton_Langue_app" Content="Appliquer" Click="LangueExecute" Margin="0,10"/>
-
             <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,30"/>
             <ComboBox Name="FichierLogTextBox" Margin="0,10">
-                <ComboBoxItem Content="En"/>
-                <ComboBoxItem Content="Fr"/>
+                <ComboBoxItem Content="json"/>
+                <ComboBoxItem Content="xml"/>
             </ComboBox>
             <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,10"/>
 
+
+            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.10" />
+
             <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,10"/>
+
         </StackPanel>
 
         <!-- DataGrid -->
@@ -86,6 +89,5 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Button Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="50,187,50,53" Grid.Column="1" />
     </Grid>
 </Window>

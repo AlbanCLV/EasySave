@@ -25,7 +25,6 @@ namespace EasySaveWPF.ViewModelsWPF
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NewAppName)));
             }
         }
-
         public ICommand AddApplicationCommand { get; }
         public ICommand RemoveApplicationCommand { get; }
 
@@ -40,7 +39,6 @@ namespace EasySaveWPF.ViewModelsWPF
             AddApplicationCommand = new RelayCommand(AddApplication);
             RemoveApplicationCommand = new RelayCommand(RemoveApplication);
         }
-
         private void AddApplication(object param)
         {
             if (!string.IsNullOrWhiteSpace(NewAppName))
@@ -50,7 +48,6 @@ namespace EasySaveWPF.ViewModelsWPF
                 NewAppName = ""; // Réinitialiser le champ
             }
         }
-
         private void RemoveApplication(object param)
         {
             if (param is string appName && BusinessApplications.Contains(appName))
@@ -59,7 +56,6 @@ namespace EasySaveWPF.ViewModelsWPF
                 BusinessApplications.Remove(appName);
             }
         }
-
         private void OnBusinessAppStateChanged(string appName, bool isRunning)
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>

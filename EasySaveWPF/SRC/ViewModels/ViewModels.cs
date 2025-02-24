@@ -6,6 +6,10 @@ using EasySaveWPF.ModelsWPF;
 using EasySaveWPF;
 using EasySaveLog;
 using EasySave.Models;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using System.ComponentModel;
+
 
 namespace EasySaveWPF.ViewModelsWPF
 {
@@ -83,7 +87,6 @@ namespace EasySaveWPF.ViewModelsWPF
             LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", "-1");  // Log the action
             return r;
         }
-
         public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
             stopwatch.Start();
@@ -92,8 +95,6 @@ namespace EasySaveWPF.ViewModelsWPF
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             return (r, formattedTime);
         }
-
-
         public (List<Backup_ModelsWPF>, List<string>, string) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
         {
             stopwatch.Start();
@@ -103,7 +104,6 @@ namespace EasySaveWPF.ViewModelsWPF
             return (executedTasks, logMessages, formattedTime);
 
         }
-
         public void SetFichierLog(string type)
         {
             LogViewModels.Type_File_Log(type);
