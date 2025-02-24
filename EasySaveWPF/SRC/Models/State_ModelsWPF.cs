@@ -6,7 +6,7 @@ using EasySaveWPF.ModelsWPF;
 using Newtonsoft.Json;
 using EasySaveLog;
 
-namespace EasySave.Models
+namespace EasySaveWPF.ModelsWPF
 {
     public class State_modelsWPF
     {

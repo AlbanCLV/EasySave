@@ -6,8 +6,9 @@ using EasySaveWPF.ViewModelsWPF;
 using Newtonsoft.Json;
 using EasySaveLog;
 using EasySaveWPF;
-using EasySave.Models;
+using EasySaveWPF.ModelsWPF;
 using EasySaveConsole.Models;
+using System.Windows;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -37,7 +38,7 @@ namespace EasySaveWPF.ModelsWPF
         public const string SaveFilePath = "tasks.json";
         private Log_ViewModels controller_log = new Log_ViewModels();
         public List<Backup_ModelsWPF> Tasks { get; private set; } = new List<Backup_ModelsWPF>();
-
+        private Cryptage_ModelsWPF cryptage;
         // Instanciation du gestionnaire de langue (ici en français par défaut)
 
         /// <summary>
@@ -51,6 +52,7 @@ namespace EasySaveWPF.ModelsWPF
             TargetDirectory = targetDirectory;
             Type = type;
 
+            cryptage = Cryptage_ModelsWPF.Instance;
 
             if (loadTasks)  // Load tasks if necessary
             {
@@ -200,6 +202,17 @@ namespace EasySaveWPF.ModelsWPF
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
+                if (Cryptage_ModelsWPF.EncryptEnabled == true)    
+                {
+                    System.Windows.MessageBox.Show("ENAZBELELELELELELLELELELELELLELELELELELELE", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Ici, tu peux utiliser la méthode ProcessFile pour crypter le fichier
+                    var result = cryptage.ProcessFile(destinationFile, true);  // "true" pour crypter
+                    if (!result.Item3)
+                    {
+                        // Si une erreur de cryptage se produit, tu peux gérer l'erreur
+                        System.Windows.MessageBox.Show("Erreur de cryptage pour le fichier : " + fileName, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
 
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))

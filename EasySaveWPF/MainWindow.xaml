@@ -50,23 +50,23 @@
 
         <!-- Formulaire droit avec options Langue et Log -->
         <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="50,10">
-            <TextBlock x:Name="LangueTextBlock" Text="Langue" FontWeight="Bold" Margin="0,10"/>
-            <ComboBox Name="LangueTextBox" Margin="0,10">
+            <TextBlock x:Name="LangueTextBlock" Text="Langue" FontWeight="Bold" Margin="0,5"/>
+            <ComboBox Name="LangueTextBox" Margin="0,5">
                 <ComboBoxItem Content="En"/>
                 <ComboBoxItem Content="Fr"/>
             </ComboBox>
-            <Button Name="Boutton_Langue_app" Content="Appliquer" Click="LangueExecute" Margin="0,10"/>
-            <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,30"/>
-            <ComboBox Name="FichierLogTextBox" Margin="0,10">
+            <Button Name="Boutton_Langue_app" Content="Appliquer" Click="LangueExecute" Margin="0,5"/>
+            <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,15"/>
+            <ComboBox Name="FichierLogTextBox" Margin="0">
                 <ComboBoxItem Content="json"/>
                 <ComboBoxItem Content="xml"/>
             </ComboBox>
-            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,10"/>
+            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,5"/>
 
 
-            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.10" />
+            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.25" />
 
-            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,10"/>
+            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,25"/>
 
         </StackPanel>
 
@@ -81,8 +81,31 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="Lancer" Width="100" Margin="5" Click="ExecuteButton_Click"/>
-                                <Button Content="Supprimer" Width="100" Margin="5" Click="DeleteButton_Click"/>
+                                <Button x:Name="Boutton_ajouter" Width="50" Height="50" Margin="5" Click="ExecuteButton_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid>
+                                                <!-- Dessiner un cercle plein aligné à droite -->
+                                                <Ellipse Fill="Green" HorizontalAlignment="Right" VerticalAlignment="Center" Width="25" Height="25"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+
+
+                                <Button x:Name="Boutton_supprimer" Width="50" Height="50" Margin="5" Click="DeleteButton_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid>
+                                                <!-- Croissance de la croix plus petite -->
+                                                <Path Data="M 0,0 L 1,1 M 1,0 L 0,1" Stroke="Red" StrokeThickness="3" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" Width="25" Height="25"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

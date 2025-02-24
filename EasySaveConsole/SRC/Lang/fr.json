@@ -12,6 +12,18 @@
   "Langue": "Langue",
   "FileLog": "Type de fichier log",
   "businesssoftware": "Logiciel Métier",
+  "Launch": "Lancer",
+  "Delete": "Supprimer",
+
+
+  "TitreBusinessTexBLox": "Applications Métier Surveillées",
+
+  "OptionTextBlock": "Option de Chiffrement",
+  "ExtansionTextBlock": "Extension à sélectionner",
+  "ExtensionError": "Veuillez sélectionner au moins une extension.",
+  "ConfirmCryptage": "Voulez-vous vraiment chiffrer cette tâche ?",
+  "MDP": "Mot de passe",
+  "NepasChiffrer": "Ne pas chiffrer",
 
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",

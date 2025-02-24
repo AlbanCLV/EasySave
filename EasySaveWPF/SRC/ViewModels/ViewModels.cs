@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using EasySaveWPF.ModelsWPF;
 using EasySaveWPF;
 using EasySaveLog;
-using EasySave.Models;
+using EasySaveConsole.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.ComponentModel;
+using EasySaveWPF.Views;
 
 
 namespace EasySaveWPF.ViewModelsWPF
@@ -27,6 +28,7 @@ namespace EasySaveWPF.ViewModelsWPF
         private Backup_ModelsWPF backupModel;
         private Log_ViewModels LogViewModels;
         private Stopwatch stopwatch = new Stopwatch();
+        private CryptageWPF Cryptage;
 
         /// <summary>
         /// Private constructor to prevent direct instantiation.
@@ -35,6 +37,7 @@ namespace EasySaveWPF.ViewModelsWPF
         {
             backupModel = Backup_ModelsWPF.Instance; // Load tasks
             LogViewModels = Log_ViewModels.Instance;
+            Cryptage = CryptageWPF.Instance;
             backupModel.LoadTasks();
         }
         /// <summary>

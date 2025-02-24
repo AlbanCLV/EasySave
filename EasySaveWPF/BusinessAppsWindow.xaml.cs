@@ -16,6 +16,7 @@ namespace EasySaveWPF.Views
             lang.SetLanguage(SelectedLanguage);
             InitializeComponent();
             DataContext = new BusinessApps_ViewModel(); // Lier la fenêtre au ViewModel
+            SetColumnHeaders();
         }
         public static BusinessAppsWindow Instance
         {
@@ -37,7 +38,18 @@ namespace EasySaveWPF.Views
         }
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
-            this.Close(); // Ferme la fenêtre
+            this.Hide();
+        }
+        public void SetLanguage(string langue)
+        {
+            SelectedLanguage = langue;
+            lang.SetLanguage(langue);
+        }
+        public void SetColumnHeaders()
+        {
+            TitreBusinessTexBLox.Text = lang.Translate("TitreBusinessTexBLox");
+            Boutton_ADD.Content = lang.Translate("Create");
+            Boutton_Supprimer.Content = lang.Translate("Delete");
         }
     }
 }

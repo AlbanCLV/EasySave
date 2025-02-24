@@ -15,6 +15,7 @@ using System.Diagnostics;
 using ButtonWPF = System.Windows.Controls.Button;
 using ButtonWinForms = System.Windows.Forms.Button;
 using EasySaveWPF.Views;
+using EasySaveWPF.ModelsWPF;
 
 
 namespace EasySaveWPF
@@ -27,6 +28,8 @@ namespace EasySaveWPF
         private Log_ViewModels Log_VM;
         private BusinessAppsWindow Business;
         private CryptageWPF Cryptage;
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -35,8 +38,7 @@ namespace EasySaveWPF
             Log_VM = Log_ViewModels.Instance;
             Business = BusinessAppsWindow.Instance;
             Cryptage = CryptageWPF.Instance;
-            lang.SetLanguage(SelectedLanguage);
-            SetColumnHeaders();
+            Setlanguage(SelectedLanguage);
 
         }
 
@@ -70,7 +72,6 @@ namespace EasySaveWPF
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmADD"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                
 
                 (string reponse, string time) = Main.CreateBackupTaskWPF(nom, source, destination, type);
                 if (reponse == "OK")
@@ -106,7 +107,20 @@ namespace EasySaveWPF
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
+                if (Cryptage == null || !Cryptage.IsVisible)
+                {
+                    Cryptage = new CryptageWPF();
+                }
+                Cryptage.ShowDialog();  // Affiche la fenêtre de cryptage pour que l'utilisateur définisse ses paramètres
+                // Récupérer les paramètres de cryptage définis précédemment depuis EncryptionSettings
+                string password = Cryptage_ModelsWPF.UserPassword;
+                bool encryptAll = Cryptage_ModelsWPF.EncryptAll;
+                string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
+                bool encry = Cryptage_ModelsWPF.EncryptAll;
+
+                // Exécuter la tâche en fonction des paramètres récupérés
                 (string réponse, string time) = Main.ExecuteSpecificTasks(selectedTask);
+
                 if (réponse == "OK")
                 {
                     System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
@@ -122,10 +136,12 @@ namespace EasySaveWPF
             {
                 Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "select NO during confirmation", "-1");
             }
+
+            // Réinitialiser la source des tâches
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
-
         }
+
         private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
@@ -139,6 +155,16 @@ namespace EasySaveWPF
             if (result == MessageBoxResult.Yes)
             {
 
+                if (Cryptage == null || !Cryptage.IsVisible)
+                {
+                    Cryptage = new CryptageWPF();
+                }
+                Cryptage.ShowDialog();  // Affiche la fenêtre de cryptage pour que l'utilisateur définisse ses paramètres
+                // Récupérer les paramètres de cryptage définis précédemment depuis EncryptionSettings
+                string password = Cryptage_ModelsWPF.UserPassword;
+                bool encryptAll = Cryptage_ModelsWPF.EncryptAll;
+                string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
+                bool encry = Cryptage_ModelsWPF.EncryptAll;
 
                 (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time) = Main.ExecuteALlTask(tasks);
                 for (int i = 0; i < executedTasks.Count; i++)
@@ -164,7 +190,6 @@ namespace EasySaveWPF
 
             }
         }
-
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmDelete"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -191,11 +216,11 @@ namespace EasySaveWPF
                 System.Windows.MessageBox.Show(lang.Translate("LangueEmpty"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            lang.SetLanguage(langue);
+            Setlanguage(langue);
+
             Log_VM.LogBackupAction("-1", langue, "-1", "-1", "change language", "-1");
             System.Windows.MessageBox.Show(lang.Translate("NewLanguage") +" " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
-            SetColumnHeaders();
 
         }
         private void FichierLogExecute(object sender, RoutedEventArgs e)
@@ -231,9 +256,6 @@ namespace EasySaveWPF
             }
         }
 
-
-
-
         private void SetColumnHeaders()
         {
             // Exemple pour le DataGrid
@@ -254,13 +276,26 @@ namespace EasySaveWPF
             FichierLogTextBlock.Text = lang.Translate("FileLog");
             Boutton_Metier.Content = lang.Translate("businesssoftware");
         }
+
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
         {
-            Business.ShowDialog(); // Ouvre la fenêtre en mode modal
-
+            if (Business == null || !Business.IsVisible)
+            {
+                Business = new BusinessAppsWindow();
+            }
+            Business.ShowDialog();
         }
 
+        private void Setlanguage(string langue)
+        {
+            lang.SetLanguage(langue);
+            Business.SetLanguage(langue);
+            Cryptage.SetLanguage(langue);
 
+            SetColumnHeaders();
+            Business.SetColumnHeaders();
+            Cryptage.SetColumnHeaders();
+        }
 
 
 
