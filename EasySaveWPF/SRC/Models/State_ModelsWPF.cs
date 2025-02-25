@@ -1,53 +1,33 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using EasySaveWPF.ModelsWPF;
 using Newtonsoft.Json;
 using EasySaveLog;
-using EasySaveConsole.ViewModels;
 
-namespace EasySaveConsole.Models
-
+namespace EasySaveWPF.ModelsWPF
 {
-    public class State_models
+    public class State_modelsWPF
     {
         Log_Models LogModels = new Log_Models();
         private readonly string logDirectoryState; // Directory to store log files.
-        private readonly LangManager lang;
-        private static State_models _instance;
-        private static readonly object _lock = new object();
 
-        public static State_models Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    lock (_lock)
-                    {
-                        if (_instance == null)
-                            _instance = new State_models();
-                    }
-                }
-                return _instance;
-            }
-        }
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
         /// </summary>
         /// <param name="logDirectory">The directory where logs will be saved.</param>
 
 
-        public State_models(string logDirectoryState = "States")
+        public State_modelsWPF(string logDirectoryState = "States")
         {
             this.logDirectoryState = logDirectoryState; // Initializes the log directory.
-            lang = LangManager.Instance;
+
         }
 
 
-        public void StateUpdate(Backup_Models task, string lasth, string desti)
+        public void StateUpdate(Backup_ModelsWPF task, string lasth, string desti)
         {
-
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
             var StateEntry = new
@@ -66,7 +46,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -74,7 +54,7 @@ namespace EasySaveConsole.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void StatEnd(Backup_Models task, string lasth, string desti)
+        public void SatetEnd(Backup_ModelsWPF task, string lasth, string desti)
         {
 
             // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
@@ -96,7 +76,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -104,7 +84,7 @@ namespace EasySaveConsole.Models
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void StateError(Backup_Models task, string lasth, string error)
+        public void StateError(Backup_ModelsWPF task, string lasth, string error, string desti)
         {
             var StateEntry = new
             {
@@ -116,7 +96,7 @@ namespace EasySaveConsole.Models
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates {DateTime.Now:yyyy-MM-dd}.json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);

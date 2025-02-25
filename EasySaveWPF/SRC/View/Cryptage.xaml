@@ -1,0 +1,28 @@
+<Window x:Class="EasySaveWPF.Views.CryptageWPF"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cryptage" Height="350" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+
+	<StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="50,10">
+		<TextBlock x:Name="OptionTextBlock" Text="Option de Chiffrement" FontWeight="Bold" Margin="0,5"/>
+		<ComboBox Name="OptionComboBox" Margin="0,10">
+            <ComboBoxItem Name="Option1" Content="Chiffrer toutes les sauvegardes"/>
+			<ComboBoxItem Name="Option2" Content="Chiffrer uniquement les extensions sélectionnées"/>
+            <ComboBoxItem Name="Option3" Content="Ne pas Chiffrer"/>
+
+        </ComboBox>
+		<TextBlock x:Name="ExtansionTextBlock" Text="Extensions à sélectionner" FontWeight="Bold" Margin="0,5"/>
+		<ListBox Name="ExtensionListBox" SelectionMode="Multiple" Margin="0,10">
+			<ListBoxItem Content=".json"/>
+			<ListBoxItem Content=".xml"/>
+			<ListBoxItem Content=".txt"/>
+			<ListBoxItem Content=".csv"/>
+		</ListBox>
+        <TextBlock x:Name="PassTextBloc" Text="Mot de passe" FontWeight="Bold" Margin="0,5"/>
+        <PasswordBox Name="PassTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>
+
+        <Button Name="Boutton_Apply" Content="Appliquer" Click="Boutton_Apply_Click" Margin="0,5"/>
+	</StackPanel>
+</Window>

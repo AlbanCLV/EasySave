@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using EasySave;
+using System.Diagnostics;
 
-namespace EasySave.Utilities
+namespace EasySaveConsole.Models
 {
     /// <summary>
     /// Manages translations for the application.
@@ -20,14 +22,26 @@ namespace EasySave.Utilities
         public LangManager(string language)
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string projectRoot = Path.GetFullPath(Path.Combine(basePath, "..", "..", ".."));
+            DirectoryInfo dir = new DirectoryInfo(basePath);
 
-            // Ensure we go to the correct SRC/Lang directory
-            langDirectory = Path.Combine(projectRoot, "SRC", "Lang");
+            // Remonter jusqu'à trouver "Cesi-AlbanCalvo"
+            while (dir != null && dir.Name != "DEV")
+            {
+                dir = dir.Parent;
+            }
+
+            if (dir == null)
+            {
+                throw new DirectoryNotFoundException("Impossible de trouver le dossier 'Cesi-AlbanCalvo'.");
+            }
+
+            // Construire le chemin final
+            langDirectory = Path.Combine(dir.FullName, "EasySaveConsole", "SRC", "Lang");
 
             SetLanguage(language);
             Console.WriteLine($"LangManager initialized with language: {language}");
         }
+
 
         // Singleton pattern for LangManager
         public static LangManager Instance
@@ -36,7 +50,7 @@ namespace EasySave.Utilities
             {
                 if (_instance == null)
                 {
-                    _instance = new LangManager("en"); // Default language, can be overridden
+                    _instance = new LangManager(Program.SelectedLanguage); // Default language, can be overridden
                 }
                 return _instance;
             }
@@ -44,6 +58,7 @@ namespace EasySave.Utilities
 
         public void SetLanguage(string language)
         {
+            
             string filePath = Path.Combine(langDirectory, $"{language}.json");
 
             if (File.Exists(filePath))
@@ -68,5 +83,6 @@ namespace EasySave.Utilities
         {
             return translations.ContainsKey(key) ? translations[key] : $"[Missing translation: {key}]";
         }
+      
     }
 }

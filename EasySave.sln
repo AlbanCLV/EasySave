@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveConsole", "EasySave
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveLog", "EasySaveLog\EasySaveLog.csproj", "{C7995398-0CA7-4745-B496-54CE29F69775}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveWPF", "EasySaveWPF\EasySaveWPF.csproj", "{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C7995398-0CA7-4745-B496-54CE29F69775}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7995398-0CA7-4745-B496-54CE29F69775}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7995398-0CA7-4745-B496-54CE29F69775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

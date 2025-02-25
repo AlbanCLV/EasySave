@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;  // Pour utiliser Stopwatch
 using Newtonsoft.Json;
 using System.Xml.Linq;
+using System.Security.Cryptography;
 
 namespace EasySaveLog
 {
@@ -15,7 +16,7 @@ namespace EasySaveLog
         private static Log_Models? _instance;  // Instance unique
         private static readonly object _lock = new object(); // Verrou pour éviter les problèmes de multithreading
         private readonly string logDirectory;  // Répertoire des logs
-        public string Type_File { get; set; }
+        public string Type_File { get; set; } = "json";
 
         /// <summary>
         /// Constructor to specify the log directory (default is "Logs").
@@ -40,44 +41,137 @@ namespace EasySaveLog
                 }
             }
         }
-        public void LogAction(string name, string source, string target, string time, string act)
+        public void LogAction(string name, string source, string target, string time, string act, string encryptTime)
         {
             if (Type_File.ToLower() == "json")
-                LogActionJSON(name, source, target, time, act);
+                LogActionJSON(name, source, target, time, act, encryptTime);
             else
-                LogActionXML(name, source, target, time, act);
+                LogActionXML(name, source, target, time, act, encryptTime);
         }
-        public void LogErreur(string task, string baseAction, string erreur)
+        public void LogErreur(string task, string baseAction, string erreur, string encryptTime)
         {
             if (Type_File.ToLower() == "json")
-                LogErreurJSON(task, baseAction, erreur);
+                LogErreurJSON(task, baseAction, erreur, encryptTime);
             else
-                LogErreurXML(task, baseAction, erreur);
+                LogErreurXML(task, baseAction, erreur, encryptTime);
         }
         /// <summary>
         /// Creates a new log entry for a backup action, with details about the task, source, and destination.
         /// </summary>
         /// <param name="task">The backup job task object containing task details.</param>
         /// <param name="act">The action performed (e.g., "Started", "Completed").</param>
-        public void LogActionJSON(string name, string source, string target , string time, string act)
+        public void LogActionJSON(string name, string source, string target, string time, string act, string encryptTime)
         {
-            // Initialize variable to store the file size (default is 0).
-            long fileSize = 0;
+           
+          
+            var logEntry = new object(); // Déclaration de la variable
 
-            // calculate the total size of files within it (including subdirectories).
-            fileSize = GetDirectorySize(new DirectoryInfo(source));
-            double fileSizeInKB = fileSize / 1024.0;
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
-            var logEntry = new
+            if (act == "View Task" || act == "DisplayExistingApplications")
             {
-                Action = act, // The action performed (e.g., "Backup Started").
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
-                TaskName = "Backup_" + name, // Name of the backup task.
-                SourceFile = source, // Path of the source file or directory.
-                TargetFile = target, // Path of the target file or directory.
-                FileSize = fileSizeInKB, // Size of the source file/directory.
-                TransferTimeMs = time // Placeholder for transfer time (currently not used).
-            };
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                };
+            }
+            else if (act == "Create Task" || act == "Deleting_task")
+            {
+                long fileSize = 0;            // calculate the total size of files within it (including subdirectories).
+                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName =  name, // Name of the backup task.
+                    SourceFile = source, // Path of the source file or directory.
+                    TargetFile = target, // Path of the target file or directory.
+                    Type = encryptTime,
+                    FileSize = fileSizeInKB, // Size of the source file/directory.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "ChooseFileLog")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Old_log_files = source,
+                    New_log_files = target
+                };
+            }
+            else if (act == "execute specific Task" || act == "execute ALL Task")
+            {
+                // Initialize variable to store the file size (default is 0).
+                long fileSize = 0;            // calculate the total size of files within it (including subdirectories).
+                fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+                // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = "Backup_" + name, // Name of the backup task.
+                    SourceFile = source, // Path of the source file or directory.
+                    TargetFile = target, // Path of the target file or directory.
+                    FileSize = fileSizeInKB, // Size of the source file/directory.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+                    encryptTime = encryptTime, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "FolderDecrypted")
+            {
+               
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "AddBusinessApplication"|| act == "RemoveBusinessApplication")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    AppName = name,
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMS = time, // Placeholder for transfer time (currently not used).
+
+                };
+            }
+            else if (act == "change language")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    New_Language_files = source,
+                };
+            }
+            else if (act == "AddApplication" || act == "RemoveApplication")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Application = name,
+                };
+
+            }
+            else if (act == "isRunning" || act == "Is CLose")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Application = name,
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -85,103 +179,221 @@ namespace EasySaveLog
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogErreurJSON(string task, string Base, string Erreur)
+        public void LogErreurJSON(string task, string Base, string Erreur, string encryptTime)
         {
+            var logEntry = new object(); // Déclaration de la variable
 
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
-            var logEntry = new
+            if (Base == "create_task_attempt"|| Base == "View_task_attempt" || Base == "delete_task_attempt")
             {
-                Action = Base, // The action performed (e.g., "Backup Started").
-                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
-                TaskName = "Backup_" + task, // Name of the backup task.
-                TransferTimeMs = -1, // Placeholder for transfer time (currently not used).
-                Error = Erreur // Placeholder for transfer time (currently not used).
-            };
-            // Create the log file path based on the current date.
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = task, // Name of the backup task.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "ChoiceMetier")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "Execute_Task_attempt")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TaskName = task, // Name of the backup task.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    EncryptTime = encryptTime,
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            else if (Base == "Decrypt Folder")
+            {
+                logEntry = new
+                {
+                    Action = Base, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    TimeMs = -1, // Placeholder for transfer time (currently not used).
+                    Error = Erreur // Placeholder for transfer time (currently not used).
+                };
+            }
+            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+
+                // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectory);
             // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(logPath, JsonConvert.SerializeObject(logEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void LogActionXML(string name, string source, string target, string time, string act)
+        public void LogActionXML(string name, string source, string target, string time, string act, string encryptTime)
         {
-            // Initialiser la variable pour stocker la taille du fichier (par défaut à 0)
-            long fileSize = 0;
+            XElement logEntry = new XElement("LogEntry",
+                new XElement("Action", "Unknown"),
+                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+            );
 
-            // Calculer la taille totale des fichiers dans le répertoire source
-            fileSize = GetDirectorySize(new DirectoryInfo(source));
-            double fileSizeInKB = fileSize / 1024.0;
-
-            // Définir le chemin du fichier log XML basé sur la date actuelle
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
-
-            // Vérifier si le fichier existe, sinon créer un nouveau document XML
-            XDocument xmlDoc;
-            if (File.Exists(logPath))
+            if (act == "View Task" || act == "DisplayExistingApplications")
             {
-                xmlDoc = XDocument.Load(logPath);
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                );
+            }
+
+            else if (act == "Create Task" || act == "Deleting_task")
+            {
+                long fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", name),
+                    new XElement("SourceFile", source),
+                    new XElement("TargetFile", target),
+                    new XElement("Type", encryptTime),
+                    new XElement("FileSizeKB", fileSizeInKB),
+                    new XElement("TimeMS", time)
+                );
+            }
+            else if (act == "ChooseFileLog")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("OldLogFiles", source),
+                    new XElement("NewLogFiles", target)
+                );
+            }
+            else if (act == "change language")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("OldLogFiles", source)
+                );
+            }
+            else if (act == "execute specific Task" || act == "execute ALL Task")
+            {
+                long fileSize = GetDirectorySize(new DirectoryInfo(source));
+                double fileSizeInKB = fileSize / 1024.0;
+
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", "Backup_" + name),
+                    new XElement("SourceFile", source),
+                    new XElement("TargetFile", target),
+                    new XElement("FileSizeKB", fileSizeInKB),
+                    new XElement("TimeMS", time),
+                    new XElement("EncryptTime", encryptTime)
+                );
+            }
+            else if (act == "FolderDecrypted")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", time)
+                );
+            }
+            else if (act == "AddBusinessApplication" || act == "RemoveBusinessApplication")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("AppName", name),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", time)
+                );
+            }
+
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
+            Directory.CreateDirectory(logDirectory);
+
+            if (!File.Exists(logPath))
+            {
+                new XDocument(new XElement("Logs", logEntry)).Save(logPath);
             }
             else
             {
-                xmlDoc = new XDocument(new XElement("Logs"));
+                XDocument doc = XDocument.Load(logPath);
+                doc.Root.Add(logEntry);
+                doc.Save(logPath);
             }
+        }
 
-            // Créer une nouvelle entrée de log
-            XElement logEntry = new XElement("Log",
-                new XElement("Action", act),
+        public void LogErreurXML(string task, string Base, string Erreur, string encryptTime)
+        {
+            XElement logEntry = new XElement("LogEntry",
+                new XElement("Action", "Unknown"),
                 new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
-                new XElement("TaskName", "Backup_" + name),
-                new XElement("SourceFile", source),
-                new XElement("TargetFile", target),
-                new XElement("FileSize", fileSizeInKB),
-                new XElement("TransferTimeMs", time)
+                new XElement("Error", "No error specified")
             );
 
-            // Ajouter l'entrée au document XML
-            xmlDoc.Root?.Add(logEntry);
+            if (Base == "create_task_attempt" || Base == "View_task_attempt" || Base == "delete_task_attempt")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", task),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "ChoiceMetier")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "Execute_Task_attempt")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TaskName", task),
+                    new XElement("TimeMS", -1),
+                    new XElement("EncryptTime", encryptTime),
+                    new XElement("Error", Erreur)
+                );
+            }
+            else if (Base == "Decrypt Folder")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", Base),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new XElement("TimeMS", -1),
+                    new XElement("Error", Erreur)
+                );
+            }
 
-            // S'assurer que le répertoire existe
+            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
             Directory.CreateDirectory(logDirectory);
 
-            // Sauvegarder le fichier XML
-            xmlDoc.Save(logPath);
-        }
-        public void LogErreurXML(string task, string baseAction, string erreur)
-        {
-            // Définir le chemin du fichier log XML basé sur la date actuelle
-            string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.xml");
-
-            // Vérifier si le fichier existe, sinon créer un nouveau document XML
-            XDocument xmlDoc;
-            if (File.Exists(logPath))
+            if (!File.Exists(logPath))
             {
-                xmlDoc = XDocument.Load(logPath);
+                new XDocument(new XElement("Logs", logEntry)).Save(logPath);
             }
             else
             {
-                xmlDoc = new XDocument(new XElement("Logs"));
+                XDocument doc = XDocument.Load(logPath);
+                doc.Root.Add(logEntry);
+                doc.Save(logPath);
             }
-
-            // Créer une nouvelle entrée de log
-            XElement logEntry = new XElement("Log",
-                new XElement("Action", baseAction),
-                new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
-                new XElement("TaskName", "Backup_" + task),
-                new XElement("TransferTimeMs", -1),
-                new XElement("Error", erreur)
-            );
-
-            // Ajouter l'entrée au document XML
-            xmlDoc.Root?.Add(logEntry);
-
-            // S'assurer que le répertoire existe
-            Directory.CreateDirectory(logDirectory);
-
-            // Sauvegarder le fichier XML
-            xmlDoc.Save(logPath);
         }
-
 
         public void TypeFile(string Input)
         {
@@ -199,7 +411,7 @@ namespace EasySaveLog
         {
             if (!directory.Exists)
             {
-                LogErreurJSON("Error", "try to delete a task", "Folder not found");
+                LogErreurJSON("Error", "Error", "Folder not found", "-1");
                 Environment.Exit(0);
             }
 
