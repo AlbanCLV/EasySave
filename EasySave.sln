@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveLog", "EasySaveLog\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveWPF", "EasySaveWPF\EasySaveWPF.csproj", "{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySaveClient", "EasySaveClient\EasySaveClient.csproj", "{ADB89D38-9675-4AA0-BADD-A31E76243F46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2092D41E-DC9A-480F-8BFC-93C9BEF6B791}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADB89D38-9675-4AA0-BADD-A31E76243F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADB89D38-9675-4AA0-BADD-A31E76243F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADB89D38-9675-4AA0-BADD-A31E76243F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADB89D38-9675-4AA0-BADD-A31E76243F46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

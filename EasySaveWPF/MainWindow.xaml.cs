@@ -28,11 +28,13 @@ namespace EasySaveWPF
         private Log_ViewModels Log_VM;
         private BusinessAppsWindow Business;
         private CryptageWPF Cryptage;
-
+        private SocketServer server;
 
         public MainWindow()
         {
             InitializeComponent();
+            server = SocketServer.Instance;
+            server.StartServer(12345);
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
             lang = LangManager.Instance;
             Log_VM = Log_ViewModels.Instance;
