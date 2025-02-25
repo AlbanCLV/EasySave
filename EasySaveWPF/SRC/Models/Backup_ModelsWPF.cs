@@ -9,6 +9,8 @@ using EasySaveWPF;
 using EasySaveWPF.ModelsWPF;
 using EasySaveConsole.Models;
 using System.Windows;
+using System.Diagnostics;
+using System.Reactive.Concurrency;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -39,6 +41,7 @@ namespace EasySaveWPF.ModelsWPF
         private Log_ViewModels controller_log = new Log_ViewModels();
         public List<Backup_ModelsWPF> Tasks { get; private set; } = new List<Backup_ModelsWPF>();
         private Cryptage_ModelsWPF cryptage;
+        private Stopwatch stopwatch = new Stopwatch();
         // Instanciation du gestionnaire de langue (ici en français par défaut)
 
         /// <summary>
@@ -135,7 +138,7 @@ namespace EasySaveWPF.ModelsWPF
             SaveTasks();
             return "task delete";
         }
-        public string ExecuteSpecificTasks(Backup_ModelsWPF task)
+        public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
             if (task.Type == "Full")
             {
@@ -145,30 +148,30 @@ namespace EasySaveWPF.ModelsWPF
             {
                 return ExecuteDifferentialBackup(task);
             }
-            return "";
+            return ("", "");
         }
 
-        public string PerformFullBackup(Backup_ModelsWPF task)
+        public (string, string) PerformFullBackup(Backup_ModelsWPF task)
         {
             if (!Directory.Exists(task.SourceDirectory))
             {
                 controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
-                return "KO SOURCE";
+                return ("KO SOURCE","-1");
             }
 
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
             Directory.CreateDirectory(targetPath);
-            CopyDirectoryContent(task.SourceDirectory, targetPath, task);
-            return "OK";
+            return ("OK", CopyDirectoryContent(task.SourceDirectory, targetPath, task));
+            
         }
-        public string ExecuteDifferentialBackup(Backup_ModelsWPF task)
+        public (string, string) ExecuteDifferentialBackup(Backup_ModelsWPF task)
         {
             if (!Directory.Exists(task.SourceDirectory))
             {
                 string t = controller_log.Get_Type_File();
                 controller_log.LogBackupErreur(task.Name, "execute_task_attempt", "source_directory_not_exist", "-1");
-                return "KO SOURCE";
+                return ("KO SOURCE", "-1");
             }
             string sourceDirectoryName = Path.GetFileName(task.SourceDirectory.TrimEnd(Path.DirectorySeparatorChar));
             string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
@@ -176,9 +179,8 @@ namespace EasySaveWPF.ModelsWPF
             {
                 PerformFullBackup(task);
             }
-            CopyModifiedFiles(task.SourceDirectory, targetPath, task);
+            return ("OK" ,CopyModifiedFiles(task.SourceDirectory, targetPath, task));
 
-            return "OK";
         }
 
         private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
@@ -194,24 +196,29 @@ namespace EasySaveWPF.ModelsWPF
 
             return Path.Combine(destinationPath, uniqueName);
         }
-        private void CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task)
+        private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task)
         {
+            long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
                 state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
-                if (Cryptage_ModelsWPF.EncryptEnabled == true)    
+
+                if (Cryptage_ModelsWPF.EncryptEnabled == true)
                 {
-                    System.Windows.MessageBox.Show("ENAZBELELELELELELLELELELELELLELELELELELELE", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                    // Ici, tu peux utiliser la méthode ProcessFile pour crypter le fichier
-                    var result = cryptage.ProcessFile(destinationFile, true);  // "true" pour crypter
+                    stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
+                    var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
+                    stopwatch.Stop();
+
                     if (!result.Item3)
                     {
-                        // Si une erreur de cryptage se produit, tu peux gérer l'erreur
-                        System.Windows.MessageBox.Show("Erreur de cryptage pour le fichier : " + fileName, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return "KO";
                     }
+
+                    totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
                 }
             }
 
@@ -220,13 +227,18 @@ namespace EasySaveWPF.ModelsWPF
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir, task); // Recursive call to copy all subfolders
+                CopyDirectoryContent(directory, destinationSubDir, task); // Appel récursif
             }
+
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
 
+            return totalEncryptionTime.ToString();
         }
-        private void CopyModifiedFiles(string sourceDir, string destDir, Backup_ModelsWPF task)
+        private string CopyModifiedFiles(string sourceDir, string destDir, Backup_ModelsWPF task)
         {
+            long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+            Stopwatch stopwatch = new Stopwatch();
+
             foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
                 state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
@@ -238,26 +250,44 @@ namespace EasySaveWPF.ModelsWPF
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                     File.Copy(sourceFile, destFile, true);
+
+                    if (Cryptage_ModelsWPF.EncryptEnabled == true)
+                    {
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destFile, true); // "true" pour crypter
+                        stopwatch.Stop();
+
+                        if (!result.Item3)
+                        {
+                            return "KO";
+                        }
+
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                    }
                 }
             }
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-
+            return totalEncryptionTime.ToString(); ;
         }
 
 
-        public (List<Backup_ModelsWPF>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks)
+
+        public (List<Backup_ModelsWPF>, List<string>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks)
         {
             List<Backup_ModelsWPF> executedTasks = new List<Backup_ModelsWPF>();
             List<string> logMessages = new List<string>();
+            List<string> TimeEncrypt = new List<string>();
 
             foreach (var task in tasks)
             {
-                string log = ExecuteSpecificTasks(task);
+                (string log, string time) = ExecuteSpecificTasks(task);
                 executedTasks.Add(task);
                 logMessages.Add(log);  // Store log message
+                TimeEncrypt.Add(time);  // Store log message
+
             }
 
-            return (executedTasks, logMessages);  // Return both lists
+            return (executedTasks, logMessages, TimeEncrypt);  // Return both lists
         }
     }
 }

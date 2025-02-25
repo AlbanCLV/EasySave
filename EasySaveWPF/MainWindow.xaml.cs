@@ -76,7 +76,7 @@ namespace EasySaveWPF
                 (string reponse, string time) = Main.CreateBackupTaskWPF(nom, source, destination, type);
                 if (reponse == "OK")
                 {
-                    Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", "0");
+                    Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", type);
                 }
                 else if (reponse == "KO")
                 {
@@ -119,16 +119,16 @@ namespace EasySaveWPF
                 bool encry = Cryptage_ModelsWPF.EncryptAll;
 
                 // Exécuter la tâche en fonction des paramètres récupérés
-                (string réponse, string time) = Main.ExecuteSpecificTasks(selectedTask);
+                (string réponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask);
 
                 if (réponse == "OK")
                 {
                     System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
-                    Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", "-1");  // Log the action
+                    Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", timeencrypt);  // Log the action
                 }
                 else if (réponse == "KO SOURCE")
                 {
-                    Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "The source folder could not be found.", "-1");
+                    Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "The source folder could not be found.", timeencrypt);
                     System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), " ", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -166,18 +166,18 @@ namespace EasySaveWPF
                 string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
                 bool encry = Cryptage_ModelsWPF.EncryptAll;
 
-                (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time) = Main.ExecuteALlTask(tasks);
+                (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time, List<string> TimeEncry) = Main.ExecuteALlTask(tasks);
                 for (int i = 0; i < executedTasks.Count; i++)
                 {
                     if (logMessages[i] == "KO SOURCE")
                     {
-                        Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_Task_attempt", "source_directory_not_exist", "EncryptionTime");
+                        Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_Task_attempt", "source_directory_not_exist", TimeEncry[i]);
                         System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), executedTasks[i].Name, MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
                     else if (logMessages[i] == "OK")
                     {
-                        Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, time, "execute ALL Task", "EncryptionTime");  // Log the action
+                        Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, time, "execute ALL Task", TimeEncry[i]);  // Log the action
                     }
                 }
                 // Afficher un message avec le résultat de l'exécution
@@ -198,7 +198,7 @@ namespace EasySaveWPF
             if (result == MessageBoxResult.Yes)
             {
                 string t = Main.DeleteBackupTaskWPF(selectedTask);
-                System.Windows.MessageBox.Show(t, lang.Translate("success"), MessageBoxButton.OK, MessageBoxImage.None);
+                System.Windows.MessageBox.Show(t, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
                 TasksDataGrid.ItemsSource = null;
                 TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
             }

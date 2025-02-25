@@ -87,24 +87,24 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.DeleteTaskWPF(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", "-1");  // Log the action
+            LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", task.Type);  // Log the action
             return r;
         }
-        public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
+        public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
             stopwatch.Start();
-            string r = backupModel.ExecuteSpecificTasks(task);
+            (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            return (r, formattedTime);
+            return (r, formattedTime, timeencrypt);
         }
-        public (List<Backup_ModelsWPF>, List<string>, string) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
+        public (List<Backup_ModelsWPF>, List<string>, string, List<string>) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
         {
             stopwatch.Start();
-            (List<Backup_ModelsWPF> executedTasks, List< string > logMessages) = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
+            (List<Backup_ModelsWPF> executedTasks, List< string > logMessages, List<string> TimeEncrypt ) = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            return (executedTasks, logMessages, formattedTime);
+            return (executedTasks, logMessages, formattedTime, TimeEncrypt);
 
         }
         public void SetFichierLog(string type)

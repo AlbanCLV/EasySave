@@ -86,6 +86,7 @@ namespace EasySaveLog
                     TaskName =  name, // Name of the backup task.
                     SourceFile = source, // Path of the source file or directory.
                     TargetFile = target, // Path of the target file or directory.
+                    Type = encryptTime,
                     FileSize = fileSizeInKB, // Size of the source file/directory.
                     TimeMS = time, // Placeholder for transfer time (currently not used).
 
@@ -240,6 +241,7 @@ namespace EasySaveLog
                     new XElement("TaskName", name),
                     new XElement("SourceFile", source),
                     new XElement("TargetFile", target),
+                    new XElement("Type", encryptTime),
                     new XElement("FileSizeKB", fileSizeInKB),
                     new XElement("TimeMS", time)
                 );

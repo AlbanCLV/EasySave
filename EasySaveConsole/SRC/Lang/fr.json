@@ -24,6 +24,9 @@
   "ConfirmCryptage": "Voulez-vous vraiment chiffrer cette tâche ?",
   "MDP": "Mot de passe",
   "NepasChiffrer": "Ne pas chiffrer",
+  "Success": "Succès",
+  "Error": "Erreur",
+
 
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",
