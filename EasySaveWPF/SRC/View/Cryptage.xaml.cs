@@ -52,7 +52,7 @@ namespace EasySaveWPF.Views
             var selectedExtensions = new List<string>();
 
             // Vérifier si l'option ou le mot de passe est vide
-            if (string.IsNullOrWhiteSpace(optionText) || string.IsNullOrWhiteSpace(pass))
+            if (string.IsNullOrWhiteSpace(optionText))
             {
                 System.Windows.MessageBox.Show("Veuillez remplir tous les champs.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -61,6 +61,11 @@ namespace EasySaveWPF.Views
             // Définir les paramètres selon l'option sélectionnée
             if (optionText == "Chiffrer toutes les sauvegardes" || optionText == "Encrypt all backups")
             {
+                if (string.IsNullOrWhiteSpace(pass))
+                {
+                    System.Windows.MessageBox.Show("Veuillez remplir tous les champs.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 EncryptionALL = true; // Chiffrer toutes les sauvegardes
             }
             else if (optionText == "Chiffrer uniquement les extensions sélectionnées" || optionText == "Encrypt only selected extensions")
