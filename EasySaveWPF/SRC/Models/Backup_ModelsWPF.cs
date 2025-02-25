@@ -140,16 +140,17 @@ namespace EasySaveWPF.ModelsWPF
         }
         public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
-            if (task.Type == "Full")
+            return Task.Run(() =>
             {
-                return PerformFullBackup(task);
-            }
-            else if (task.Type == "Differential")
-            {
-                return ExecuteDifferentialBackup(task);
-            }
-            return ("", "");
+                if (task.Type == "Full")
+                    return PerformFullBackup(task);
+                else if (task.Type == "Differential")
+                    return ExecuteDifferentialBackup(task);
+
+                return ("KO", "-1");
+            }).Result;
         }
+
 
         public (string, string) PerformFullBackup(Backup_ModelsWPF task)
         {
@@ -312,16 +313,27 @@ namespace EasySaveWPF.ModelsWPF
             List<string> logMessages = new List<string>();
             List<string> TimeEncrypt = new List<string>();
 
+            var tasksList = new List<Task>();
+
             foreach (var task in tasks)
             {
-                (string log, string time) = ExecuteSpecificTasks(task);
-                executedTasks.Add(task);
-                logMessages.Add(log);  // Store log message
-                TimeEncrypt.Add(time);  // Store log message
+                tasksList.Add(Task.Run(() =>
+                {
+                    (string log, string time) = ExecuteSpecificTasks(task);
 
+                    lock (executedTasks) // Empêcher les conflits d'accès
+                    {
+                        executedTasks.Add(task);
+                        logMessages.Add(log);
+                        TimeEncrypt.Add(time);
+                    }
+                }));
             }
 
-            return (executedTasks, logMessages, TimeEncrypt);  // Return both lists
+            Task.WaitAll(tasksList.ToArray()); // Attendre que toutes les tâches se terminent
+
+            return (executedTasks, logMessages, TimeEncrypt);
         }
+
     }
 }

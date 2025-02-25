@@ -98,10 +98,15 @@ namespace EasySaveWPF
         }
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-            TasksDataGrid.ItemsSource = null;
-            TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+            Dispatcher.Invoke(() =>
+            {
+                TasksDataGrid.ItemsSource = null;
+                TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+            });
+
             Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
         }
+
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
