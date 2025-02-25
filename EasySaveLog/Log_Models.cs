@@ -172,6 +172,14 @@ namespace EasySaveLog
                     Application = name,
                 };
             }
+            else if (act == "Pause" || act == "Resume" || act =="Stop") 
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.

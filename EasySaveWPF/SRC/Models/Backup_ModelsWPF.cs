@@ -28,6 +28,7 @@ namespace EasySaveWPF.ModelsWPF
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }
         public string Type { get; set; }
+        public int Progress { get; set; } 
 
         private static Backup_ModelsWPF _instance;
         private static readonly object _lock = new object();

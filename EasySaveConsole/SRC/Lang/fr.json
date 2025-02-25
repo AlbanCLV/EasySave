@@ -14,10 +14,8 @@
   "businesssoftware": "Logiciel Métier",
   "Launch": "Lancer",
   "Delete": "Supprimer",
-
-
   "TitreBusinessTexBLox": "Applications Métier Surveillées",
-
+  "STOP": "Vous avez stopper toutes les actions en cours. Des tâches ne se sont dont pas finis.",
   "OptionTextBlock": "Option de Chiffrement",
   "ExtansionTextBlock": "Extension à sélectionner",
   "ExtensionError": "Veuillez sélectionner au moins une extension.",
@@ -26,8 +24,7 @@
   "NepasChiffrer": "Ne pas chiffrer",
   "Success": "Succès",
   "Error": "Erreur",
-
-
+  "RESUME": "Reprendre",
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",
   "ExecuteBackupTask": "Exécuter une tâche de sauvegarde",

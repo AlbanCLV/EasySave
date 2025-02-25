@@ -70,6 +70,13 @@
 
             <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,25"/>
 
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Button Name="PauseButton" Content="Pause" Width="100" Height="30" Click="PauseButton_Click" Margin="10"/>
+                <Button Name="StopButton" Content="Stop" Click="StopButton_Click" Width="100" Height="30" Margin="10"/>
+
+            </StackPanel>
+
+
         </StackPanel>
 
         <!-- DataGrid -->
@@ -84,15 +91,18 @@
                 <DataGridTemplateColumn Header="Progression" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" Width="120"/>
+                            <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" Width="120" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+
+                <!-- Colonne pour les boutons de contrôle -->
                 <DataGridTemplateColumn Header="Actions" Width="250">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
+                                <!-- Bouton Ajouter (lance le processus de sauvegarde) -->
                                 <Button x:Name="Boutton_ajouter" Width="50" Height="50" Margin="5" Click="ExecuteButton_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
@@ -103,6 +113,7 @@
                                     </Button.Template>
                                 </Button>
 
+                                <!-- Bouton Supprimer (supprime une tâche de sauvegarde) -->
                                 <Button x:Name="Boutton_supprimer" Width="50" Height="50" Margin="5" Click="DeleteButton_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
@@ -112,11 +123,14 @@
                                         </ControlTemplate>
                                     </Button.Template>
                                 </Button>
+
+                               
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+
     </Grid>
 </Window>
