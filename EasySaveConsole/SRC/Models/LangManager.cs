@@ -25,7 +25,7 @@ namespace EasySaveConsole.Models
             DirectoryInfo dir = new DirectoryInfo(basePath);
 
             // Remonter jusqu'à trouver "Cesi-AlbanCalvo"
-            while (dir != null && dir.Name != "DEV")
+            while (dir != null && dir.Name != "EasySave")
             {
                 dir = dir.Parent;
             }
