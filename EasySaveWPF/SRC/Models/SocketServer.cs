@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using EasySaveWPF.ViewModelsWPF;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -11,7 +13,7 @@ namespace EasySaveWPF.ModelsWPF
     {
         private static SocketServer _instance;
         private static readonly object _lock = new object();
-        
+
         private TcpListener server;
         private List<TcpClient> clients = new List<TcpClient>();
 
@@ -21,16 +23,18 @@ namespace EasySaveWPF.ModelsWPF
             {
                 lock (_lock)
                 {
-                    if(_instance == null) {
+                    if (_instance == null)
+                    {
                         _instance = new SocketServer();
                     }
                     return _instance;
                 }
             }
         }
+
         public void StartServer(int port)
         {
-            server = new TcpListener(IPAddress.Loopback, port);
+            server = new TcpListener(IPAddress.Any, port);
             server.Start();
             Console.WriteLine($"[SERVER] En attente de connexions sur le port {port}...");
 
@@ -61,9 +65,10 @@ namespace EasySaveWPF.ModelsWPF
                         string command = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
                         Console.WriteLine($"[SERVER] Commande reçue : {command}");
 
-                        if (command == "PAUSE") PauseBackup();
-                        else if (command == "RESUME") ResumeBackup();
-                        else if (command == "STOP") StopBackup();
+                        if (command == "GET_TASKS")
+                        {
+                            await SendTaskListAsync(); // Envoie la liste des tâches
+                        }
                     }
                 }
                 catch
@@ -77,15 +82,27 @@ namespace EasySaveWPF.ModelsWPF
             client.Close();
         }
 
-        public async Task SendBackupStatusAsync(string status)
+        public async Task SendTaskListAsync()
         {
-            byte[] data = Encoding.UTF8.GetBytes(status);
+            var tasks = Backup_VueModelsWPF.Instance.ViewTasksWPF();
+
+            if (tasks == null || !tasks.Any())
+            {
+                Console.WriteLine("[SERVER] Aucune tâche à envoyer.");
+                return;
+            }
+
+            string taskList = string.Join(";", tasks.Select(t => $"{t.Name}:{t.SourceDirectory}->{t.TargetDirectory}"));
+            Console.WriteLine($"[SERVER] Envoi des tâches : {taskList}"); // ✅ LOG IMPORTANT
+
+            byte[] data = Encoding.UTF8.GetBytes($"TASKS:{taskList}");
 
             foreach (var client in clients)
             {
                 try
                 {
                     await client.GetStream().WriteAsync(data, 0, data.Length);
+                    Console.WriteLine("[SERVER] Liste des tâches envoyée au client.");
                 }
                 catch
                 {
@@ -95,8 +112,5 @@ namespace EasySaveWPF.ModelsWPF
             }
         }
 
-        private void PauseBackup() => Console.WriteLine("[SERVER] Pause demandée.");
-        private void ResumeBackup() => Console.WriteLine("[SERVER] Reprise demandée.");
-        private void StopBackup() => Console.WriteLine("[SERVER] Arrêt demandé.");
     }
 }

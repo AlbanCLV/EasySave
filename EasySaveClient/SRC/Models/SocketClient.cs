@@ -21,7 +21,8 @@ namespace EasySaveClient.Models
 
         private async Task ListenForMessagesAsync()
         {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096]; // ✅ Augmenter la taille du buffer
+            StringBuilder completeMessage = new StringBuilder();
 
             while (client.Connected)
             {
@@ -30,16 +31,28 @@ namespace EasySaveClient.Models
                     int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead > 0)
                     {
-                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        OnMessageReceived?.Invoke(message);
+                        string messagePart = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        completeMessage.Append(messagePart);
+
+                        // ✅ Vérifier si le message est complet
+                        if (messagePart.EndsWith("\n") || bytesRead < buffer.Length)
+                        {
+                            string fullMessage = completeMessage.ToString().Trim();
+                            completeMessage.Clear();
+                            Console.WriteLine($"[CLIENT] Message reçu : {fullMessage}");
+                            OnMessageReceived?.Invoke(fullMessage);
+                        }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"[CLIENT] Erreur de réception : {ex.Message}");
                     break;
                 }
             }
         }
+
+
 
         public async Task SendMessageAsync(string message)
         {

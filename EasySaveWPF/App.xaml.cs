@@ -1,20 +1,19 @@
-﻿using System.Configuration;
-using System.Data;
+﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows;
-using EasySaveWPF.ModelsWPF;
 
 namespace EasySaveWPF
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        [DllImport("kernel32.dll")]
+        static extern bool AllocConsole();
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            _ = ProcessWatcherWPF.Instance; // Initialisation au démarrage
+            AllocConsole(); // ✅ Ouvre une console au démarrage
+            Console.WriteLine("[SERVER] Console initialisée.");
         }
     }
-
 }

@@ -1,25 +1,29 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
-using System.Threading.Tasks;
-using EasySaveClient.Models;
 using System.Windows.Controls;
+using EasySaveClient.Models;
 
 namespace EasySaveClient
 {
     public partial class MainWindow : Window
     {
         private SocketClient socketClient = new SocketClient();
-        private string serverIp = "127.0.0.1"; // Valeur par défaut
+        private string serverIp = "127.0.0.1"; // IP par défaut
+
+        public ObservableCollection<BackupTask> Tasks { get; set; } = new ObservableCollection<BackupTask>();
 
         public MainWindow()
         {
             InitializeComponent();
             socketClient.OnMessageReceived += UpdateUI;
+            TaskListView.ItemsSource = Tasks;
         }
 
         private async void ConnectToServer_Click(object sender, RoutedEventArgs e)
         {
-            serverIp = IpTextBox.Text.Trim(); // Récupère l'IP saisie
+            serverIp = IpTextBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(serverIp))
             {
@@ -30,7 +34,7 @@ namespace EasySaveClient
             try
             {
                 await socketClient.ConnectAsync(serverIp, 12345);
-                LogsListBox.Items.Add($"[CLIENT] Connecté à {serverIp}:12345");
+                MessageBox.Show($"Connecté à {serverIp}:12345", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -38,24 +42,73 @@ namespace EasySaveClient
             }
         }
 
+        private async void GetTasks_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("[CLIENT] Demande de récupération des tâches envoyée.");
+            await socketClient.SendMessageAsync("GET_TASKS");
+
+            await Task.Delay(500); // ✅ Attendre la réponse du serveur
+
+            Console.WriteLine("[CLIENT] Attente de la réponse du serveur...");
+        }
+
+
+
         private void UpdateUI(string message)
         {
-            Dispatcher.Invoke(() => LogsListBox.Items.Add(message));
+            Dispatcher.Invoke(() =>
+            {
+                Console.WriteLine($"[CLIENT] Message reçu : {message}");
+
+                if (message.StartsWith("TASKS:"))
+                {
+                    string taskList = message.Replace("TASKS:", "").Trim();
+                    string[] taskEntries = taskList.Split(';'); // ✅ Séparation des tâches
+
+                    Tasks.Clear(); // ✅ Vider la liste avant d'ajouter de nouvelles tâches
+                    foreach (var entry in taskEntries)
+                    {
+                        Console.WriteLine($"[CLIENT] Traitement de l'entrée : {entry}");
+
+                        // ✅ Vérifier si l'entrée contient bien ":"
+                        int firstColonIndex = entry.IndexOf(':');
+                        if (firstColonIndex == -1) continue; // ❌ Ignorer l'entrée si elle est mal formatée
+
+                        string taskName = entry.Substring(0, firstColonIndex);
+                        string pathData = entry.Substring(firstColonIndex + 1);
+
+                        // ✅ Vérifier si la partie des chemins contient bien "->"
+                        string[] paths = pathData.Split("->");
+                        if (paths.Length != 2) continue; // ❌ Ignorer l'entrée si elle est mal formatée
+
+                        Tasks.Add(new BackupTask
+                        {
+                            Name = taskName.Trim(),
+                            SourceDirectory = paths[0].Trim(),
+                            TargetDirectory = paths[1].Trim()
+                        });
+
+                        Console.WriteLine($"[CLIENT] Ajout de la tâche : {taskName}");
+                    }
+
+                    TaskListView.Items.Refresh(); // ✅ FORCER LE RAFRAÎCHISSEMENT
+                    Console.WriteLine($"[CLIENT] {Tasks.Count} tâches affichées.");
+                }
+                else
+                {
+                    Console.WriteLine($"[CLIENT] Message ignoré : {message}");
+                }
+            });
         }
 
-        private async void PauseBackup_Click(object sender, RoutedEventArgs e)
-        {
-            await socketClient.SendMessageAsync("PAUSE");
-        }
 
-        private async void ResumeBackup_Click(object sender, RoutedEventArgs e)
-        {
-            await socketClient.SendMessageAsync("RESUME");
-        }
 
-        private async void StopBackup_Click(object sender, RoutedEventArgs e)
-        {
-            await socketClient.SendMessageAsync("STOP");
-        }
+    }
+
+    public class BackupTask
+    {
+        public string Name { get; set; }
+        public string SourceDirectory { get; set; }
+        public string TargetDirectory { get; set; }
     }
 }
