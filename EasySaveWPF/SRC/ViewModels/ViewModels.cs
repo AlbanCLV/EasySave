@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.ComponentModel;
 using EasySaveWPF.Views;
+using System.Windows;
 
 
 namespace EasySaveWPF.ViewModelsWPF
@@ -92,6 +93,13 @@ namespace EasySaveWPF.ViewModelsWPF
         }
         public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
         {
+            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+            {
+                // Si des applications métiers sont en cours, arrêter l'exécution
+                System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
+                                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return ("KO", "KO", "KO");
+            }
             stopwatch.Start();
             (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task);
             stopwatch.Stop();
@@ -100,6 +108,13 @@ namespace EasySaveWPF.ViewModelsWPF
         }
         public (List<Backup_ModelsWPF>, List<string>, string, List<string>) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
         {
+            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+            {
+                // Si des applications métiers sont en cours, arrêter l'exécution
+                System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
+                                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return (null, null, "KO",null);
+            }
             stopwatch.Start();
             (List<Backup_ModelsWPF> executedTasks, List< string > logMessages, List<string> TimeEncrypt ) = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
             stopwatch.Stop();

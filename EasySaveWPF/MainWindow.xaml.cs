@@ -109,6 +109,13 @@ namespace EasySaveWPF
 
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+            {
+                // Si des applications métiers sont en cours, arrêter l'exécution
+                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.",lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log_VM.LogBackupAction(ProcessWatcherWPF.Instance.GetRunningBusinessApps(), "", "", "", "isrunning", "");
+                return;
+            }
             var selectedTask = TasksDataGrid.SelectedItem as Backup_ModelsWPF;
 
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -150,6 +157,14 @@ namespace EasySaveWPF
         }
         private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+            {
+                // Si des applications métiers sont en cours, arrêter l'exécution
+                System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
+                                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
             if (tasks == null || !tasks.Any())
             {

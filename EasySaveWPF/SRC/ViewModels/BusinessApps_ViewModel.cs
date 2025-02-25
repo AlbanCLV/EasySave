@@ -35,13 +35,16 @@ namespace EasySaveWPF.ViewModelsWPF
         public ICommand AddApplicationCommand { get; }
         public ICommand RemoveApplicationCommand { get; }
 
-        public BusinessApps_ViewModel(string select)
+        public BusinessApps_ViewModel(string select, bool e)
         {
             _processWatcher = ProcessWatcherWPF.Instance;
             BusinessApplications = new ObservableCollection<string>(_processWatcher.GetBusinessApplications());
             lang = LangManager.Instance;
             lang.SetLanguage(select);
-            _processWatcher.BusinessAppStateChanged += OnBusinessAppStateChanged;
+            if (e)
+            {
+                _processWatcher.BusinessAppStateChanged += OnBusinessAppStateChanged; // Puis abonne
+            }
             AddApplicationCommand = new RelayCommand(AddApplication);
             RemoveApplicationCommand = new RelayCommand(RemoveApplication);
             Log_VM = Log_ViewModels.Instance;

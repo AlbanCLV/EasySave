@@ -21,7 +21,7 @@ namespace EasySaveWPF.Views
             lang = LangManager.Instance;
             EncryptionModelsWPF = Cryptage_ModelsWPF.Instance;
             lang.SetLanguage(SelectedLanguage);
-            DataContext = new BusinessApps_ViewModel(SelectedLanguage); // Lier la fenêtre au ViewModel
+            DataContext = new BusinessApps_ViewModel(SelectedLanguage, false); // Lier la fenêtre au ViewModel
             SetColumnHeaders();
 
         }

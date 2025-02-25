@@ -203,11 +203,10 @@ namespace EasySaveWPF.ModelsWPF
 
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
-                string runningApp = ProcessWatcherWPF.Instance.GetRunningBusinessApps();
-                while (!string.IsNullOrEmpty(runningApp))
+                while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
                 {
                     // Si des applications métiers sont en cours, arrêter l'exécution
-                    System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {runningApp}. Veuillez fermer ces applications avant de continuer.",
+                    System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
                                                      "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
 
