@@ -4,6 +4,11 @@ using System.ComponentModel;
 using System;
 using EasySaveWPF.ModelsWPF;
 using System.Windows;
+using EasySaveConsole.Models;
+using EasySaveLog;
+using System.Diagnostics;
+using System.Reactive.Concurrency;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace EasySaveWPF.ViewModelsWPF
 {
@@ -11,7 +16,9 @@ namespace EasySaveWPF.ViewModelsWPF
     {
         private readonly ProcessWatcherWPF _processWatcher;
         private string _newAppName;
-
+        private LangManager lang;
+        private Log_ViewModels Log_VM;
+        Stopwatch stopwatch = new Stopwatch();
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<string> BusinessApplications { get; private set; }
@@ -28,32 +35,42 @@ namespace EasySaveWPF.ViewModelsWPF
         public ICommand AddApplicationCommand { get; }
         public ICommand RemoveApplicationCommand { get; }
 
-        public BusinessApps_ViewModel()
+        public BusinessApps_ViewModel(string select)
         {
             _processWatcher = ProcessWatcherWPF.Instance;
             BusinessApplications = new ObservableCollection<string>(_processWatcher.GetBusinessApplications());
-
-            // Écouter l'événement BusinessAppStateChanged
+            lang = LangManager.Instance;
+            lang.SetLanguage(select);
             _processWatcher.BusinessAppStateChanged += OnBusinessAppStateChanged;
-
             AddApplicationCommand = new RelayCommand(AddApplication);
             RemoveApplicationCommand = new RelayCommand(RemoveApplication);
+            Log_VM = Log_ViewModels.Instance;
         }
         private void AddApplication(object param)
         {
             if (!string.IsNullOrWhiteSpace(NewAppName))
             {
+                stopwatch.Start();
                 _processWatcher.AddBusinessApplication(NewAppName);
                 BusinessApplications.Add(NewAppName);
+                stopwatch.Stop();
+                string time = stopwatch.ElapsedMilliseconds.ToString();
+                Log_VM.LogBackupAction(NewAppName, "", "", time, "", "");
                 NewAppName = ""; // Réinitialiser le champ
+
+
             }
         }
         private void RemoveApplication(object param)
         {
             if (param is string appName && BusinessApplications.Contains(appName))
             {
+                stopwatch.Start();
                 _processWatcher.RemoveBusinessApplication(appName);
                 BusinessApplications.Remove(appName);
+                stopwatch.Stop();
+                string time = stopwatch.ElapsedMilliseconds.ToString();
+                Log_VM.LogBackupAction(appName, "", "", time, "RemoveApplication", "");
             }
         }
         private void OnBusinessAppStateChanged(string appName, bool isRunning)
@@ -64,11 +81,15 @@ namespace EasySaveWPF.ViewModelsWPF
                 {
                     MessageBox.Show($"Attention ! L'application métier '{appName}' est en cours d'exécution.",
                                     "Application Métier Détectée", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Log_VM.LogBackupAction(appName, "", "", "-1", "isRunning", "");
+
                 }
                 else
                 {
                     MessageBox.Show($"L'application métier '{appName}' a été fermée.",
                                     "Application Métier Fermée", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Log_VM.LogBackupAction(appName, "", "", "-1", "Is CLose", "");
+
                 }
             });
         }

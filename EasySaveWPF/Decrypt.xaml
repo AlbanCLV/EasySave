@@ -1,0 +1,16 @@
+<Window x:Class="EasySaveWPF.Views.DeCryptageWPF"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DéCryptage" Height="142" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+
+    <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="50,10">
+
+
+        <TextBlock x:Name="PassTextBloc" Text="Mot de passe" FontWeight="Bold" Margin="0,5"/>
+        <PasswordBox Name="PassTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>
+
+        <Button Name="Boutton_Apply" Content="Appliquer" Click="Boutton_Apply_Click" Margin="0,5"/>
+    </StackPanel>
+</Window>

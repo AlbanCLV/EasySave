@@ -21,7 +21,7 @@ namespace EasySaveWPF.Views
             lang = LangManager.Instance;
             EncryptionModelsWPF = Cryptage_ModelsWPF.Instance;
             lang.SetLanguage(SelectedLanguage);
-            DataContext = new BusinessApps_ViewModel(); // Lier la fenêtre au ViewModel
+            DataContext = new BusinessApps_ViewModel(SelectedLanguage); // Lier la fenêtre au ViewModel
             SetColumnHeaders();
 
         }
@@ -52,33 +52,57 @@ namespace EasySaveWPF.Views
             var selectedExtensions = new List<string>();
 
             // Vérifier si l'option ou le mot de passe est vide
-            if (string.IsNullOrWhiteSpace(optionText) || string.IsNullOrWhiteSpace(pass)) { return; }
+            if (string.IsNullOrWhiteSpace(optionText) || string.IsNullOrWhiteSpace(pass))
+            {
+                System.Windows.MessageBox.Show("Veuillez remplir tous les champs.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Définir les paramètres selon l'option sélectionnée
             if (optionText == "Chiffrer toutes les sauvegardes" || optionText == "Encrypt all backups")
             {
-                EncryptionALL = true;
+                EncryptionALL = true; // Chiffrer toutes les sauvegardes
             }
             else if (optionText == "Chiffrer uniquement les extensions sélectionnées" || optionText == "Encrypt only selected extensions")
             {
+                // Vérifier si des extensions ont été sélectionnées
                 if (ExtensionListBox.SelectedItems.Count == 0)
                 {
-                    System.Windows.MessageBox.Show(lang.Translate("ExtensionError"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("Veuillez sélectionner des extensions.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
+                // Ajouter les extensions sélectionnées à la liste
                 foreach (ListBoxItem item in ExtensionListBox.SelectedItems)
                 {
                     selectedExtensions.Add(item.Content.ToString());
                 }
+                EncryptionALL = false; // Ne pas tout chiffrer, seulement les extensions sélectionnées
             }
-            else if (optionText == "Ne pas chiffrer"|| optionText == "Do not encrypt")
+            else if (optionText == "Ne pas chiffrer" || optionText == "Do not encrypt")
             {
+                // Si "Ne pas chiffrer", on met les options d'encryption sur false
                 EncryptionModelsWPF.SetEncryptionSettings("KO", false, selectedExtensions.ToArray(), false);
                 CloseWindow(sender, e);
+                return;
+            }
+            else
+            {
+                // Si aucune option valide n'est sélectionnée
+                System.Windows.MessageBox.Show("Option non valide sélectionnée.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
+            // Affichage pour débogage ou test (peut être retiré après tests)
+            System.Windows.MessageBox.Show($"EncryptionAll: {EncryptionALL}, Extensions sélectionnées: {string.Join(", ", selectedExtensions)}", "Paramètres d'encryption", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Appliquer les paramètres d'encryption
             EncryptionModelsWPF.SetEncryptionSettings(pass, EncryptionALL, selectedExtensions.ToArray(), true);
+
+            // Fermer la fenêtre après application
             CloseWindow(sender, e);
         }
+
 
 
         public void SetLanguage(string langue)

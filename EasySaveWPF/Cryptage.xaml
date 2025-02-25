@@ -15,10 +15,10 @@
         </ComboBox>
 		<TextBlock x:Name="ExtansionTextBlock" Text="Extensions à sélectionner" FontWeight="Bold" Margin="0,5"/>
 		<ListBox Name="ExtensionListBox" SelectionMode="Multiple" Margin="0,10">
-			<ListBoxItem Content="json"/>
-			<ListBoxItem Content="xml"/>
-			<ListBoxItem Content="txt"/>
-			<ListBoxItem Content="csv"/>
+			<ListBoxItem Content=".json"/>
+			<ListBoxItem Content=".xml"/>
+			<ListBoxItem Content=".txt"/>
+			<ListBoxItem Content=".csv"/>
 		</ListBox>
         <TextBlock x:Name="PassTextBloc" Text="Mot de passe" FontWeight="Bold" Margin="0,5"/>
         <PasswordBox Name="PassTextBox" Width="300" Margin="0,5" HorizontalAlignment="Left"/>

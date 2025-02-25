@@ -15,7 +15,7 @@ namespace EasySaveWPF.Views
             lang = LangManager.Instance;
             lang.SetLanguage(SelectedLanguage);
             InitializeComponent();
-            DataContext = new BusinessApps_ViewModel(); // Lier la fenêtre au ViewModel
+            DataContext = new BusinessApps_ViewModel(SelectedLanguage); // Lier la fenêtre au ViewModel
             SetColumnHeaders();
         }
         public static BusinessAppsWindow Instance
@@ -40,7 +40,7 @@ namespace EasySaveWPF.Views
         {
             this.Hide();
         }
-        public void SetLanguage(string langue)
+        public void SetLangueLog(string langue)
         {
             SelectedLanguage = langue;
             lang.SetLanguage(langue);
@@ -51,5 +51,6 @@ namespace EasySaveWPF.Views
             Boutton_ADD.Content = lang.Translate("Create");
             Boutton_Supprimer.Content = lang.Translate("Delete");
         }
+
     }
 }

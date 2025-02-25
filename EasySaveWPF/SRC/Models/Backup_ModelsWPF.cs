@@ -202,23 +202,57 @@ namespace EasySaveWPF.ModelsWPF
 
             foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
+                string runningApp = ProcessWatcherWPF.Instance.GetRunningBusinessApps();
+                while (!string.IsNullOrEmpty(runningApp))
+                {
+                    // Si des applications métiers sont en cours, arrêter l'exécution
+                    System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {runningApp}. Veuillez fermer ces applications avant de continuer.",
+                                                     "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                // Mettre à jour l'état de la tâche
                 state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
+
+                // Copier le fichier dans le répertoire de destination
                 File.Copy(file, destinationFile, true);
 
+                // Vérification si le cryptage est activé
                 if (Cryptage_ModelsWPF.EncryptEnabled == true)
                 {
-                    stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
-                    var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
-                    stopwatch.Stop();
-
-                    if (!result.Item3)
+                    // Si l'option "EncryptAll" est activée, crypter tous les fichiers
+                    if (Cryptage_ModelsWPF.EncryptAll)
                     {
-                        return "KO";
-                    }
+                        stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
+                        var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
+                        stopwatch.Stop();
 
-                    totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
+                        if (!result.Item3)
+                        {
+                            return "KO";
+                        }
+
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
+                    }
+                    else
+                    {
+                        // Vérifier l'extension avant de crypter
+                        string fileExtension = Path.GetExtension(file).ToLower();
+                        if (Cryptage_ModelsWPF.SelectedExtensions.Contains(fileExtension))
+                        {
+                            stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
+                            var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
+                            stopwatch.Stop();
+
+                            if (!result.Item3)
+                            {
+                                return "KO";
+                            }
+
+                            totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
+                        }
+                    }
                 }
             }
 

@@ -65,6 +65,7 @@
 
 
             <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.25" />
+            <Button Name="Boutton_Decrypt" Content="Decrypt Folder" Click="DecryptFolder" Margin="0.25" />
 
             <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,25"/>
 

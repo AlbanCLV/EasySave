@@ -28,7 +28,7 @@ namespace EasySaveWPF
         private Log_ViewModels Log_VM;
         private BusinessAppsWindow Business;
         private CryptageWPF Cryptage;
-
+        private DeCryptageWPF DeCryptage;
 
         public MainWindow()
         {
@@ -38,6 +38,8 @@ namespace EasySaveWPF
             Log_VM = Log_ViewModels.Instance;
             Business = BusinessAppsWindow.Instance;
             Cryptage = CryptageWPF.Instance;
+            DeCryptage = DeCryptageWPF.Instance;
+
             Setlanguage(SelectedLanguage);
 
         }
@@ -117,7 +119,7 @@ namespace EasySaveWPF
                 bool encryptAll = Cryptage_ModelsWPF.EncryptAll;
                 string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
                 bool encry = Cryptage_ModelsWPF.EncryptAll;
-
+                
                 // Exécuter la tâche en fonction des paramètres récupérés
                 (string réponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask);
 
@@ -141,7 +143,6 @@ namespace EasySaveWPF
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
-
         private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             var tasks = TasksDataGrid.ItemsSource as List<Backup_ModelsWPF>;
@@ -255,7 +256,6 @@ namespace EasySaveWPF
                 }
             }
         }
-
         private void SetColumnHeaders()
         {
             // Exemple pour le DataGrid
@@ -276,7 +276,6 @@ namespace EasySaveWPF
             FichierLogTextBlock.Text = lang.Translate("FileLog");
             Boutton_Metier.Content = lang.Translate("businesssoftware");
         }
-
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
         {
             if (Business == null || !Business.IsVisible)
@@ -284,12 +283,12 @@ namespace EasySaveWPF
                 Business = new BusinessAppsWindow();
             }
             Business.ShowDialog();
-        }
 
+        }
         private void Setlanguage(string langue)
         {
             lang.SetLanguage(langue);
-            Business.SetLanguage(langue);
+            Business.SetLangueLog(langue);
             Cryptage.SetLanguage(langue);
 
             SetColumnHeaders();
@@ -297,7 +296,14 @@ namespace EasySaveWPF
             Cryptage.SetColumnHeaders();
         }
 
-
+        private void DecryptFolder(object sender, RoutedEventArgs e)
+        {
+            if (DeCryptage == null || !DeCryptage.IsVisible)
+            {
+                DeCryptage = new DeCryptageWPF();
+            }
+            DeCryptage.ShowDialog();
+        }
 
 
 

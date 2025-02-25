@@ -153,6 +153,25 @@ namespace EasySaveLog
                     New_Language_files = source,
                 };
             }
+            else if (act == "AddApplication" || act == "RemoveApplication")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Application = name,
+                };
+
+            }
+            else if (act == "isRunning" || act == "Is CLose")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                    Application = name,
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -230,6 +249,7 @@ namespace EasySaveLog
                     new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
                 );
             }
+
             else if (act == "Create Task" || act == "Deleting_task")
             {
                 long fileSize = GetDirectorySize(new DirectoryInfo(source));

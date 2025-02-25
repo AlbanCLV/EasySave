@@ -66,6 +66,20 @@ namespace EasySaveWPF.ModelsWPF
                 return DecryptFile(filePath, outputFile);
             }
         }
+        public string ReadPassword()
+        {
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo key;
+            while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+            {
+                if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
+                    sb.Remove(sb.Length - 1, 1);
+                else if (!char.IsControl(key.KeyChar))
+                    sb.Append(key.KeyChar);
+            }
+            Console.WriteLine();
+            return sb.ToString();
+        }
         private (string,string,bool) EncryptFile(string inputFile, string outputFile)
         {
             try
