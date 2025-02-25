@@ -66,7 +66,6 @@ namespace EasySaveClient
 
             if (selectedTask == null)
             {
-                Console.WriteLine("[CLIENT] Erreur : Aucune tâche sélectionnée !");
                 MessageBox.Show("Veuillez sélectionner une tâche avant d'exécuter.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -77,6 +76,10 @@ namespace EasySaveClient
             CryptageClient cryptageWindow = new CryptageClient();
             bool? result = cryptageWindow.ShowDialog();
 
+            Console.WriteLine($"[CLIENT] Fenêtre de cryptage ouverte, résultat : {result}");
+
+            string encryptionOptions = "NO_ENCRYPT";
+
             if (result == true)
             {
                 string password = cryptageWindow.Password;
@@ -84,23 +87,20 @@ namespace EasySaveClient
                 List<string> selectedExtensions = cryptageWindow.SelectedExtensions;
                 bool encryptEnabled = cryptageWindow.EncryptEnabled;
 
-                // ✅ Vérifier si l'utilisateur a choisi "Ne pas chiffrer"
-                string encryptionOptions = encryptEnabled
-                    ? $"ENCRYPT:{password}:{encryptAll}:{string.Join(",", selectedExtensions)}"
-                    : "NO_ENCRYPT";
-
-                string command = $"EXECUTE:{taskName}:{encryptionOptions}";
-
-                Console.WriteLine($"[CLIENT] Commande envoyée au serveur : {command}");
-                await socketClient.SendMessageAsync(command);
-                LogsListBox.Items.Add($"[CLIENT] Demande d'exécution de {taskName} avec cryptage : {encryptionOptions}");
+                if (encryptEnabled)
+                {
+                    encryptionOptions = $"ENCRYPT:{password}:{encryptAll}:{string.Join(",", selectedExtensions)}";
+                }
             }
-            else
-            {
-                Console.WriteLine("[CLIENT] Fenêtre de cryptage annulée.");
-                LogsListBox.Items.Add($"[CLIENT] Exécution annulée par l'utilisateur.");
-            }
+
+            string command = $"EXECUTE:{taskName}:{encryptionOptions}";
+
+            Console.WriteLine($"[CLIENT] Commande envoyée au serveur : {command}");
+            await socketClient.SendMessageAsync(command);
+            LogsListBox.Items.Add($"[CLIENT] Demande d'exécution de {taskName} avec cryptage : {encryptionOptions}");
         }
+
+
 
         private void TaskListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -168,9 +168,6 @@ namespace EasySaveClient
                 }
             });
         }
-
-
-
 
 
     }
