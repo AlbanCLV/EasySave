@@ -19,6 +19,14 @@ namespace EasySaveClient
             InitializeComponent();
             socketClient.OnMessageReceived += UpdateUI;
             TaskListView.ItemsSource = Tasks;
+            if (LogsListBox == null)
+            {
+                Console.WriteLine("[CLIENT] Erreur : LogsListBox est NULL !");
+            }
+            else
+            {
+                Console.WriteLine("[CLIENT] LogsListBox trouvé !");
+            }
         }
 
         private async void ConnectToServer_Click(object sender, RoutedEventArgs e)
@@ -52,6 +60,62 @@ namespace EasySaveClient
             Console.WriteLine("[CLIENT] Attente de la réponse du serveur...");
         }
 
+        private async void ExecuteTask_Click(object sender, RoutedEventArgs e)
+        {
+            BackupTask selectedTask = TaskListView.SelectedItem as BackupTask;
+
+            if (selectedTask == null)
+            {
+                Console.WriteLine("[CLIENT] Erreur : Aucune tâche sélectionnée !");
+                MessageBox.Show("Veuillez sélectionner une tâche avant d'exécuter.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string taskName = selectedTask.Name;
+            Console.WriteLine($"[CLIENT] Tâche sélectionnée : {taskName}");
+
+            CryptageClient cryptageWindow = new CryptageClient();
+            bool? result = cryptageWindow.ShowDialog();
+
+            if (result == true)
+            {
+                string password = cryptageWindow.Password;
+                bool encryptAll = cryptageWindow.EncryptAll;
+                List<string> selectedExtensions = cryptageWindow.SelectedExtensions;
+                bool encryptEnabled = cryptageWindow.EncryptEnabled;
+
+                // ✅ Vérifier si l'utilisateur a choisi "Ne pas chiffrer"
+                string encryptionOptions = encryptEnabled
+                    ? $"ENCRYPT:{password}:{encryptAll}:{string.Join(",", selectedExtensions)}"
+                    : "NO_ENCRYPT";
+
+                string command = $"EXECUTE:{taskName}:{encryptionOptions}";
+
+                Console.WriteLine($"[CLIENT] Commande envoyée au serveur : {command}");
+                await socketClient.SendMessageAsync(command);
+                LogsListBox.Items.Add($"[CLIENT] Demande d'exécution de {taskName} avec cryptage : {encryptionOptions}");
+            }
+            else
+            {
+                Console.WriteLine("[CLIENT] Fenêtre de cryptage annulée.");
+                LogsListBox.Items.Add($"[CLIENT] Exécution annulée par l'utilisateur.");
+            }
+        }
+
+        private void TaskListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TaskListView.SelectedItem != null)
+            {
+                BackupTask selectedTask = TaskListView.SelectedItem as BackupTask;
+                Console.WriteLine($"[CLIENT] Nouvelle tâche sélectionnée : {selectedTask?.Name}");
+            }
+            else
+            {
+                Console.WriteLine("[CLIENT] Aucune tâche sélectionnée !");
+            }
+        }
+
+
 
 
         private void UpdateUI(string message)
@@ -72,18 +136,26 @@ namespace EasySaveClient
 
                         // ✅ Vérifier si l'entrée contient bien ":"
                         int firstColonIndex = entry.IndexOf(':');
-                        if (firstColonIndex == -1) continue; // ❌ Ignorer l'entrée si elle est mal formatée
+                        if (firstColonIndex == -1)
+                        {
+                            Console.WriteLine($"[CLIENT] Erreur : format incorrect pour {entry}");
+                            continue; // ❌ Ignorer l'entrée si elle est mal formatée
+                        }
 
-                        string taskName = entry.Substring(0, firstColonIndex);
-                        string pathData = entry.Substring(firstColonIndex + 1);
+                        string taskName = entry.Substring(0, firstColonIndex).Trim();
+                        string pathData = entry.Substring(firstColonIndex + 1).Trim();
 
                         // ✅ Vérifier si la partie des chemins contient bien "->"
-                        string[] paths = pathData.Split("->");
-                        if (paths.Length != 2) continue; // ❌ Ignorer l'entrée si elle est mal formatée
+                        string[] paths = pathData.Split(new string[] { "->" }, StringSplitOptions.None);
+                        if (paths.Length != 2)
+                        {
+                            Console.WriteLine($"[CLIENT] Erreur : format incorrect des chemins pour {entry}");
+                            continue; // ❌ Ignorer l'entrée si elle est mal formatée
+                        }
 
                         Tasks.Add(new BackupTask
                         {
-                            Name = taskName.Trim(),
+                            Name = taskName,
                             SourceDirectory = paths[0].Trim(),
                             TargetDirectory = paths[1].Trim()
                         });
@@ -94,12 +166,10 @@ namespace EasySaveClient
                     TaskListView.Items.Refresh(); // ✅ FORCER LE RAFRAÎCHISSEMENT
                     Console.WriteLine($"[CLIENT] {Tasks.Count} tâches affichées.");
                 }
-                else
-                {
-                    Console.WriteLine($"[CLIENT] Message ignoré : {message}");
-                }
             });
         }
+
+
 
 
 

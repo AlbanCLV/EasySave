@@ -6,6 +6,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using EasySaveWPF.ViewModelsWPF;
+using System.Windows;
+using EasySaveWPF.Views;
+
+
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -69,6 +73,24 @@ namespace EasySaveWPF.ModelsWPF
                         {
                             await SendTaskListAsync(); // Envoie la liste des tâches
                         }
+                        else if (command.StartsWith("EXECUTE:"))
+                        {
+                            Console.WriteLine($"[SERVER] Commande reçue pour exécution : {command}");
+
+                            string[] parts = command.Split(':');
+                            if (parts.Length < 2)
+                            {
+                                Console.WriteLine("[SERVER] Erreur : Format de commande incorrect !");
+                                return;
+                            }
+
+                            string taskName = parts[1]; // ✅ Récupération correcte du nom de la tâche
+                            string encryptionOptions = parts.Length > 2 ? parts[2] : "NO_ENCRYPT"; // ✅ Défaut à "NO_ENCRYPT"
+
+                            await ExecuteTaskAsync(taskName, encryptionOptions);
+                        }
+
+
                     }
                 }
                 catch
@@ -111,6 +133,41 @@ namespace EasySaveWPF.ModelsWPF
                 }
             }
         }
+
+        private async Task ExecuteTaskAsync(string taskName, string encryptionOptions)
+        {
+            Console.WriteLine($"[SERVER] Exécution de la tâche {taskName} avec options : {encryptionOptions}");
+
+            if (encryptionOptions.StartsWith("ENCRYPT"))
+            {
+                string[] encParts = encryptionOptions.Split(':');
+                string password = encParts[1];
+                bool encryptAll = bool.Parse(encParts[2]);
+                string[] selectedExtensions = encParts.Length > 3 ? encParts[3].Split(',') : new string[0];
+
+                Cryptage_ModelsWPF.Instance.SetEncryptionSettings(password, encryptAll, selectedExtensions, true);
+            }
+            else
+            {
+                Console.WriteLine("[SERVER] Aucune option de cryptage. Lancement direct de la tâche.");
+                Cryptage_ModelsWPF.Instance.SetEncryptionSettings("KO", false, new string[0], false);
+            }
+
+            var task = Backup_VueModelsWPF.Instance.ViewTasksWPF().FirstOrDefault(t => t.Name == taskName);
+            if (task != null)
+            {
+                (string status, string time, string encryptTime) = Backup_VueModelsWPF.Instance.ExecuteSpecificTasks(task);
+                Console.WriteLine($"[SERVER] Tâche {taskName} exécutée. Statut : {status}");
+            }
+            else
+            {
+                Console.WriteLine($"[SERVER] Erreur : Tâche {taskName} introuvable !");
+            }
+        }
+
+
+
+
 
     }
 }
