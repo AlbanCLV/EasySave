@@ -62,20 +62,18 @@ namespace EasySaveWPF.ViewModelsWPF
                 return _instance;
             }
         }
-
-
         /// <summary>
         /// Creates a backup task based on the user's input.
         /// Records the time taken to create the task and logs the action.
         /// </summary>
         public (string, string) CreateBackupTaskWPF(string n, string s, string d, string t)
         {
-            Backup_ModelsWPF task = new Backup_ModelsWPF(n, s, d, t); // Get task details from user
+            Backup_ModelsWPF task = new Backup_ModelsWPF(n, s, d, t, 0); // Get task details from user
             stopwatch.Start();
             string r = backupModel.CreateBackupTask(task);  // Create the backup task
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-
+            
             return (r, formattedTime);
         }
         public List<Backup_ModelsWPF> ViewTasksWPF()
@@ -92,7 +90,7 @@ namespace EasySaveWPF.ViewModelsWPF
             LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", task.Type);  // Log the action
             return r;
         }
-        public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token)
+        public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
@@ -102,7 +100,7 @@ namespace EasySaveWPF.ViewModelsWPF
                 return ("KO", "KO", "KO");
             }
             stopwatch.Start();
-            (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task, token);
+            (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task, token, main);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             return (r, formattedTime, timeencrypt);

@@ -61,20 +61,21 @@
                 <ComboBoxItem Content="json"/>
                 <ComboBoxItem Content="xml"/>
             </ComboBox>
-            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,5"/>
+            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,5,0,5"/>
 
+            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0,5,0,5" />
 
-            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.20" />
-            
-            <Button Name="Boutton_Decrypt" Content="Decrypt Folder" Click="DecryptFolder" Margin="0.25" />
+            <Button Name="Boutton_Decrypt" Content="Decrypt Folder" Click="DecryptFolder" Margin="0,5,0,5" />
 
-            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,25"/>
+            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,5,0,5"/>
+
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Button Name="PauseButton" Content="Pause" Width="100" Height="30" Click="PauseButton_Click" Margin="10"/>
                 <Button Name="StopButton" Content="Stop" Click="StopButton_Click" Width="100" Height="30" Margin="10"/>
 
             </StackPanel>
+            <ProgressBar x:Name="ProgressBarControl" HorizontalAlignment="Left" Height="20" Margin="10" VerticalAlignment="Top" Width="200" Minimum="0" Maximum="100" Value="0" />
 
 
         </StackPanel>
@@ -86,19 +87,18 @@
                 <DataGridTextColumn Header="Source" Binding="{Binding SourceDirectory}" Width="*" />
                 <DataGridTextColumn Header="Destination" Binding="{Binding TargetDirectory}" Width="*" />
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
-
-                <!-- Nouvelle colonne avec une barre de progression -->
-                <DataGridTemplateColumn Header="Progression" Width="150">
+                <DataGridTemplateColumn Header="Progression" Width="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" Width="120" />
+                            <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="20" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
 
+
                 <!-- Colonne pour les boutons de contrôle -->
-                <DataGridTemplateColumn Header="Actions" Width="250">
+                <DataGridTemplateColumn Header="Actions" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">

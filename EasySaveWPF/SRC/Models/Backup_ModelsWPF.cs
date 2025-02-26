@@ -11,6 +11,8 @@ using EasySaveConsole.Models;
 using System.Windows;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
+using System.Windows.Threading;
+using System.ComponentModel;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -24,11 +26,12 @@ namespace EasySaveWPF.ModelsWPF
     /// </summary>
     public class Backup_ModelsWPF
     {
+
         public string Name { get; set; }
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }
         public string Type { get; set; }
-        public int Progress { get; set; } 
+        public int Progress {  get; set; }
 
         private static Backup_ModelsWPF _instance;
         private static readonly object _lock = new object();
@@ -49,12 +52,13 @@ namespace EasySaveWPF.ModelsWPF
         /// Constructor for creating a backup job.
         /// </summary>
 
-        public Backup_ModelsWPF(string name, string sourceDirectory, string targetDirectory, string type, bool loadTasks = false)
+        public Backup_ModelsWPF(string name, string sourceDirectory, string targetDirectory, string type, int progress, bool loadTasks = false)
         {
             Name = name;
             SourceDirectory = sourceDirectory;
             TargetDirectory = targetDirectory;
             Type = type;
+            Progress = progress;
 
             cryptage = Cryptage_ModelsWPF.Instance;
 
@@ -63,6 +67,7 @@ namespace EasySaveWPF.ModelsWPF
                 LoadTasks();
             }
         }
+       
         public static Backup_ModelsWPF Instance
         {
             get
@@ -74,7 +79,7 @@ namespace EasySaveWPF.ModelsWPF
                     {
                         if (_instance == null)
                         {
-                            _instance = new Backup_ModelsWPF("", "", "", "Full", true);
+                            _instance = new Backup_ModelsWPF("", "", "", "Full",0, true);
                         }
                     }
                 }
@@ -132,14 +137,27 @@ namespace EasySaveWPF.ModelsWPF
             Tasks.Add(task);
             return SaveTasks();
 
-        }
+        }        
         public string DeleteTaskWPF(Backup_ModelsWPF task)
         {
-            Tasks.Remove(task);
-            SaveTasks();
-            return "task delete";
+            var taskToRemove = Tasks.Find(t =>
+                t.Name == task.Name &&
+                t.SourceDirectory == task.SourceDirectory &&
+                t.TargetDirectory == task.TargetDirectory &&
+                t.Type == task.Type
+            );
+
+            if (taskToRemove != null)
+            {
+                Tasks.Remove(taskToRemove);
+                SaveTasks(); // Sauvegarde après suppression
+                return "Task deleted";
+            }
+
+            return "Task not found";
         }
-        public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token)
+
+        public (string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             return Task.Run(() =>
             {
@@ -147,16 +165,16 @@ namespace EasySaveWPF.ModelsWPF
                     return ("KO", "Canceled");
 
                 if (task.Type == "Full")
-                    return PerformFullBackup(task, token);
+                    return PerformFullBackup(task, token, main);
                 else if (task.Type == "Differential")
-                    return ExecuteDifferentialBackup(task, token);
+                    return ExecuteDifferentialBackup(task, token, main);
 
                 return ("KO", "-1");
             }, token).Result;
         }
 
 
-        public (string, string) PerformFullBackup(Backup_ModelsWPF task, CancellationToken token)
+        public (string, string) PerformFullBackup(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             if (!Directory.Exists(task.SourceDirectory))
             {
@@ -168,9 +186,9 @@ namespace EasySaveWPF.ModelsWPF
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
             Directory.CreateDirectory(targetPath);
 
-            return ("OK", CopyDirectoryContent(task.SourceDirectory, targetPath, task, token));
+            return ("OK", CopyDirectoryContent(task.SourceDirectory, targetPath, task, token, main));
         }
-        public (string, string) ExecuteDifferentialBackup(Backup_ModelsWPF task, CancellationToken token)
+        public (string, string) ExecuteDifferentialBackup(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             if (!Directory.Exists(task.SourceDirectory))
             {
@@ -182,10 +200,10 @@ namespace EasySaveWPF.ModelsWPF
             string targetPath = Path.Combine(task.TargetDirectory, sourceDirectoryName);
             if (!Directory.Exists(targetPath))
             {
-                PerformFullBackup(task, token);
+                PerformFullBackup(task, token, main);
             }
 
-            return ("OK", CopyModifiedFiles(task.SourceDirectory, targetPath, task, token));
+            return ("OK", CopyModifiedFiles(task.SourceDirectory, targetPath, task, token, main));
         }
 
         private string GetUniqueDirectoryName(string destinationPath, string sourceDirectoryName)
@@ -201,11 +219,14 @@ namespace EasySaveWPF.ModelsWPF
 
             return Path.Combine(destinationPath, uniqueName);
         }
-        private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task, CancellationToken token)
+        private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+            string[] files = Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly); // Liste de tous les fichiers
+            int totalFiles = GetTotalFilesInDirectory(sourceDir); // Nombre total de fichiers
+            int currentFile = 0; // Nombre de fichiers traités jusqu'à présent
 
-            foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
+            foreach (string file in files)
             {
                 if (token.IsCancellationRequested)
                     return "KO Canceled";
@@ -222,7 +243,19 @@ namespace EasySaveWPF.ModelsWPF
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
-                task.Progress = (int)((float)task.Progress + (100f / Directory.GetFiles(sourceDir).Length));
+                currentFile++; 
+                DeleteTaskWPF(task);
+
+                task.Progress = (int)((float)currentFile / totalFiles * 100);
+                CreateBackupTask(task);
+
+
+                main.Dispatcher.Invoke(() =>
+                {
+                    main.TasksDataGrid.ItemsSource = null;
+                    main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                });
+
 
                 // Vérification si le cryptage est activé
                 if (Cryptage_ModelsWPF.EncryptEnabled == true)
@@ -260,6 +293,7 @@ namespace EasySaveWPF.ModelsWPF
                         }
                     }
                 }
+
             }
 
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
@@ -271,18 +305,26 @@ namespace EasySaveWPF.ModelsWPF
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir, task, token);
+                CopyDirectoryContent(directory, destinationSubDir, task, token, main);
             }
 
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
             return totalEncryptionTime.ToString();
         }
-        private string CopyModifiedFiles(string sourceDir, string destDir, Backup_ModelsWPF task, CancellationToken token)
+        public List<Backup_ModelsWPF> ViewTasksWPF()
         {
-            long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+            LoadTasks(); // Recharger depuis le fichier
+            return Tasks;
+        }
+        private string CopyModifiedFiles(string sourceDir, string destDir, Backup_ModelsWPF task, CancellationToken token, MainWindow main)
+        {
+            long totalEncryptionTime = 0;
             Stopwatch stopwatch = new Stopwatch();
+            string[] files = Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories);
+            int totalFiles = files.Length;
+            int currentFile = 0;
 
-            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            foreach (string sourceFile in files)
             {
                 // Vérification de l'annulation
                 if (token.IsCancellationRequested)
@@ -296,7 +338,17 @@ namespace EasySaveWPF.ModelsWPF
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                     File.Copy(sourceFile, destFile, true);
+                    currentFile++;
+                    DeleteTaskWPF(task);
 
+                    task.Progress = (int)((float)currentFile / totalFiles * 100);
+                    CreateBackupTask(task);
+                    main.Dispatcher.Invoke(() =>
+                    {
+                        main.ProgressBarControl.Value = task.Progress;
+                        main.TasksDataGrid.ItemsSource = null;
+                        main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                    });
                     if (Cryptage_ModelsWPF.EncryptEnabled == true)
                     {
                         stopwatch.Restart();
@@ -318,7 +370,7 @@ namespace EasySaveWPF.ModelsWPF
 
 
 
-        public (List<Backup_ModelsWPF>, List<string>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks, CancellationToken token)
+        public (List<Backup_ModelsWPF>, List<string>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks, CancellationToken token, MainWindow main)
         {
             List<Backup_ModelsWPF> executedTasks = new List<Backup_ModelsWPF>();
             List<string> logMessages = new List<string>();
@@ -330,7 +382,7 @@ namespace EasySaveWPF.ModelsWPF
             {
                 tasksList.Add(Task.Run(() =>
                 {
-                    (string log, string time) = ExecuteSpecificTasks(task, token);
+                    (string log, string time) = ExecuteSpecificTasks(task, token, main);
 
                     lock (executedTasks) // Empêcher les conflits d'accès
                     {
@@ -345,6 +397,23 @@ namespace EasySaveWPF.ModelsWPF
 
             return (executedTasks, logMessages, TimeEncrypt);
         }
+        public int GetTotalFilesInDirectory(string directoryPath)
+        {
+            int totalFiles = 0;
+
+            // Vérifier si le répertoire existe
+            if (Directory.Exists(directoryPath))
+            {
+                // Récupérer tous les fichiers dans le répertoire actuel et ses sous-dossiers
+                string[] files = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+
+                // Retourner le nombre total de fichiers
+                totalFiles = files.Length;
+            }
+
+            return totalFiles;
+        }
+
 
     }
 }

@@ -47,6 +47,8 @@ namespace EasySaveWPF
 
         }
 
+
+
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
             // Récupérer les valeurs des champs d'entrée
@@ -101,13 +103,14 @@ namespace EasySaveWPF
         }
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                TasksDataGrid.ItemsSource = null;
-                TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
-            });
+          Dispatcher.Invoke(() =>
+          {
+              TasksDataGrid.ItemsSource = null;
+              TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+           });
 
-            Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
+           Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
+       
         }
 
 
@@ -137,7 +140,7 @@ namespace EasySaveWPF
                     try
                     {
 
-                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token);
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
                         if (token.IsCancellationRequested)
                         {
                             // Si l'annulation est demandée, logguez l'annulation
@@ -213,7 +216,7 @@ namespace EasySaveWPF
                         {
                             await Task.Delay(100);
                         }
-                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task, token);
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task, token, this);
 
                         if (reponse == "KO SOURCE")
                         {
