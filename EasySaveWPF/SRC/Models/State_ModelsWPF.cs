@@ -46,7 +46,7 @@ namespace EasySaveWPF.ModelsWPF
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -76,7 +76,7 @@ namespace EasySaveWPF.ModelsWPF
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
@@ -96,7 +96,7 @@ namespace EasySaveWPF.ModelsWPF
             };
 
             // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates .json");
+            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
 
             // Ensure that the log directory exists, create it if necessary.
             Directory.CreateDirectory(logDirectoryState);
