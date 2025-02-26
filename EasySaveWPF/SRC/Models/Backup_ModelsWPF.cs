@@ -200,111 +200,179 @@ namespace EasySaveWPF.ModelsWPF
         }
         private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task)
         {
-            long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+            long totalEncryptionTime = 0; // Temps total d'encryption
 
-            foreach (string file in Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
+            // Mise à jour de l'état de la tâche
+            state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
+
+            // Récupérer tous les fichiers du répertoire courant
+            string[] files = Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly);
+
+            // Séparer les fichiers prioritaires et non prioritaires
+            var priorityFiles = new List<string>();
+            var nonPriorityFiles = new List<string>();
+
+            foreach (string file in files)
             {
-                while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
-                {
-                    // Si des applications métiers sont en cours, arrêter l'exécution
-                    System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
-                                                     "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                if (PriorityManager.IsPriority(file))
+                    priorityFiles.Add(file);
+                else
+                    nonPriorityFiles.Add(file);
+            }
 
-                // Mettre à jour l'état de la tâche
-                state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
+            // Copier d'abord les fichiers prioritaires
+            foreach (string file in priorityFiles)
+            {
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
-
-                // Copier le fichier dans le répertoire de destination
                 File.Copy(file, destinationFile, true);
 
-                // Vérification si le cryptage est activé
-                if (Cryptage_ModelsWPF.EncryptEnabled == true)
+                // Si le cryptage est activé, traiter le fichier
+                if (Cryptage_ModelsWPF.EncryptEnabled)
                 {
-                    // Si l'option "EncryptAll" est activée, crypter tous les fichiers
                     if (Cryptage_ModelsWPF.EncryptAll)
                     {
-                        stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
-                        var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destinationFile, true);
                         stopwatch.Stop();
-
                         if (!result.Item3)
-                        {
                             return "KO";
-                        }
-
-                        totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
                     }
                     else
                     {
-                        // Vérifier l'extension avant de crypter
                         string fileExtension = Path.GetExtension(file).ToLower();
                         if (Cryptage_ModelsWPF.SelectedExtensions.Contains(fileExtension))
                         {
-                            stopwatch.Restart(); // Démarrer ou redémarrer le chronomètre
-                            var result = cryptage.ProcessFile(destinationFile, true); // "true" pour crypter
+                            stopwatch.Restart();
+                            var result = cryptage.ProcessFile(destinationFile, true);
                             stopwatch.Stop();
-
                             if (!result.Item3)
-                            {
                                 return "KO";
-                            }
-
-                            totalEncryptionTime += stopwatch.ElapsedMilliseconds; // Ajouter le temps pris à la somme totale
+                            totalEncryptionTime += stopwatch.ElapsedMilliseconds;
                         }
                     }
                 }
             }
 
+            // Ensuite copier les fichiers non prioritaires
+            foreach (string file in nonPriorityFiles)
+            {
+                string fileName = Path.GetFileName(file);
+                string destinationFile = Path.Combine(targetDir, fileName);
+                File.Copy(file, destinationFile, true);
+
+                if (Cryptage_ModelsWPF.EncryptEnabled)
+                {
+                    if (Cryptage_ModelsWPF.EncryptAll)
+                    {
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destinationFile, true);
+                        stopwatch.Stop();
+                        if (!result.Item3)
+                            return "KO";
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                    }
+                    else
+                    {
+                        string fileExtension = Path.GetExtension(file).ToLower();
+                        if (Cryptage_ModelsWPF.SelectedExtensions.Contains(fileExtension))
+                        {
+                            stopwatch.Restart();
+                            var result = cryptage.ProcessFile(destinationFile, true);
+                            stopwatch.Stop();
+                            if (!result.Item3)
+                                return "KO";
+                            totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                        }
+                    }
+                }
+            }
+
+            // Traiter les sous-dossiers de manière récursive
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-                CopyDirectoryContent(directory, destinationSubDir, task); // Appel récursif
+                totalEncryptionTime += Convert.ToInt64(CopyDirectoryContent(directory, destinationSubDir, task));
             }
 
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
 
             return totalEncryptionTime.ToString();
         }
+
+
         private string CopyModifiedFiles(string sourceDir, string destDir, Backup_ModelsWPF task)
         {
-            long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
+            long totalEncryptionTime = 0;
             Stopwatch stopwatch = new Stopwatch();
 
-            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
+
+            // Récupérer tous les fichiers (dans tous les sous-dossiers)
+            var allFiles = Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories);
+
+            // Séparer en deux listes : fichiers prioritaires et non prioritaires
+            var priorityFiles = new List<string>();
+            var nonPriorityFiles = new List<string>();
+
+            foreach (string file in allFiles)
             {
-                state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-                // Get relative path of source directory
+                if (PriorityManager.IsPriority(file))
+                    priorityFiles.Add(file);
+                else
+                    nonPriorityFiles.Add(file);
+            }
+
+            // Copier d'abord les fichiers prioritaires
+            foreach (string sourceFile in priorityFiles)
+            {
                 string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
                 string destFile = Path.Combine(destDir, relativePath);
-
+                Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                 if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                     File.Copy(sourceFile, destFile, true);
 
-                    if (Cryptage_ModelsWPF.EncryptEnabled == true)
+                    if (Cryptage_ModelsWPF.EncryptEnabled)
                     {
                         stopwatch.Restart();
-                        var result = cryptage.ProcessFile(destFile, true); // "true" pour crypter
+                        var result = cryptage.ProcessFile(destFile, true);
                         stopwatch.Stop();
-
                         if (!result.Item3)
-                        {
                             return "KO";
-                        }
-
                         totalEncryptionTime += stopwatch.ElapsedMilliseconds;
                     }
                 }
             }
-            state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
-            return totalEncryptionTime.ToString(); ;
-        }
 
+            // Ensuite copier les fichiers non prioritaires
+            foreach (string sourceFile in nonPriorityFiles)
+            {
+                string relativePath = PathHelper.GetRelativePath(sourceDir, sourceFile);
+                string destFile = Path.Combine(destDir, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+                if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
+                {
+                    File.Copy(sourceFile, destFile, true);
+
+                    if (Cryptage_ModelsWPF.EncryptEnabled)
+                    {
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destFile, true);
+                        stopwatch.Stop();
+                        if (!result.Item3)
+                            return "KO";
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                    }
+                }
+            }
+
+            state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), destDir);
+            return totalEncryptionTime.ToString();
+        }
 
 
         public (List<Backup_ModelsWPF>, List<string>, List<string>) ExecuteAllTasks(List<Backup_ModelsWPF> tasks)

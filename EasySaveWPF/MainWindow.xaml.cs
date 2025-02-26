@@ -414,5 +414,10 @@ namespace EasySaveWPF
 
             }
         }
+        private void Boutton_PriorityExtensions_Click(object sender, RoutedEventArgs e)
+        {
+            PriorityExtensionsWindow window = new PriorityExtensionsWindow();
+            window.ShowDialog();
+        }
     }
 }
