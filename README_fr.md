@@ -91,6 +91,54 @@ EasySave est un logiciel de sauvegarde performant et évolutif, développé dans
 | Matheo Pinget | matheo.pinget@viacesi.fr |
 
 ---
+# Manuel de l'utilisateur - Version 2.0
+
+## Introduction
+
+Ce logiciel vous permet de créer et de gérer des tâches de sauvegarde avec un support de chiffrement. La nouvelle version inclut une interface graphique, une sécurité renforcée et la prise en charge d'outils de chiffrement externes.
+
+## Installation
+
+1. Téléchargez l'installateur et lancez le programme d'installation.
+2. Suivez les instructions à l'écran pour terminer l'installation.
+3. Lancez l'application depuis le menu Démarrer ou le raccourci sur le bureau.
+
+## Fonctionnalités
+
+- **Interface graphique** : Interface WPF facile à utiliser.
+- **Support multilingue** : Disponible en anglais et en français.
+- **Modes de sauvegarde** : Sauvegarde unique ou séquentielle.
+- **Tâches de sauvegarde illimitées** : Aucune restriction sur le nombre de tâches.
+- **Fichier de log quotidien** : Suivi de l'avancement des sauvegardes, y compris le temps de chiffrement.
+- **Fichier de statut** : Fournit un aperçu des statuts des sauvegardes.
+- **Détection de logiciels métier** : Option pour arrêter les sauvegardes si un logiciel métier est détecté.
+- **Support en ligne de commande** : Permet l'automatisation et les scripts.
+- **Outil de chiffrement externe** : Supporte CryptoSoft pour des sauvegardes sécurisées.
+
+## Comment utiliser
+
+### Créer une tâche de sauvegarde
+
+1. Ouvrez l'application.
+2. Cliquez sur "Nouvelle sauvegarde" et configurez la source, la destination et l'horaire.
+3. Cliquez sur "Enregistrer" pour enregistrer la tâche.
+
+### Lancer une sauvegarde
+
+1. Sélectionnez une tâche de sauvegarde et cliquez sur "Exécuter" pour démarrer immédiatement.
+2. L'application traitera les fichiers selon le mode sélectionné.
+
+### Voir les logs et les statuts
+
+1. Allez dans la section "Logs" pour voir les rapports quotidiens.
+2. Vérifiez la section "Statut" pour les résumés des tâches.
+
+## Dépannage
+
+- Assurez-vous que les chemins source et destination sont accessibles.
+- Vérifiez les logs pour d'éventuels messages d'erreur.
+- Si les sauvegardes s'arrêtent de manière inattendue, vérifiez les paramètres de détection des logiciels métier.
+- Si vous utilisez CryptoSoft, confirmez son installation et sa configuration.
 
 ## 📊 Résumé des Versions
 
