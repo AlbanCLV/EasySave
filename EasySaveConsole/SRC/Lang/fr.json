@@ -12,6 +12,7 @@
   "Langue": "Langue",
   "FileLog": "Type de fichier log",
   "businesssoftware": "Logiciel Métier",
+  "TaskCreatedName": "Une tâche possède déjà ce nom",
   "Launch": "Lancer",
   "Delete": "Supprimer",
   "TitreBusinessTexBLox": "Applications Métier Surveillées",

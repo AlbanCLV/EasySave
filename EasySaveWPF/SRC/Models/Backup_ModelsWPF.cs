@@ -134,6 +134,10 @@ namespace EasySaveWPF.ModelsWPF
         /// </summary>
         public string CreateBackupTask(Backup_ModelsWPF task)
         {
+            if (Tasks.Any(t => t.Name.Equals(task.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                return ("KONAME");
+            }
             Tasks.Add(task);
             return SaveTasks();
 
@@ -299,7 +303,18 @@ namespace EasySaveWPF.ModelsWPF
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
                 File.Copy(file, destinationFile, true);
+                currentFile++;
+                DeleteTaskWPF(task);
 
+                task.Progress = (int)((float)currentFile / totalFiles * 100);
+                CreateBackupTask(task);
+
+
+                main.Dispatcher.Invoke(() =>
+                {
+                    main.TasksDataGrid.ItemsSource = null;
+                    main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                });
                 if (Cryptage_ModelsWPF.EncryptEnabled)
                 {
                     if (Cryptage_ModelsWPF.EncryptAll)
@@ -420,7 +435,18 @@ namespace EasySaveWPF.ModelsWPF
                 if (!File.Exists(destFile) || File.GetLastWriteTime(sourceFile) > File.GetLastWriteTime(destFile))
                 {
                     File.Copy(sourceFile, destFile, true);
+                    currentFile++;
+                    DeleteTaskWPF(task);
 
+                    task.Progress = (int)((float)currentFile / totalFiles * 100);
+                    CreateBackupTask(task);
+
+
+                    main.Dispatcher.Invoke(() =>
+                    {
+                        main.TasksDataGrid.ItemsSource = null;
+                        main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                    });
                     if (Cryptage_ModelsWPF.EncryptEnabled)
                     {
                         stopwatch.Restart();

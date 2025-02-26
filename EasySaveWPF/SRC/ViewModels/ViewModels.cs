@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.ComponentModel;
 using EasySaveWPF.Views;
 using System.Windows;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 
 namespace EasySaveWPF.ViewModelsWPF
@@ -68,6 +69,7 @@ namespace EasySaveWPF.ViewModelsWPF
         /// </summary>
         public (string, string) CreateBackupTaskWPF(string n, string s, string d, string t)
         {
+
             Backup_ModelsWPF task = new Backup_ModelsWPF(n, s, d, t, 0); // Get task details from user
             stopwatch.Start();
             string r = backupModel.CreateBackupTask(task);  // Create the backup task

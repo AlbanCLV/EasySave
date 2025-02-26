@@ -90,10 +90,18 @@ namespace EasySaveWPF
                 if (reponse == "OK")
                 {
                     Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", type);
+                 
                 }
                 else if (reponse == "KO")
                 {
                     Log_VM.LogBackupErreur(nom, "create_task_attempt", "Error Saving Tasks", "-1");
+                    return ;
+                }
+                else if (reponse == "KONAME")
+                {
+                    Log_VM.LogBackupErreur(nom, "create_task_attempt", "Same Name", "-1");
+                    System.Windows.MessageBox.Show(lang.Translate("TaskCreatedName"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.None);
+                    return;
                 }
                 System.Windows.MessageBox.Show(lang.Translate("TaskCreated"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
@@ -101,6 +109,7 @@ namespace EasySaveWPF
             else
             {
                 Log_VM.LogBackupErreur(nom, "create_task_attempt", "Select NO during confirmation", "-1");
+                return;
             }
 
             ViewButton_Click(sender, e);
@@ -330,7 +339,7 @@ namespace EasySaveWPF
             Boutton_Langue_app.Content = lang.Translate("App");
             LangueTextBlock.Text = lang.Translate("Langue");
             FichierLogTextBlock.Text = lang.Translate("FileLog");
-            Boutton_Metier.Content = lang.Translate("businesssoftware");
+            Boutton_Metier1.Content = lang.Translate("businesssoftware");
 
         }
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
