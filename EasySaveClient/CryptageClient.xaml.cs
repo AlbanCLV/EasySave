@@ -5,6 +5,9 @@ using System.Windows.Controls;
 
 namespace EasySaveClient
 {
+    /// <summary>
+    /// Represents the encryption settings window.
+    /// </summary>
     public partial class CryptageClient : Window
     {
         public string Password { get; private set; }
@@ -12,12 +15,18 @@ namespace EasySaveClient
         public List<string> SelectedExtensions { get; private set; }
         public bool EncryptEnabled { get; private set; }
 
+        /// <summary>
+        /// Initializes the encryption settings window.
+        /// </summary>
         public CryptageClient()
         {
             InitializeComponent();
             SelectedExtensions = new List<string>();
         }
 
+        /// <summary>
+        /// Applies the selected encryption settings when the user clicks "Apply".
+        /// </summary>
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             string selectedOption = (OptionComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
@@ -28,31 +37,41 @@ namespace EasySaveClient
 
             if (string.IsNullOrWhiteSpace(selectedOption))
             {
-                MessageBox.Show("Veuillez choisir une option de cryptage.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select an encryption option.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            if (selectedOption == "Chiffrer toutes les sauvegardes")
+            if (selectedOption == "Encrypt all backups" || selectedOption == "Encrypt only specific extensions")
             {
-                EncryptAll = true;
-            }
-            else if (selectedOption == "Chiffrer uniquement certaines extensions")
-            {
-                foreach (ListBoxItem item in ExtensionListBox.SelectedItems)
+                // Ensure that a password is provided
+                if (string.IsNullOrWhiteSpace(Password))
                 {
-                    SelectedExtensions.Add(item.Content.ToString());
-                }
-
-                if (SelectedExtensions.Count == 0)
-                {
-                    MessageBox.Show("Veuillez sélectionner au moins une extension.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Please enter a password to enable encryption.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                if (selectedOption == "Encrypt all backups")
+                {
+                    EncryptAll = true;
+                }
+                else if (selectedOption == "Encrypt only specific extensions")
+                {
+                    foreach (ListBoxItem item in ExtensionListBox.SelectedItems)
+                    {
+                        SelectedExtensions.Add(item.Content.ToString());
+                    }
+
+                    if (SelectedExtensions.Count == 0)
+                    {
+                        MessageBox.Show("Please select at least one file extension.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                }
             }
-            else if (selectedOption == "Ne pas chiffrer")
+            else if (selectedOption == "Do not encrypt")
             {
-                EncryptEnabled = false;  // ✅ Désactive le cryptage
-                Password = string.Empty; // ✅ Efface le mot de passe pour éviter une erreur serveur
+                EncryptEnabled = false;  // Disable encryption
+                Password = string.Empty; // Clear the password to avoid server errors
                 EncryptAll = false;
                 SelectedExtensions.Clear();
             }
@@ -60,6 +79,5 @@ namespace EasySaveClient
             DialogResult = true;
             Close();
         }
-
     }
 }

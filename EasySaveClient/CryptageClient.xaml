@@ -1,20 +1,25 @@
 ﻿<Window x:Class="EasySaveClient.CryptageClient"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Cryptage" Height="300" Width="400">
+        Title="Encryption Settings" Height="300" Width="400">
+
     <Grid>
         <StackPanel Margin="20">
-            <TextBlock Text="Mot de passe de cryptage :" FontWeight="Bold"/>
+
+            <!-- Password Input -->
+            <TextBlock Text="Encryption Password:" FontWeight="Bold"/>
             <PasswordBox x:Name="PasswordBox" Width="200"/>
 
-            <TextBlock Text="Choisir l'option :" FontWeight="Bold" Margin="0,10,0,0"/>
+            <!-- Encryption Options -->
+            <TextBlock Text="Select an option:" FontWeight="Bold" Margin="0,10,0,0"/>
             <ComboBox x:Name="OptionComboBox" Width="200">
-                <ComboBoxItem Content="Chiffrer toutes les sauvegardes"/>
-                <ComboBoxItem Content="Chiffrer uniquement certaines extensions"/>
-                <ComboBoxItem Content="Ne pas chiffrer"/>
+                <ComboBoxItem Content="Encrypt all backups"/>
+                <ComboBoxItem Content="Encrypt only specific extensions"/>
+                <ComboBoxItem Content="Do not encrypt"/>
             </ComboBox>
 
-            <TextBlock Text="Extensions à chiffrer (si applicable) :" FontWeight="Bold" Margin="0,10,0,0"/>
+            <!-- File Extension Selection -->
+            <TextBlock Text="Select extensions to encrypt (if applicable):" FontWeight="Bold" Margin="0,10,0,0"/>
             <ListBox x:Name="ExtensionListBox" SelectionMode="Multiple" Height="60">
                 <ListBoxItem Content=".txt"/>
                 <ListBoxItem Content=".jpg"/>
@@ -22,7 +27,8 @@
                 <ListBoxItem Content=".docx"/>
             </ListBox>
 
-            <Button Content="Appliquer" Click="Apply_Click" Width="150" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+            <!-- Apply Button -->
+            <Button Content="Apply" Click="Apply_Click" Width="150" Margin="0,10,0,0" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>
