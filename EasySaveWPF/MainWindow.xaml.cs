@@ -382,6 +382,10 @@ namespace EasySaveWPF
 
             // Ici, vous pouvez ajouter la logique pour suspendre les tâches pendant la pause
         }
-
+        private void Boutton_PriorityExtensions_Click(object sender, RoutedEventArgs e)
+        {
+            PriorityExtensionsWindow window = new PriorityExtensionsWindow();
+            window.ShowDialog();
+        }
     }
 }
