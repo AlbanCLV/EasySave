@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EasySaveWPF.ViewModelsWPF;
 using System.Windows;
 using EasySaveWPF.Views;
+using Newtonsoft.Json.Linq;
 
 namespace EasySaveWPF.ModelsWPF
 {
@@ -39,7 +40,7 @@ namespace EasySaveWPF.ModelsWPF
         /// <summary>
         /// Starts the TCP server on the specified port.
         /// </summary>
-        public void StartServer(int port)
+        public void StartServer(int port, CancellationToken token, MainWindow main)
         {
             server = new TcpListener(IPAddress.Any, port);
             server.Start();
@@ -54,7 +55,7 @@ namespace EasySaveWPF.ModelsWPF
                         TcpClient client = await server.AcceptTcpClientAsync();
                         clients.Add(client);
                         Console.WriteLine($"[SERVER] Client connected: {client.Client.RemoteEndPoint}");
-                        _ = HandleClientAsync(client);
+                        _ = HandleClientAsync(client, token, main);
                     }
                     catch (Exception ex)
                     {
@@ -67,7 +68,7 @@ namespace EasySaveWPF.ModelsWPF
         /// <summary>
         /// Handles incoming client messages asynchronously.
         /// </summary>
-        private async Task HandleClientAsync(TcpClient client)
+        private async Task HandleClientAsync(TcpClient client, CancellationToken token, MainWindow main)
         {
             NetworkStream stream = client.GetStream();
             byte[] buffer = new byte[1024];
@@ -88,7 +89,7 @@ namespace EasySaveWPF.ModelsWPF
                         }
                         else if (command.StartsWith("EXECUTE:"))
                         {
-                            await ExecuteTaskAsync(command);
+                            await ExecuteTaskAsync(command, token, main);
                         }
                     }
                 }
@@ -137,7 +138,7 @@ namespace EasySaveWPF.ModelsWPF
         /// <summary>
         /// Executes a specified task based on the received command.
         /// </summary>
-        private async Task ExecuteTaskAsync(string command)
+        private async Task ExecuteTaskAsync(string command, CancellationToken token, MainWindow main)
         {
             Console.WriteLine($"[SERVER] Processing execution command: {command}");
 
@@ -167,7 +168,7 @@ namespace EasySaveWPF.ModelsWPF
             if (task != null)
             {
                 Console.WriteLine($"[SERVER] Starting backup for {taskName}...");
-                (string status, string time, string encryptTime) = Backup_VueModelsWPF.Instance.ExecuteSpecificTasks(task);
+                (string status, string time, string encryptTime) = Backup_VueModelsWPF.Instance.ExecuteSpecificTasks(task,token, main);
                 Console.WriteLine($"[SERVER] Task {taskName} completed. Status: {status}, Encryption Time: {encryptTime}");
             }
             else

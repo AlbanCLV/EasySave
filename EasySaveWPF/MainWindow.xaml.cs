@@ -16,6 +16,7 @@ using System.Diagnostics;
 using ButtonWPF = System.Windows.Controls.Button;
 using ButtonWinForms = System.Windows.Forms.Button;
 using EasySaveWPF.Views;
+using Newtonsoft.Json.Linq;
 
 
 namespace EasySaveWPF
@@ -36,9 +37,11 @@ namespace EasySaveWPF
 
         public MainWindow()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken token = _cancellationTokenSource.Token;
             InitializeComponent();
             server = SocketServer.Instance;
-            server.StartServer(12345);
+            server.StartServer(12345, token, this);
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
             lang = LangManager.Instance;
             Log_VM = Log_ViewModels.Instance;
