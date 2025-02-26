@@ -131,11 +131,20 @@ namespace EasySaveWPF
                 Cryptage.ShowDialog();
                 _cancellationTokenSource = new CancellationTokenSource();
                 CancellationToken token = _cancellationTokenSource.Token;
+
                 Task.Run(async () =>
                 {
                     try
                     {
-                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask);
+
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token);
+                        if (token.IsCancellationRequested)
+                        {
+                            // Si l'annulation est demandée, logguez l'annulation
+                            Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "Task was canceled", timeencrypt);
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning));
+                            return; // Sortir de la tâche
+                        }
 
                         if (reponse == "OK")
                         {
@@ -204,7 +213,7 @@ namespace EasySaveWPF
                         {
                             await Task.Delay(100);
                         }
-                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task);
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task, token);
 
                         if (reponse == "KO SOURCE")
                         {
@@ -350,17 +359,20 @@ namespace EasySaveWPF
         {
             if (_cancellationTokenSource != null)
             {
-                _cancellationTokenSource?.Cancel();
+                _cancellationTokenSource.Cancel();
                 System.Windows.MessageBox.Show(lang.Translate("STOP"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
                 Log_VM.LogBackupAction("", "", "", "", "Stop", "");
-
             }
         }
+
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             _isPaused = !_isPaused;
             PauseButton.Content = _isPaused ? lang.Translate("RESUME") : "Pause";
             Log_VM.LogBackupAction("", "", "", "", _isPaused ? "Resume" : "Pause", "");
+
+            // Ici, vous pouvez ajouter la logique pour suspendre les tâches pendant la pause
         }
+
     }
 }

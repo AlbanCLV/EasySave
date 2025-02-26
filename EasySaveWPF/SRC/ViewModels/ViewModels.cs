@@ -75,6 +75,7 @@ namespace EasySaveWPF.ViewModelsWPF
             string r = backupModel.CreateBackupTask(task);  // Create the backup task
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
+
             return (r, formattedTime);
         }
         public List<Backup_ModelsWPF> ViewTasksWPF()
@@ -91,7 +92,7 @@ namespace EasySaveWPF.ViewModelsWPF
             LogViewModels.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, formattedTime, "Deleting_task", task.Type);  // Log the action
             return r;
         }
-        public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task)
+        public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token)
         {
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
@@ -101,27 +102,12 @@ namespace EasySaveWPF.ViewModelsWPF
                 return ("KO", "KO", "KO");
             }
             stopwatch.Start();
-            (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task);
+            (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task, token);
             stopwatch.Stop();
             string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
             return (r, formattedTime, timeencrypt);
         }
-        public (List<Backup_ModelsWPF>, List<string>, string, List<string>) ExecuteALlTask(List<Backup_ModelsWPF> taskList)
-        {
-            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
-            {
-                // Si des applications métiers sont en cours, arrêter l'exécution
-                System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
-                                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return (null, null, "KO",null);
-            }
-            stopwatch.Start();
-            (List<Backup_ModelsWPF> executedTasks, List< string > logMessages, List<string> TimeEncrypt ) = backupModel.ExecuteAllTasks(taskList);  // Execute all tasks
-            stopwatch.Stop();
-            string formattedTime = stopwatch.Elapsed.ToString(@"hh\:mm\:ss\.fff");  // Format elapsed time
-            return (executedTasks, logMessages, formattedTime, TimeEncrypt);
-
-        }
+       
         public void SetFichierLog(string type)
         {
             LogViewModels.Type_File_Log(type);
