@@ -108,3 +108,48 @@ EasySave is a powerful and scalable backup software developed as part of ProSoft
 | Use of External Encryption Software ("CryptoSoft") | No | No | Yes |
 
 ---
+# User Manual - Version 2.0  
+
+## Introduction  
+This software allows you to create and manage backup tasks with encryption support. The new version includes a graphical interface, enhanced security, and support for external encryption tools.  
+
+## Installation  
+1. Download the installer and run the setup.  
+2. Follow the on-screen instructions to complete the installation.  
+3. Launch the application from the Start Menu or desktop shortcut.  
+
+## Features  
+- **Graphical Interface:** Easy-to-use WPF interface.  
+- **Multi-language Support:** Available in English and French.  
+- **Backup Modes:** Single or sequential backup.  
+- **Unlimited Backup Tasks:** No restriction on the number of tasks.  
+- **Daily Log File:** Tracks backup progress, including encryption time.  
+- **Status File:** Provides an overview of backup statuses.  
+- **Business Software Detection:** Option to stop backups if business software is detected.  
+- **Command Line Support:** Allows automation and scripting.  
+- **External Encryption Tool:** Supports CryptoSoft for secure backups.  
+
+## How to Use  
+1. **Create a Backup Task**  
+   - Open the application.  
+   - Click **"New Backup"** and configure the source, destination, and schedule.  
+   - Click **"Save"** to store the task.  
+
+2. **Run a Backup**  
+   - Select a backup task and click **"Run"** to start immediately.  
+   - The application will process files based on the selected mode.  
+
+3. **View Logs and Status**  
+   - Navigate to the **"Logs"** section to view daily reports.  
+   - Check the **"Status"** section for task summaries.  
+
+## Troubleshooting  
+- Ensure the source and destination paths are accessible.  
+- Check the logs for error messages.  
+- If backups stop unexpectedly, verify business software detection settings.  
+- If using CryptoSoft, confirm its installation and configuration.  
+
+## Support  
+For additional help, visit our [support page](#) or contact customer service.  
+
+🚀 **Start protecting your data today!**  
