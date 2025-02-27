@@ -37,18 +37,23 @@ namespace EasySaveWPF.ViewModelsWPF
 
         public BusinessApps_ViewModel(string select, bool e)
         {
+            Debug.WriteLine("BusinessApps_ViewModel instance created");
+
             _processWatcher = ProcessWatcherWPF.Instance;
             BusinessApplications = new ObservableCollection<string>(_processWatcher.GetBusinessApplications());
             lang = LangManager.Instance;
             lang.SetLanguage(select);
             if (e)
             {
+                _processWatcher.BusinessAppStateChanged -= OnBusinessAppStateChanged; // Désabonne au cas où
                 _processWatcher.BusinessAppStateChanged += OnBusinessAppStateChanged; // Puis abonne
             }
+
             AddApplicationCommand = new RelayCommand(AddApplication);
             RemoveApplicationCommand = new RelayCommand(RemoveApplication);
             Log_VM = Log_ViewModels.Instance;
         }
+
         private void AddApplication(object param)
         {
             if (!string.IsNullOrWhiteSpace(NewAppName))
@@ -58,7 +63,7 @@ namespace EasySaveWPF.ViewModelsWPF
                 BusinessApplications.Add(NewAppName);
                 stopwatch.Stop();
                 string time = stopwatch.ElapsedMilliseconds.ToString();
-                Log_VM.LogBackupAction(NewAppName, "", "", time, "", "");
+                Log_VM.LogBackupAction(NewAppName, "", "", time, "AddBusinessApplication", "");
                 NewAppName = ""; // Réinitialiser le champ
 
 
@@ -76,26 +81,35 @@ namespace EasySaveWPF.ViewModelsWPF
                 Log_VM.LogBackupAction(appName, "", "", time, "RemoveApplication", "");
             }
         }
+        private string _lastAppRunning;
+        private bool _lastState;
+
         private void OnBusinessAppStateChanged(string appName, bool isRunning)
         {
+            if (_lastAppRunning == appName && _lastState == isRunning)
+                return;
+
+            _lastAppRunning = appName;
+            _lastState = isRunning;
+
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 if (isRunning)
                 {
-                    MessageBox.Show($"Attention ! L'application métier '{appName}' est en cours d'exécution.",
-                                    "Application Métier Détectée", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(lang.Translate("mettieropen"),
+                                    " ", MessageBoxButton.OK, MessageBoxImage.Information);
                     Log_VM.LogBackupAction(appName, "", "", "-1", "isRunning", "");
-
                 }
                 else
                 {
-                    MessageBox.Show($"L'application métier '{appName}' a été fermée.",
-                                    "Application Métier Fermée", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(lang.Translate("mettierclose"),
+                                    " ", MessageBoxButton.OK, MessageBoxImage.Information);
                     Log_VM.LogBackupAction(appName, "", "", "-1", "Is CLose", "");
-
                 }
             });
         }
+
+
     }
 
     public class RelayCommand : ICommand

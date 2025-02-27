@@ -1,13 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using EasySaveLog;
 using EasySaveWPF.ModelsWPF;
+using Microsoft.VisualBasic.Logging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EasySaveWPF.ViewModelsWPF
 {
     public class PriorityExtensionsViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        private Log_ViewModels Log_VM;
 
         public ObservableCollection<string> PriorityExtensions { get; set; }
 
@@ -42,6 +46,7 @@ namespace EasySaveWPF.ViewModelsWPF
             PriorityExtensions = new ObservableCollection<string>(PriorityManager.PriorityExtensions);
             AddExtensionCommand = new RelayCommand(AddExtension, CanAddExtension);
             RemoveExtensionCommand = new RelayCommand(RemoveExtension, CanRemoveExtension);
+            Log_VM = Log_ViewModels.Instance;
         }
 
         private void AddExtension(object obj)
@@ -58,6 +63,7 @@ namespace EasySaveWPF.ViewModelsWPF
                 if (!PriorityExtensions.Contains(ext))
                 {
                     PriorityExtensions.Add(ext);
+                    Log_VM.LogBackupAction(ext, "", "", "", "Add Extension", "");
                     PriorityManager.PriorityExtensions.Add(ext);
                     PriorityManager.SaveExtensions(); // Sauvegarde après ajout
                 }
@@ -72,6 +78,8 @@ namespace EasySaveWPF.ViewModelsWPF
             if (!string.IsNullOrWhiteSpace(SelectedExtension))
             {
                 PriorityExtensions.Remove(SelectedExtension);
+                Log_VM.LogBackupAction(SelectedExtension, "", "", "", "Remove Extension", "");
+
                 PriorityManager.PriorityExtensions.Remove(SelectedExtension);
                 PriorityManager.SaveExtensions(); // Sauvegarde après suppression
             }

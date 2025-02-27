@@ -27,6 +27,9 @@
   "Error": "Erreur",
   "RESUME": "Reprendre",
   "PriorityExtensions": "Fichier prioritaire",
+  "mettieropen": "L'application métier a été ouverte",
+  "mettierclose": "L'application métier a été fermée",
+
   "Boutton_Decrypt": "Decrypter un dossier",
   "Titre_Extan": "Liste des extensions prioritaires :",
   "Supp": "Supprimer",

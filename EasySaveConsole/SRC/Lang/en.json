@@ -25,6 +25,8 @@
   "ExtensionError": "Please select at least one extension.",
   "Titre_Extan": "List of priority extensions",
   "Supp": "Delete",
+  "mettieropen": "The business application has been opened",
+  "mettierclose": "The business application has been closed",
 
   "NepasChiffrer": "Do not encrypt",
   "Success": "Success",

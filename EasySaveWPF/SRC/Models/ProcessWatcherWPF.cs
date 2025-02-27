@@ -43,22 +43,27 @@ namespace EasySaveWPF.ModelsWPF
             string runningApp = GetRunningBusinessApps();
             bool isRunning = !string.IsNullOrEmpty(runningApp);
 
+            Debug.WriteLine($"CheckBusinessApplications called - App: {runningApp}, isRunning: {isRunning}");
+
             if (isRunning)
             {
                 if (!_isBusinessAppRunning)
                 {
                     _isBusinessAppRunning = true;
-                    _lastDetectedApp = runningApp; // Stocker le nom de l'application détectée
+                    _lastDetectedApp = runningApp;
+                    Debug.WriteLine($"Raising event for start: {runningApp}");
                     BusinessAppStateChanged?.Invoke(runningApp, true);
                 }
             }
             else if (_isBusinessAppRunning)
             {
                 _isBusinessAppRunning = false;
-                BusinessAppStateChanged?.Invoke(_lastDetectedApp, false); // Utiliser le dernier nom stocké
-                _lastDetectedApp = null; // Réinitialiser après affichage
+                Debug.WriteLine($"Raising event for stop: {_lastDetectedApp}");
+                BusinessAppStateChanged?.Invoke(_lastDetectedApp, false);
+                _lastDetectedApp = null;
             }
         }
+
 
         public string GetRunningBusinessApps()
         {
