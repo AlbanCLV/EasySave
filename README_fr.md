@@ -3,6 +3,7 @@
 [![Version](https://img.shields.io/badge/version-1.0-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v1.0)
 [![Version](https://img.shields.io/badge/version-1.1-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v1.1)
 [![Version](https://img.shields.io/badge/version-2.0-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v2.0)
+[![Version](https://img.shields.io/badge/version-3.0-blue)](https://github.com/Cesi-AlbanCalvo/EasySave/releases/tag/v3.0)
 ![Langues](https://img.shields.io/badge/langues-Fran%C3%A7ais%20%7C%20English-green)
 
 ---
