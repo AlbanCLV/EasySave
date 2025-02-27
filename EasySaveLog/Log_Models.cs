@@ -172,6 +172,23 @@ namespace EasySaveLog
                     Application = name,
                 };
             }
+            else if (act == "Pause" || act == "Resume" || act =="Stop") 
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                };
+            }
+            else if (act == "Add Extension" || act == "Remove Extension")
+            {
+                logEntry = new
+                {
+                    Action = act, // The action performed (e.g., "Backup Started").
+                    ExtensionName = name,
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), // Format to show only date and time.
+                };
+            }
             // Create the log file path based on the current date.
             string logPath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.json");
             // Ensure that the log directory exists, create it if necessary.
@@ -314,6 +331,15 @@ namespace EasySaveLog
                     new XElement("AppName", name),
                     new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
                     new XElement("TimeMS", time)
+                );
+            }
+
+            else if (act == "Add Extension" || act == "Remove Extension")
+            {
+                logEntry = new XElement("LogEntry",
+                    new XElement("Action", act),
+                    new XElement("ExtensionName", name),
+                    new XElement("Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
                 );
             }
 

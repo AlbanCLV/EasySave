@@ -12,12 +12,11 @@
   "Langue": "Langue",
   "FileLog": "Type de fichier log",
   "businesssoftware": "Logiciel Métier",
+  "TaskCreatedName": "Une tâche possède déjà ce nom",
   "Launch": "Lancer",
   "Delete": "Supprimer",
-
-
   "TitreBusinessTexBLox": "Applications Métier Surveillées",
-
+  "STOP": "Vous avez stopper toutes les actions en cours. Des tâches ne se sont dont pas finis.",
   "OptionTextBlock": "Option de Chiffrement",
   "ExtansionTextBlock": "Extension à sélectionner",
   "ExtensionError": "Veuillez sélectionner au moins une extension.",
@@ -26,8 +25,14 @@
   "NepasChiffrer": "Ne pas chiffrer",
   "Success": "Succès",
   "Error": "Erreur",
+  "RESUME": "Reprendre",
+  "PriorityExtensions": "Fichier prioritaire",
+  "mettieropen": "L'application métier a été ouverte",
+  "mettierclose": "L'application métier a été fermée",
 
-
+  "Boutton_Decrypt": "Decrypter un dossier",
+  "Titre_Extan": "Liste des extensions prioritaires :",
+  "Supp": "Supprimer",
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",
   "ExecuteBackupTask": "Exécuter une tâche de sauvegarde",

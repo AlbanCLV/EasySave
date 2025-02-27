@@ -10,18 +10,22 @@ using System.Collections.ObjectModel;
 using EasySaveConsole.Models;
 using EasySaveConsole.Views;
 using EasySaveLog;
+
 using System.Threading.Tasks;
 using System.Diagnostics;
 using ButtonWPF = System.Windows.Controls.Button;
 using ButtonWinForms = System.Windows.Forms.Button;
 using EasySaveWPF.Views;
-using EasySaveWPF.ModelsWPF;
+using Newtonsoft.Json.Linq;
 
 
 namespace EasySaveWPF
 {
     public partial class MainWindow : Window
     {
+        private CancellationTokenSource _cancellationTokenSource;
+        private bool _isPaused = false;  // Variable pour suivre l'état de la pause
+
         private Backup_VueModelsWPF Main; // Instance du contrôleur
         public static string SelectedLanguage { get; private set; } = "en";
         private LangManager lang;
@@ -29,20 +33,28 @@ namespace EasySaveWPF
         private BusinessAppsWindow Business;
         private CryptageWPF Cryptage;
         private DeCryptageWPF DeCryptage;
+        private SocketServer server;
+        private PriorityExtensionsWindow priorityExtensionsWindow;
 
         public MainWindow()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken token = _cancellationTokenSource.Token;
             InitializeComponent();
+            server = SocketServer.Instance;
+            server.StartServer(12345, token, this);
             Main = Backup_VueModelsWPF.Instance;  // Initialiser le contrôleur
             lang = LangManager.Instance;
             Log_VM = Log_ViewModels.Instance;
             Business = BusinessAppsWindow.Instance;
             Cryptage = CryptageWPF.Instance;
             DeCryptage = DeCryptageWPF.Instance;
-
+            priorityExtensionsWindow = PriorityExtensionsWindow.Instance;
             Setlanguage(SelectedLanguage);
 
         }
+
+
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
@@ -79,10 +91,18 @@ namespace EasySaveWPF
                 if (reponse == "OK")
                 {
                     Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", type);
+
                 }
                 else if (reponse == "KO")
                 {
                     Log_VM.LogBackupErreur(nom, "create_task_attempt", "Error Saving Tasks", "-1");
+                    return;
+                }
+                else if (reponse == "KONAME")
+                {
+                    Log_VM.LogBackupErreur(nom, "create_task_attempt", "Same Name", "-1");
+                    System.Windows.MessageBox.Show(lang.Translate("TaskCreatedName"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.None);
+                    return;
                 }
                 System.Windows.MessageBox.Show(lang.Translate("TaskCreated"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
@@ -90,6 +110,7 @@ namespace EasySaveWPF
             else
             {
                 Log_VM.LogBackupErreur(nom, "create_task_attempt", "Select NO during confirmation", "-1");
+                return;
             }
 
             ViewButton_Click(sender, e);
@@ -105,14 +126,15 @@ namespace EasySaveWPF
             });
 
             Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
+
         }
+
 
         private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
-                // Si des applications métiers sont en cours, arrêter l'exécution
-                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.",lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.", lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 Log_VM.LogBackupAction(ProcessWatcherWPF.Instance.GetRunningBusinessApps(), "", "", "", "isrunning", "");
                 return;
             }
@@ -125,38 +147,52 @@ namespace EasySaveWPF
                 {
                     Cryptage = new CryptageWPF();
                 }
-                Cryptage.ShowDialog();  // Affiche la fenêtre de cryptage pour que l'utilisateur définisse ses paramètres
-                // Récupérer les paramètres de cryptage définis précédemment depuis EncryptionSettings
-                string password = Cryptage_ModelsWPF.UserPassword;
-                bool encryptAll = Cryptage_ModelsWPF.EncryptAll;
-                string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
-                bool encry = Cryptage_ModelsWPF.EncryptAll;
-                
-                // Exécuter la tâche en fonction des paramètres récupérés
-                (string réponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask);
+                Cryptage.ShowDialog();
+                _cancellationTokenSource = new CancellationTokenSource();
+                CancellationToken token = _cancellationTokenSource.Token;
 
-                if (réponse == "OK")
+                Task.Run(async () =>
                 {
-                    System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
-                    Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", timeencrypt);  // Log the action
-                }
-                else if (réponse == "KO SOURCE")
-                {
-                    Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "The source folder could not be found.", timeencrypt);
-                    System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), " ", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    try
+                    {
+
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
+                        if (token.IsCancellationRequested)
+                        {
+                            // Si l'annulation est demandée, logguez l'annulation
+                            Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "Task was canceled", timeencrypt);
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning));
+                            return; // Sortir de la tâche
+                        }
+
+                        if (reponse == "OK")
+                        {
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
+                            Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", timeencrypt);
+                        }
+                        else if (reponse == "KO SOURCE")
+                        {
+                            Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "The source folder could not be found.", timeencrypt);
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), " ", MessageBoxButton.OK, MessageBoxImage.Error));
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "Task was canceled", "-1");
+                        Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning));
+                    }
+                }, token);
             }
             else
             {
                 Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "select NO during confirmation", "-1");
             }
-
-            // Réinitialiser la source des tâches
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
-        private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
+        private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
+
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
                 // Si des applications métiers sont en cours, arrêter l'exécution
@@ -172,42 +208,57 @@ namespace EasySaveWPF
                 Log_VM.LogBackupErreur("Error", "Execute_All_Task_attempt", "No_tasks", "-1");
                 return;
             }
+
             var result = System.Windows.MessageBox.Show(lang.Translate("ConfirmAllExecute"), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-
+                // Afficher la fenêtre de cryptage
                 if (Cryptage == null || !Cryptage.IsVisible)
                 {
                     Cryptage = new CryptageWPF();
                 }
-                Cryptage.ShowDialog();  // Affiche la fenêtre de cryptage pour que l'utilisateur définisse ses paramètres
-                // Récupérer les paramètres de cryptage définis précédemment depuis EncryptionSettings
-                string password = Cryptage_ModelsWPF.UserPassword;
-                bool encryptAll = Cryptage_ModelsWPF.EncryptAll;
-                string[] selectedExtensions = Cryptage_ModelsWPF.SelectedExtensions;
-                bool encry = Cryptage_ModelsWPF.EncryptAll;
+                Cryptage.ShowDialog();  // Affiche la fenêtre de cryptage pour que l'utilisateur définisse ses par
 
-                (List<Backup_ModelsWPF> executedTasks, List<string> logMessages, string time, List<string> TimeEncry) = Main.ExecuteALlTask(tasks);
-                for (int i = 0; i < executedTasks.Count; i++)
+                // Initialiser un CancellationTokenSource pour gérer l'annulation de toutes les tâches
+                _cancellationTokenSource = new CancellationTokenSource();
+                CancellationToken token = _cancellationTokenSource.Token;
+
+                // Lancer les tâches en parallèle et les surveiller pour l'annulation
+                var backupTasks = tasks.Select(task => Task.Run(async () =>
                 {
-                    if (logMessages[i] == "KO SOURCE")
+                    try
                     {
-                        Log_VM.LogBackupErreur(executedTasks[i].Name, "Execute_Task_attempt", "source_directory_not_exist", TimeEncry[i]);
-                        System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), executedTasks[i].Name, MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                    else if (logMessages[i] == "OK")
-                    {
-                        Log_VM.LogBackupAction(executedTasks[i].Name, executedTasks[i].SourceDirectory, executedTasks[i].TargetDirectory, time, "execute ALL Task", TimeEncry[i]);  // Log the action
-                    }
-                }
-                // Afficher un message avec le résultat de l'exécution
-                System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+                        while (_isPaused)
+                        {
+                            await Task.Delay(500); // Met en pause la tâche tant que _isPaused est true
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show("PAUSE", lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
 
-            }
-            else
-            {
-                Log_VM.LogBackupErreur("All Tasks", "Execute_Task_attempt", "select NO during confirmation.", "-1");
+                        }
+                        if (token.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException();
+                        }
+                        (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task, token, this);
+
+                        if (reponse == "KO SOURCE")
+                        {
+                            Log_VM.LogBackupErreur(task.Name, "Execute_Task_attempt", "source_directory_not_exist", timeencrypt);
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("source_directory_not_exist"), task.Name, MessageBoxButton.OK, MessageBoxImage.Error));
+                        }
+                        else if (reponse == "OK")
+                        {
+                            Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, time, "execute ALL Task", timeencrypt);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Gestion de l'annulation
+                        Log_VM.LogBackupErreur(task.Name, "Execute_Task_attempt", "Task was canceled", "-1");
+                        Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning));
+                    }
+                }, token)).ToArray();
+                await Task.WhenAll(backupTasks);
+                Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
 
             }
         }
@@ -240,7 +291,7 @@ namespace EasySaveWPF
             Setlanguage(langue);
 
             Log_VM.LogBackupAction("-1", langue, "-1", "-1", "change language", "-1");
-            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") +" " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") + " " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
 
         }
@@ -294,7 +345,9 @@ namespace EasySaveWPF
             Boutton_Langue_app.Content = lang.Translate("App");
             LangueTextBlock.Text = lang.Translate("Langue");
             FichierLogTextBlock.Text = lang.Translate("FileLog");
-            Boutton_Metier.Content = lang.Translate("businesssoftware");
+            Boutton_Metier1.Content = lang.Translate("businesssoftware");
+            Boutton_PriorityExtensions.Content = lang.Translate("PriorityExtensions");
+            Boutton_Decrypt.Content = lang.Translate("Boutton_Decrypt");
         }
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
         {
@@ -310,10 +363,12 @@ namespace EasySaveWPF
             lang.SetLanguage(langue);
             Business.SetLangueLog(langue);
             Cryptage.SetLanguage(langue);
+            priorityExtensionsWindow.setLanguage(langue);
 
             SetColumnHeaders();
             Business.SetColumnHeaders();
             Cryptage.SetColumnHeaders();
+            priorityExtensionsWindow.setCollum();
         }
 
         private void DecryptFolder(object sender, RoutedEventArgs e)
@@ -327,11 +382,27 @@ namespace EasySaveWPF
 
 
 
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                System.Windows.MessageBox.Show(lang.Translate("STOP"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+                Log_VM.LogBackupAction("", "", "", "", "Stop", "");
+            }
+        }
 
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isPaused = !_isPaused;
+            PauseButton.Content = _isPaused ? lang.Translate("RESUME") : "Pause";
+            Log_VM.LogBackupAction("", "", "", "", _isPaused ? "Resume" : "Pause", "");
+        }
 
-
-
-
-
+        private void Boutton_PriorityExtensions_Click(object sender, RoutedEventArgs e)
+        {
+            PriorityExtensionsWindow window = new PriorityExtensionsWindow();
+            window.ShowDialog();
+        }
     }
 }

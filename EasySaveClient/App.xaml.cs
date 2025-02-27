@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 
-namespace EasySaveWPF
+namespace EasySaveClient
 {
     public partial class App : Application
     {
@@ -13,7 +13,7 @@ namespace EasySaveWPF
         {
             base.OnStartup(e);
             AllocConsole(); // ✅ Ouvre une console au démarrage
-            Console.WriteLine("[SERVER] Console initialisée.");
+            Console.WriteLine("[CLIENT] Console initialisée.");
         }
     }
 }

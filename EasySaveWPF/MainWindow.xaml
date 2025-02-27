@@ -50,26 +50,32 @@
 
         <!-- Formulaire droit avec options Langue et Log -->
         <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="50,10">
-            <TextBlock x:Name="LangueTextBlock" Text="Langue" FontWeight="Bold" Margin="0,5"/>
+            <TextBlock x:Name="LangueTextBlock" Text="Langue" FontWeight="Bold" Margin="0,5,0,5" HorizontalAlignment="Center"/>
             <ComboBox Name="LangueTextBox" Margin="0,5">
                 <ComboBoxItem Content="En"/>
                 <ComboBoxItem Content="Fr"/>
             </ComboBox>
             <Button Name="Boutton_Langue_app" Content="Appliquer" Click="LangueExecute" Margin="0,5"/>
-            <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,15"/>
+            <TextBlock x:Name="FichierLogTextBlock" Text="Type de fichier log" FontWeight="Bold" Margin="0,5,0,5" HorizontalAlignment="Center"/>
             <ComboBox Name="FichierLogTextBox" Margin="0">
                 <ComboBoxItem Content="json"/>
                 <ComboBoxItem Content="xml"/>
             </ComboBox>
-            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,5"/>
+            <Button Name="Boutton_Log_app" Content="Appliquer" Click="FichierLogExecute" Margin="0,5,0,5"/>
+
+            <Button Name="Boutton_Metier1" Content="Logiciel Métier" Click="OpenBusinessAppsWindow" Margin="0,5,0,5"/>
+            <Button Name="Boutton_Decrypt" Content="Decrypt Folder" Click="DecryptFolder" Margin="0,5,0,5" />
 
 
-            <Button Name="Boutton_Metier" Content="Logiciel Métiers" Click="OpenBusinessAppsWindow" Margin="0.20" />
+            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,5,0,5"/>
+            <Button x:Name="Boutton_PriorityExtensions" Content="Prioritary Extensions" Click="Boutton_PriorityExtensions_Click" Margin="0,5,0,5"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Button Name="PauseButton" Content="Pause" Width="100" Height="30" Click="PauseButton_Click" Margin="10"/>
+                <Button Name="StopButton" Content="Stop" Click="StopButton_Click" Width="100" Height="30" Margin="10"/>
+
+            </StackPanel>
             
-            <Button Name="Boutton_Decrypt" Content="Decrypt Folder" Click="DecryptFolder" Margin="0.25" />
-
-            <Button Name="Boutton_execute_All" Content="Execute" Click="ExecuteAllButton_Click" Margin="0,25"/>
-
         </StackPanel>
 
         <!-- DataGrid -->
@@ -79,20 +85,22 @@
                 <DataGridTextColumn Header="Source" Binding="{Binding SourceDirectory}" Width="*" />
                 <DataGridTextColumn Header="Destination" Binding="{Binding TargetDirectory}" Width="*" />
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*" />
-
-                <!-- Nouvelle colonne avec une barre de progression -->
-                <DataGridTemplateColumn Header="Progression" Width="150">
+                <DataGridTemplateColumn Header="Progression" Width="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" Width="120"/>
+                            <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="20" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Actions" Width="250">
+
+
+                <!-- Colonne pour les boutons de contrôle -->
+                <DataGridTemplateColumn Header="Actions" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
+                                <!-- Bouton Ajouter (lance le processus de sauvegarde) -->
                                 <Button x:Name="Boutton_ajouter" Width="50" Height="50" Margin="5" Click="ExecuteButton_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
@@ -103,6 +111,7 @@
                                     </Button.Template>
                                 </Button>
 
+                                <!-- Bouton Supprimer (supprime une tâche de sauvegarde) -->
                                 <Button x:Name="Boutton_supprimer" Width="50" Height="50" Margin="5" Click="DeleteButton_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
@@ -112,11 +121,14 @@
                                         </ControlTemplate>
                                     </Button.Template>
                                 </Button>
+
+
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+
     </Grid>
 </Window>
