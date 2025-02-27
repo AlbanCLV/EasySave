@@ -190,7 +190,7 @@ namespace EasySaveWPF.ModelsWPF
             string targetPath = GetUniqueDirectoryName(task.TargetDirectory, sourceDirectoryName);
             Directory.CreateDirectory(targetPath);
 
-            return ("OK", CopyDirectoryContent(task.SourceDirectory, targetPath, task, token, main, true, 0, 0));
+            return ("OK", CopyDirectoryContent(task.SourceDirectory, targetPath, task, token, main));
         }
         public (string, string) ExecuteDifferentialBackup(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
@@ -223,31 +223,15 @@ namespace EasySaveWPF.ModelsWPF
 
             return Path.Combine(destinationPath, uniqueName);
         }
-        private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task, CancellationToken token, MainWindow main, bool t, int non, int totofile)
+        private string CopyDirectoryContent(string sourceDir, string targetDir, Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
             long totalEncryptionTime = 0; // Variable pour accumuler le temps total d'encryption
             string[] files = Directory.GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly); // Liste de tous les fichiers
-            int totalFiles;
-            int currentFile;
-
-            // Définir le nombre total de fichiers et le compteur actuel
-            if (t)
-            {
-                totalFiles = GetTotalFilesInDirectory(sourceDir); // Nombre total de fichiers
-                currentFile = 0;
-            }
-            else
-            {
-                totalFiles = totofile;
-                currentFile = non;
-            }
-
+            int totalFiles = GetTotalFilesInDirectory(sourceDir); // Nombre total de fichiers
+            int currentFile = 0; // Nombre de fichiers traités jusqu'à présent
             state.StateUpdate(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
-
             var priorityFiles = new List<string>();
             var nonPriorityFiles = new List<string>();
-
-            // Organiser les fichiers en fonction de leur priorité
             foreach (string file in files)
             {
                 if (token.IsCancellationRequested)
@@ -255,105 +239,125 @@ namespace EasySaveWPF.ModelsWPF
 
                 while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
                 {
-                    // Si des applications métiers sont en cours, afficher un message d'erreur
+                    // Si des applications métiers sont en cours, arrêter l'exécution
                     System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
                                                      "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
-
                 if (PriorityManager.IsPriority(file))
                     priorityFiles.Add(file);
                 else
                     nonPriorityFiles.Add(file);
             }
 
-            // Fonction pour copier et mettre à jour la progression
-            Action<string, string> copyFileAndUpdateProgress = (file, destinationFile) =>
-            {
-                File.Copy(file, destinationFile, true);
-                currentFile++;
-                UpdateProgress(task, currentFile, totalFiles, main);
-            };
-
-            // Fonction pour effectuer le cryptage
-            Action<string> processFileEncryption = (destinationFile) =>
-            {
-                if (Cryptage_ModelsWPF.EncryptEnabled)
-                {
-                    stopwatch.Restart();
-                    var result = cryptage.ProcessFile(destinationFile, true);
-                    stopwatch.Stop();
-
-                    if (!result.Item3)
-                        throw new Exception("Échec du cryptage");
-
-                    totalEncryptionTime += stopwatch.ElapsedMilliseconds;
-                }
-            };
-
-            // Copier les fichiers prioritaires et appliquer le cryptage si nécessaire
+            // Copier d'abord les fichiers prioritaires
             foreach (string file in priorityFiles)
             {
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
+                File.Copy(file, destinationFile, true);
+                currentFile++;
+                DeleteTaskWPF(task);
 
-                // Copier et mettre à jour la progression
-                copyFileAndUpdateProgress(file, destinationFile);
+                task.Progress = (int)((float)currentFile / totalFiles * 100);
+                CreateBackupTask(task);
 
-                // Appliquer le cryptage si activé
-                if (Cryptage_ModelsWPF.EncryptAll || Cryptage_ModelsWPF.SelectedExtensions.Contains(Path.GetExtension(file).ToLower()))
+
+                main.Dispatcher.Invoke(() =>
                 {
-                    processFileEncryption(destinationFile);
+                    main.TasksDataGrid.ItemsSource = null;
+                    main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                });
+
+
+                // Vérification si le cryptage est activé
+                if (Cryptage_ModelsWPF.EncryptEnabled == true)
+                {
+                    if (Cryptage_ModelsWPF.EncryptAll)
+                    {
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destinationFile, true);
+                        stopwatch.Stop();
+                        if (!result.Item3)
+                            return "KO";
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                    }
+                    else
+                    {
+                        string fileExtension = Path.GetExtension(file).ToLower();
+                        if (Cryptage_ModelsWPF.SelectedExtensions.Contains(fileExtension))
+                        {
+                            stopwatch.Restart();
+                            var result = cryptage.ProcessFile(destinationFile, true);
+                            stopwatch.Stop();
+                            if (!result.Item3)
+                                return "KO";
+                            totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                        }
+                    }
                 }
             }
 
-            // Copier les fichiers non prioritaires et appliquer le cryptage si nécessaire
+            // Ensuite copier les fichiers non prioritaires
             foreach (string file in nonPriorityFiles)
             {
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
+                File.Copy(file, destinationFile, true);
+                currentFile++;
+                DeleteTaskWPF(task);
 
-                // Copier et mettre à jour la progression
-                copyFileAndUpdateProgress(file, destinationFile);
+                task.Progress = (int)((float)currentFile / totalFiles * 100);
+                CreateBackupTask(task);
 
-                // Appliquer le cryptage si activé
-                if (Cryptage_ModelsWPF.EncryptAll || Cryptage_ModelsWPF.SelectedExtensions.Contains(Path.GetExtension(file).ToLower()))
+
+                main.Dispatcher.Invoke(() =>
                 {
-                    processFileEncryption(destinationFile);
+                    main.TasksDataGrid.ItemsSource = null;
+                    main.TasksDataGrid.ItemsSource = ViewTasksWPF();
+                });
+                if (Cryptage_ModelsWPF.EncryptEnabled)
+                {
+                    if (Cryptage_ModelsWPF.EncryptAll)
+                    {
+                        stopwatch.Restart();
+                        var result = cryptage.ProcessFile(destinationFile, true);
+                        stopwatch.Stop();
+                        if (!result.Item3)
+                            return "KO";
+                        totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                    }
+                    else
+                    {
+                        string fileExtension = Path.GetExtension(file).ToLower();
+                        if (Cryptage_ModelsWPF.SelectedExtensions.Contains(fileExtension))
+                        {
+                            stopwatch.Restart();
+                            var result = cryptage.ProcessFile(destinationFile, true);
+                            stopwatch.Stop();
+                            if (!result.Item3)
+                                return "KO";
+                            totalEncryptionTime += stopwatch.ElapsedMilliseconds;
+                        }
+                    }
                 }
+
             }
 
             // Traiter les sous-dossiers de manière récursive
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
+                // Vérification de l'annulation
                 if (token.IsCancellationRequested)
                     return "KO Canceled";
 
                 string directoryName = Path.GetFileName(directory);
                 string destinationSubDir = Path.Combine(targetDir, directoryName);
                 Directory.CreateDirectory(destinationSubDir);
-
-                // Incrémenter le compteur pour chaque sous-dossier
-                currentFile++;
-                UpdateProgress(task, currentFile, totalFiles, main);
-
-                // Appel récursif pour copier le contenu du sous-dossier
-                totalEncryptionTime += Convert.ToInt64(CopyDirectoryContent(directory, destinationSubDir, task, token, main, false, currentFile, totalFiles));
+                totalEncryptionTime += Convert.ToInt64(CopyDirectoryContent(directory, destinationSubDir, task, token, main));
             }
 
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
             return totalEncryptionTime.ToString();
-        }
-
-        private void UpdateProgress(Backup_ModelsWPF task, int currentFile, int totalFiles, MainWindow main)
-        {
-            DeleteTaskWPF(task);
-            task.Progress = (int)((float)currentFile / totalFiles * 100);
-            CreateBackupTask(task);
-            main.Dispatcher.Invoke(() =>
-            {
-                main.TasksDataGrid.ItemsSource = null;
-                main.TasksDataGrid.ItemsSource = ViewTasksWPF();
-            });
         }
 
         public List<Backup_ModelsWPF> ViewTasksWPF()

@@ -35,7 +35,6 @@ namespace EasySaveWPF
         private DeCryptageWPF DeCryptage;
         private SocketServer server;
         private PriorityExtensionsWindow priorityExtensionsWindow;
-        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
 
         public MainWindow()
         {
@@ -92,12 +91,12 @@ namespace EasySaveWPF
                 if (reponse == "OK")
                 {
                     Log_VM.LogBackupAction(nom, source, destination, time, "Create Task", type);
-                 
+
                 }
                 else if (reponse == "KO")
                 {
                     Log_VM.LogBackupErreur(nom, "create_task_attempt", "Error Saving Tasks", "-1");
-                    return ;
+                    return;
                 }
                 else if (reponse == "KONAME")
                 {
@@ -120,14 +119,14 @@ namespace EasySaveWPF
         }
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-          Dispatcher.Invoke(() =>
-          {
-              TasksDataGrid.ItemsSource = null;
-              TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
-           });
+            Dispatcher.Invoke(() =>
+            {
+                TasksDataGrid.ItemsSource = null;
+                TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+            });
 
-           Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
-       
+            Log_VM.LogBackupAction("-1", "-1", "-1", "-1", "View Task", "-1");  // Log the action
+
         }
 
 
@@ -135,7 +134,7 @@ namespace EasySaveWPF
         {
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
-                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.",lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.", lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 Log_VM.LogBackupAction(ProcessWatcherWPF.Instance.GetRunningBusinessApps(), "", "", "", "isrunning", "");
                 return;
             }
@@ -156,10 +155,7 @@ namespace EasySaveWPF
                 {
                     try
                     {
-                        while (!_pauseEvent.IsSet)
-                        {
-                            await Task.Delay(100);
-                        }
+
                         (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
                         if (token.IsCancellationRequested)
                         {
@@ -196,7 +192,7 @@ namespace EasySaveWPF
         }
         private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
-            
+
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
                 // Si des applications métiers sont en cours, arrêter l'exécution
@@ -235,6 +231,8 @@ namespace EasySaveWPF
                         while (_isPaused)
                         {
                             await Task.Delay(500); // Met en pause la tâche tant que _isPaused est true
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show("PAUSE", lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
+
                         }
                         if (token.IsCancellationRequested)
                         {
@@ -293,7 +291,7 @@ namespace EasySaveWPF
             Setlanguage(langue);
 
             Log_VM.LogBackupAction("-1", langue, "-1", "-1", "change language", "-1");
-            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") +" " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+            System.Windows.MessageBox.Show(lang.Translate("NewLanguage") + " " + langue, lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
 
 
         }
@@ -396,14 +394,7 @@ namespace EasySaveWPF
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_pauseEvent.IsSet)
-            {
-                _pauseEvent.Reset(); // Met en pause
-            }
-            else
-            {
-                _pauseEvent.Set(); // Reprend
-            }
+            _isPaused = !_isPaused;
             PauseButton.Content = _isPaused ? lang.Translate("RESUME") : "Pause";
             Log_VM.LogBackupAction("", "", "", "", _isPaused ? "Resume" : "Pause", "");
         }
