@@ -75,10 +75,7 @@
                 <Button Name="StopButton" Content="Stop" Click="StopButton_Click" Width="100" Height="30" Margin="10"/>
 
             </StackPanel>
-            <TextBlock x:Name="ProgressionName" Text="Progression" FontWeight="Bold" Margin="0,2,0,2" HorizontalAlignment="Center"/>
-            <ProgressBar x:Name="ProgressBarControl" HorizontalAlignment="Center" Height="20" Margin="10" VerticalAlignment="Top" Width="200" Minimum="0" Maximum="100" Value="0" />
-
-
+            
         </StackPanel>
 
         <!-- DataGrid -->

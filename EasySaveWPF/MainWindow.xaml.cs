@@ -34,6 +34,7 @@ namespace EasySaveWPF
         private CryptageWPF Cryptage;
         private DeCryptageWPF DeCryptage;
         private SocketServer server;
+        private PriorityExtensionsWindow priorityExtensionsWindow;
 
         public MainWindow()
         {
@@ -48,7 +49,7 @@ namespace EasySaveWPF
             Business = BusinessAppsWindow.Instance;
             Cryptage = CryptageWPF.Instance;
             DeCryptage = DeCryptageWPF.Instance;
-
+            priorityExtensionsWindow = PriorityExtensionsWindow.Instance;
             Setlanguage(SelectedLanguage);
 
         }
@@ -340,7 +341,8 @@ namespace EasySaveWPF
             LangueTextBlock.Text = lang.Translate("Langue");
             FichierLogTextBlock.Text = lang.Translate("FileLog");
             Boutton_Metier1.Content = lang.Translate("businesssoftware");
-
+            Boutton_PriorityExtensions.Content = lang.Translate("PriorityExtensions");
+            Boutton_Decrypt.Content = lang.Translate("Boutton_Decrypt");
         }
         private void OpenBusinessAppsWindow(object sender, RoutedEventArgs e)
         {
@@ -356,10 +358,12 @@ namespace EasySaveWPF
             lang.SetLanguage(langue);
             Business.SetLangueLog(langue);
             Cryptage.SetLanguage(langue);
+            priorityExtensionsWindow.setLanguage(langue);
 
             SetColumnHeaders();
             Business.SetColumnHeaders();
             Cryptage.SetColumnHeaders();
+            priorityExtensionsWindow.setCollum();
         }
 
         private void DecryptFolder(object sender, RoutedEventArgs e)

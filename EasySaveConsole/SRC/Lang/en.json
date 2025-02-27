@@ -23,10 +23,14 @@
   "ConfirmCryptage": "Would you really like to Encrypt this task?",
   "MDP": "Password",
   "ExtensionError": "Please select at least one extension.",
+  "Titre_Extan": "List of priority extensions",
+  "Supp": "Delete",
+
   "NepasChiffrer": "Do not encrypt",
   "Success": "Success",
   "Error": "Error",
-
+  "PriorityExtensions": "Prioritary Extensions",
+  "Boutton_Decrypt": "Decrypt Folder",
   "CreateBackupTask": "Create a backup task",
   "ExecuteBackupTask": "Execute a backup task",
   "ExecuteAllTasks": "Execute all backup tasks",

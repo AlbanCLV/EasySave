@@ -410,7 +410,6 @@ namespace EasySaveWPF.ModelsWPF
                     CreateBackupTask(task);
                     main.Dispatcher.Invoke(() =>
                     {
-                        main.ProgressBarControl.Value = task.Progress;
                         main.TasksDataGrid.ItemsSource = null;
                         main.TasksDataGrid.ItemsSource = ViewTasksWPF();
                     });

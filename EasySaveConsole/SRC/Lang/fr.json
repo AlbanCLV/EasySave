@@ -26,6 +26,10 @@
   "Success": "Succès",
   "Error": "Erreur",
   "RESUME": "Reprendre",
+  "PriorityExtensions": "Fichier prioritaire",
+  "Boutton_Decrypt": "Decrypter un dossier",
+  "Titre_Extan": "Liste des extensions prioritaires :",
+  "Supp": "Supprimer",
 
   "CreateBackupTask": "Créer une tâche de sauvegarde",
   "ExecuteBackupTask": "Exécuter une tâche de sauvegarde",
