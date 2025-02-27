@@ -8,33 +8,36 @@ using EasySaveLog;
 
 namespace EasySaveWPF.ModelsWPF
 {
+    /// <summary>
+    /// Manages the state logging for backup tasks.
+    /// </summary>
     public class State_modelsWPF
     {
-        Log_Models LogModels = new Log_Models();
+        private readonly Log_Models LogModels = new Log_Models();
         private readonly string logDirectoryState; // Directory to store log files.
 
         /// <summary>
-        /// Constructor to specify the log directory (default is "Logs").
+        /// Initializes a new instance of the <see cref="State_modelsWPF"/> class.
         /// </summary>
-        /// <param name="logDirectory">The directory where logs will be saved.</param>
-
-
+        /// <param name="logDirectoryState">The directory where state logs will be saved.</param>
         public State_modelsWPF(string logDirectoryState = "States")
         {
-            this.logDirectoryState = logDirectoryState; // Initializes the log directory.
-
+            this.logDirectoryState = logDirectoryState;
         }
 
-
+        /// <summary>
+        /// Updates the state of an ongoing backup task.
+        /// </summary>
+        /// <param name="task">The backup task being executed.</param>
+        /// <param name="lasth">The last action timestamp.</param>
+        /// <param name="desti">The destination directory.</param>
         public void StateUpdate(Backup_ModelsWPF task, string lasth, string desti)
         {
-
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
             var StateEntry = new
             {
-                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                TaskName = "Backup_" + task.Name, // Name of the backup task.
-                HeureLastAction = lasth, // Format to show only date and time.
+                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name,
+                HeureLastAction = lasth,
                 Etat = "Active",
                 TotalFile = CountFilesInDirectory(task.SourceDirectory),
                 TotalSize = GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0,
@@ -45,68 +48,69 @@ namespace EasySaveWPF.ModelsWPF
                 CurrentDestinationFiles = desti
             };
 
-            // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
-
-            // Ensure that the log directory exists, create it if necessary.
+            string StatePath = Path.Combine(logDirectoryState, $"States_{task.Name}.json");
             Directory.CreateDirectory(logDirectoryState);
-
-            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
-        public void SatetEnd(Backup_ModelsWPF task, string lasth, string desti)
-        {
 
-            // Create a log entry with information about the action, timestamp, task, source, target, file size, and transfer time.
+        /// <summary>
+        /// Marks a backup task as completed and logs its final state.
+        /// </summary>
+        /// <param name="task">The backup task.</param>
+        /// <param name="lasth">The last action timestamp.</param>
+        /// <param name="desti">The destination directory.</param>
+        public void StateEnd(Backup_ModelsWPF task, string lasth, string desti)
+        {
             var StateEntry = new
             {
-                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                TaskName = "Backup_" + task.Name, // Name of the backup task.
-                HeureLastAction = lasth, // Format to show only date and time.
+                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name,
+                HeureLastAction = lasth,
                 Etat = "Completed",
                 TotalFileSource = CountFilesInDirectory(task.SourceDirectory),
                 TotalFileTarget = CountFilesInDirectory(desti),
                 TotalSizeSource = GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0,
                 TotalSizeTarget = GetDirectorySize(new DirectoryInfo(desti)) / 1024.0,
-                Progress = $"100 %",
-                RemainingFiles = CountFilesInDirectory(task.SourceDirectory) - CountFilesInDirectory(desti),
-                RemainingSize = (GetDirectorySize(new DirectoryInfo(task.SourceDirectory)) / 1024.0) - (GetDirectorySize(new DirectoryInfo(desti)) / 1024.0),
+                Progress = "100 %",
+                RemainingFiles = 0,
+                RemainingSize = 0,
                 CurrentSourceFile = task.SourceDirectory,
                 CurrentDestinationFiles = desti
             };
 
-            // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
-
-            // Ensure that the log directory exists, create it if necessary.
+            string StatePath = Path.Combine(logDirectoryState, $"States_{task.Name}.json");
             Directory.CreateDirectory(logDirectoryState);
-
-            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
+
+        /// <summary>
+        /// Logs an error state for a backup task.
+        /// </summary>
+        /// <param name="task">The backup task.</param>
+        /// <param name="lasth">The last action timestamp.</param>
+        /// <param name="error">The error message.</param>
+        /// <param name="desti">The destination directory.</param>
         public void StateError(Backup_ModelsWPF task, string lasth, string error, string desti)
         {
             var StateEntry = new
             {
-                Timestanp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                TaskName = "Backup_" + task.Name, // Name of the backup task.
+                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TaskName = "Backup_" + task.Name,
                 HeureLastAction = lasth,
                 Etat = "Error",
-                Error = error,
+                Error = error
             };
 
-            // Create the log file path based on the current date.
-            string StatePath = Path.Combine(logDirectoryState, $"Sates_{task.Name}.json");
-
-            // Ensure that the log directory exists, create it if necessary.
+            string StatePath = Path.Combine(logDirectoryState, $"States_{task.Name}.json");
             Directory.CreateDirectory(logDirectoryState);
-
-            // Append the log entry to the log file as a JSON object, with proper formatting and a newline.
             File.AppendAllText(StatePath, JsonConvert.SerializeObject(StateEntry, Formatting.Indented) + Environment.NewLine);
         }
 
-
-
+        /// <summary>
+        /// Calculates the total size of a directory, including subdirectories.
+        /// </summary>
+        /// <param name="directory">The directory to measure.</param>
+        /// <returns>The total size in bytes.</returns>
         private long GetDirectorySize(DirectoryInfo directory)
         {
             if (!directory.Exists)
@@ -116,23 +120,25 @@ namespace EasySaveWPF.ModelsWPF
             }
 
             long size = 0;
-
-            // Iterate through all files in the directory and subdirectories.
             foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
             {
-                size += file.Length; // Add the file size to the total.
+                size += file.Length;
             }
-
-            return size; // Return the total size.
+            return size;
         }
-        static int CountFilesInDirectory(string path)
+
+        /// <summary>
+        /// Counts the number of files in a directory, including subdirectories.
+        /// </summary>
+        /// <param name="path">The directory path.</param>
+        /// <returns>The number of files found.</returns>
+        private static int CountFilesInDirectory(string path)
         {
             try
             {
                 if (Directory.Exists(path))
                 {
-                    string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-                    return files.Length;
+                    return Directory.GetFiles(path, "*", SearchOption.AllDirectories).Length;
                 }
                 else
                 {
@@ -146,7 +152,5 @@ namespace EasySaveWPF.ModelsWPF
                 return 0;
             }
         }
-
-
     }
 }

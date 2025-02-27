@@ -5,34 +5,53 @@ using System.Linq;
 
 namespace EasySaveWPF.ModelsWPF
 {
+    /// <summary>
+    /// Manages priority file extensions for backup operations.
+    /// </summary>
     public static class PriorityManager
     {
-        // Chemin du fichier de sauvegarde des extensions prioritaires
+        /// <summary>
+        /// Path to the file storing priority extensions.
+        /// </summary>
         private static readonly string FilePath = "PriorityExtensions.txt";
 
-        // Liste des extensions prioritaires définie par l'utilisateur
+        /// <summary>
+        /// List of priority file extensions defined by the user.
+        /// </summary>
         public static List<string> PriorityExtensions { get; set; } = new List<string>();
 
-        // Compteur global des fichiers prioritaires en attente
+        /// <summary>
+        /// Global counter for pending priority files.
+        /// </summary>
         public static int PendingPriorityFiles = 0;
 
-        // Constructeur statique pour charger les extensions au démarrage
+        /// <summary>
+        /// Static constructor to load extensions at startup.
+        /// </summary>
         static PriorityManager()
         {
             LoadExtensions();
         }
 
+        /// <summary>
+        /// Checks if a given file has a priority extension.
+        /// </summary>
+        /// <param name="filePath">Path of the file to check.</param>
+        /// <returns>True if the file has a priority extension, otherwise false.</returns>
         public static bool IsPriority(string filePath)
         {
             string ext = Path.GetExtension(filePath).ToLower();
             return PriorityExtensions.Contains(ext);
         }
 
+        /// <summary>
+        /// Loads priority extensions from the configuration file.
+        /// If the file does not exist, initializes with an empty list.
+        /// </summary>
         public static void LoadExtensions()
         {
             if (File.Exists(FilePath))
             {
-                // Charge les extensions en supprimant les espaces inutiles et en convertissant en minuscule
                 PriorityExtensions = File.ReadAllLines(FilePath)
                     .Select(line => line.Trim().ToLower())
                     .Where(line => !string.IsNullOrWhiteSpace(line))
@@ -41,15 +60,16 @@ namespace EasySaveWPF.ModelsWPF
             }
             else
             {
-                // Si le fichier n'existe pas, on initialise avec une liste par défaut
-                PriorityExtensions = new List<string> {};
+                PriorityExtensions = new List<string>();
                 SaveExtensions();
             }
         }
 
+        /// <summary>
+        /// Saves the current list of priority extensions to the configuration file.
+        /// </summary>
         public static void SaveExtensions()
         {
-            // Écrit chaque extension sur une ligne
             File.WriteAllLines(FilePath, PriorityExtensions);
         }
     }

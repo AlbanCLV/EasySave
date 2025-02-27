@@ -8,18 +8,28 @@ using Terminal.Gui;
 
 namespace EasySaveConsole.Views
 {
+    /// <summary>
+    /// Represents the encryption view, handling encryption and decryption settings.
+    /// </summary>
     internal class Encryption_View
     {
         private readonly LangManager lang;
         private Lang_View LangView;
         private static Encryption_View _instance;
         private static readonly object _lock = new object();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Encryption_View"/> class.
+        /// </summary>
         public Encryption_View()
         {
             lang = LangManager.Instance;
             LangView = Lang_View.Instance;
-
         }
+
+        /// <summary>
+        /// Gets the singleton instance of <see cref="Encryption_View"/>.
+        /// </summary>
         public static Encryption_View Instance
         {
             get
@@ -35,13 +45,18 @@ namespace EasySaveConsole.Views
                 return _instance;
             }
         }
+
+        /// <summary>
+        /// Prompts the user to configure encryption settings.
+        /// </summary>
+        /// <returns>A tuple containing encryption settings: whether encryption is enabled, the password, 
+        /// whether all files should be encrypted, and the selected file extensions.</returns>
         public (bool encryptEnabled, string password, bool encryptAll, string[] selectedExtensions) GetEncryptionSettings()
         {
             Console.Clear();
             string response = "";
             while (true)
             {
-                // "EncryptPrompt" should be defined in your translation file, e.g., "Do you want to encrypt backups? (Y/N)"
                 Console.WriteLine(lang.Translate("EncryptPrompt"));
                 response = Console.ReadLine()?.Trim().ToUpper();
                 if (string.IsNullOrEmpty(response))
@@ -49,7 +64,6 @@ namespace EasySaveConsole.Views
                     Console.WriteLine(lang.Translate("EmptyInput"));
                     continue;
                 }
-                // Accept "Y" or "O" (for yes) and "N" for no.
                 if (response == "Y" || response == "O" || response == "N")
                     break;
                 else
@@ -59,13 +73,13 @@ namespace EasySaveConsole.Views
             {
                 return (false, "", false, new string[0]);
             }
-            // Since encryption is desired, present only two options: encrypt all or encrypt selected extensions.
+
             string option = "";
             while (true)
             {
-                Console.WriteLine(lang.Translate("EncryptionOptionPrompt")); // e.g., "Choose encryption option:"
-                Console.WriteLine("1. " + lang.Translate("EncryptAllBackups"));   // e.g., "Encrypt all backups"
-                Console.WriteLine("2. " + lang.Translate("EncryptSelectedExtensions")); // e.g., "Encrypt only selected extensions"
+                Console.WriteLine(lang.Translate("EncryptionOptionPrompt"));
+                Console.WriteLine("1. " + lang.Translate("EncryptAllBackups"));
+                Console.WriteLine("2. " + lang.Translate("EncryptSelectedExtensions"));
                 option = Console.ReadLine()?.Trim();
                 if (string.IsNullOrEmpty(option))
                 {
@@ -77,11 +91,13 @@ namespace EasySaveConsole.Views
                 else
                     Console.WriteLine(lang.Translate("InvalidInput"));
             }
+
             bool encryptAll = option == "1";
             string[] selectedExtensions = new string[0];
+
             if (option == "2")
             {
-                Console.WriteLine(lang.Translate("EnterExtensions")); // e.g., "Enter extensions to encrypt, separated by commas:"
+                Console.WriteLine(lang.Translate("EnterExtensions"));
                 string extensionsInput = Console.ReadLine();
                 while (string.IsNullOrEmpty(extensionsInput))
                 {
@@ -91,7 +107,8 @@ namespace EasySaveConsole.Views
                 selectedExtensions = extensionsInput.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                     .Select(e => e.Trim()).ToArray();
             }
-            Console.WriteLine(lang.Translate("EnterEncryptionPassword")); // e.g., "Enter the encryption password (it will not be displayed):"
+
+            Console.WriteLine(lang.Translate("EnterEncryptionPassword"));
             string password = ReadPassword();
             while (string.IsNullOrEmpty(password))
             {
@@ -100,6 +117,11 @@ namespace EasySaveConsole.Views
             }
             return (true, password, encryptAll, selectedExtensions);
         }
+
+        /// <summary>
+        /// Reads a password from the console input without displaying characters.
+        /// </summary>
+        /// <returns>The entered password as a string.</returns>
         public string ReadPassword()
         {
             StringBuilder sb = new StringBuilder();
@@ -114,6 +136,11 @@ namespace EasySaveConsole.Views
             Console.WriteLine();
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Prompts the user for a password and a folder path to decrypt files.
+        /// </summary>
+        /// <returns>A tuple containing the decryption password and the folder path.</returns>
         public (string, string) GetDecryptFolder()
         {
             string password;
@@ -128,7 +155,7 @@ namespace EasySaveConsole.Views
                 {
                     LangView.DisplayMessage("PasswordEmpty");
                     Console.ReadKey();
-                    continue;  // Redemande le mot de passe
+                    continue;
                 }
 
                 if (password.ToLower() == "exit")
@@ -137,7 +164,7 @@ namespace EasySaveConsole.Views
                     return ("KO", "KO");
                 }
 
-                break;  // Mot de passe correct
+                break;
             }
 
             while (true)
@@ -149,7 +176,7 @@ namespace EasySaveConsole.Views
                 {
                     LangView.DisplayMessage("NoFolderSelected");
                     Console.ReadKey();
-                    continue;  // Redemande le dossier
+                    continue;
                 }
 
                 if (folderPath.ToLower() == "exit")
@@ -158,11 +185,18 @@ namespace EasySaveConsole.Views
                     return ("KO", "KO");
                 }
 
-                break;  // Dossier correct
+                break;
             }
 
             return (password, folderPath);
         }
+
+        /// <summary>
+        /// Opens a file or directory browser to select a path.
+        /// </summary>
+        /// <param name="canChooseFiles">Indicates if files can be selected.</param>
+        /// <param name="canChooseDirectories">Indicates if directories can be selected.</param>
+        /// <returns>The selected path as a string.</returns>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
@@ -176,6 +210,5 @@ namespace EasySaveConsole.Views
             Application.Shutdown();
             return string.IsNullOrEmpty(result) ? null : result;
         }
-
     }
 }

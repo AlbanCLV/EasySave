@@ -8,16 +8,38 @@ using Terminal.Gui;
 
 namespace EasySaveConsole.Views
 {
+    /// <summary>
+    /// Classe représentant l'affichage et l'interaction avec l'utilisateur pour la gestion des sauvegardes.
+    /// </summary>
     internal class Backup_View
     {
+        /// <summary>
+        /// Instance du gestionnaire de langues pour la traduction des messages.
+        /// </summary>
         private readonly LangManager lang;
+
+        /// <summary>
+        /// Instance unique de la classe Backup_View (Singleton).
+        /// </summary>
         private static Backup_View _instance;
+
+        /// <summary>
+        /// Objet utilisé pour verrouiller l'instance (thread-safe singleton).
+        /// </summary>
         private static readonly object _lock = new object();
-        public Backup_View()
+
+        /// <summary>
+        /// Constructeur privé de la classe Backup_View.
+        /// Initialise le gestionnaire de langues.
+        /// </summary>
+        private Backup_View()
         {
             lang = LangManager.Instance;
-
         }
+
+        /// <summary>
+        /// Obtient l'instance unique de Backup_View (Singleton).
+        /// </summary>
         public static Backup_View Instance
         {
             get
@@ -33,6 +55,10 @@ namespace EasySaveConsole.Views
                 return _instance;
             }
         }
+
+        /// <summary>
+        /// Affiche le menu principal de l'application.
+        /// </summary>
         public void DisplayMainMenu()
         {
             Console.Clear();
@@ -45,9 +71,6 @@ namespace EasySaveConsole.Views
             Console.WriteLine("| $$       /$$__  $$ \\____  $$| $$  | $$ /$$  \\ $$ /$$__  $$  \\  $$$/ | $$_____/");
             Console.WriteLine("| $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \\  $/  |  $$$$$$$");
             Console.WriteLine("|________/ \\_______/|_______/  \\____  $$ \\______/  \\_______/    \\_/    \\_______/");
-            Console.WriteLine("                               /$$  | $$                                        ");
-            Console.WriteLine("                              |  $$$$$$/                                        ");
-            Console.WriteLine("                               \\______/                                         ");
             Console.WriteLine($"1. {lang.Translate("CreateBackupTask")}");
             Console.WriteLine($"2. {lang.Translate("ExecuteBackupTask")}");
             Console.WriteLine($"3. {lang.Translate("ExecuteAllTasks")}");
@@ -60,8 +83,11 @@ namespace EasySaveConsole.Views
             Console.Write($"\n{lang.Translate("SelectOption")}");
         }
 
-
-        public (Backup_Models , string) GetBackupDetails()
+        /// <summary>
+        /// Demande à l'utilisateur les détails d'une nouvelle tâche de sauvegarde.
+        /// </summary>
+        /// <returns>Un tuple contenant un objet Backup_Models et la confirmation de l'utilisateur.</returns>
+        public (Backup_Models, string) GetBackupDetails()
         {
             Console.Clear();
             Console.WriteLine($"=== {lang.Translate("CreateBackupTask")} ===");
@@ -103,7 +129,8 @@ namespace EasySaveConsole.Views
                 Console.WriteLine(lang.Translate("InvalidBackupType"));
             }
             string type = typeInput == 1 ? "Full" : "Differential";
-            // Resume and confirmation
+
+            // Résumé et confirmation
             Console.Clear();
             Console.WriteLine(lang.Translate("task_summary"));
             Console.WriteLine($"{lang.Translate("task_name")}: {name}");
@@ -116,6 +143,13 @@ namespace EasySaveConsole.Views
 
             return (new Backup_Models(name, source, target, type), confirmation);
         }
+
+        /// <summary>
+        /// Ouvre une boîte de dialogue pour sélectionner un chemin (dossier ou fichier).
+        /// </summary>
+        /// <param name="canChooseFiles">Indique si l'utilisateur peut sélectionner des fichiers.</param>
+        /// <param name="canChooseDirectories">Indique si l'utilisateur peut sélectionner des dossiers.</param>
+        /// <returns>Le chemin sélectionné sous forme de chaîne.</returns>
         public string BrowsePath(bool canChooseFiles = false, bool canChooseDirectories = true)
         {
             Application.Init();
@@ -129,12 +163,17 @@ namespace EasySaveConsole.Views
             Application.Shutdown();
             return string.IsNullOrEmpty(result) ? null : result;
         }
+
+        /// <summary>
+        /// Demande à l'utilisateur de saisir le numéro de la tâche de sauvegarde à supprimer.
+        /// </summary>
+        /// <returns>Le numéro de la tâche ou -1 en cas d'erreur.</returns>
         public int GetDeleteTask()
         {
             while (true)
             {
                 Console.Write(lang.Translate("enter_task_number_to_delete"));
-                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 )
+                if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0)
                 {
                     return taskNumber;
                 }
@@ -144,11 +183,15 @@ namespace EasySaveConsole.Views
                 }
             }
         }
+
+        /// <summary>
+        /// Demande à l'utilisateur de saisir le numéro de la tâche de sauvegarde à exécuter.
+        /// </summary>
+        /// <returns>Le numéro de la tâche ou -1 en cas d'erreur.</returns>
         public int GetExecuteTasks()
         {
-            
             Console.Write(lang.Translate("enter_task_number_to_execute"));
-            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0 )
+            if (int.TryParse(Console.ReadLine(), out int taskNumber) && taskNumber > 0)
             {
                 return taskNumber;
             }
@@ -157,7 +200,5 @@ namespace EasySaveConsole.Views
                 return -1;
             }
         }
-
-
     }
 }

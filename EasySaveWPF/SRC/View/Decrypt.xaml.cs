@@ -7,30 +7,31 @@ using EasySaveWPF.ViewModelsWPF;
 using System.Windows.Forms;
 using System.IO;  // pour FolderBrowserDialog
 
-
 namespace EasySaveWPF.Views
 {
+    /// <summary>
+    /// Interaction logic for DeCryptageWPF.
+    /// This window allows users to decrypt files using a provided password.
+    /// </summary>
     public partial class DeCryptageWPF : Window
     {
         private static DeCryptageWPF _instance;
-        public static string SelectedLanguage { get; private set; } = "en";
         private static readonly object _lock = new object();
         private LangManager lang;
 
-        public DeCryptageWPF()
-        {
-            InitializeComponent();
-            lang = LangManager.Instance;
-            lang.SetLanguage(SelectedLanguage);
-            DataContext = new BusinessApps_ViewModel(SelectedLanguage, false); // Lier la fenêtre au ViewModel
-            SetColumnHeaders();
+        /// <summary>
+        /// Gets the selected language for the application.
+        /// </summary>
+        public static string SelectedLanguage { get; private set; } = "en";
 
-        }
+        /// <summary>
+        /// Gets the singleton instance of <see cref="DeCryptageWPF"/>.
+        /// Ensures that only one instance of the window is created (thread-safe).
+        /// </summary>
         public static DeCryptageWPF Instance
         {
             get
             {
-                // Use double-check locking to ensure thread-safety
                 if (_instance == null)
                 {
                     lock (_lock)
@@ -45,22 +46,37 @@ namespace EasySaveWPF.Views
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeCryptageWPF"/> class.
+        /// Sets up the DataContext and initializes the UI elements.
+        /// </summary>
+        public DeCryptageWPF()
+        {
+            InitializeComponent();
+            lang = LangManager.Instance;
+            lang.SetLanguage(SelectedLanguage);
+            DataContext = new BusinessApps_ViewModel(SelectedLanguage, false);
+            SetColumnHeaders();
+        }
+
+        /// <summary>
+        /// Handles the click event for the apply button.
+        /// Starts the decryption process for .aes files in the selected directory.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
         public void Boutton_Apply_Click(object sender, RoutedEventArgs e)
         {
-            // Récupérer le mot de passe
             string pass = PassTextBox.Password.ToString();
 
-            // Vérifier si le mot de passe est vide
             if (string.IsNullOrWhiteSpace(pass))
             {
                 System.Windows.MessageBox.Show("Veuillez remplir tous les champs.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // Lire le mot de passe (l'ancienne fonction ReadPassword semble obsolète ici)
             Cryptage_ModelsWPF.Instance.SetEncryptionSettings(pass, false, null, false);
 
-            // Ouvrir le dialog de sélection du dossier
             string selectedPath = "";
             using (var dialog = new FolderBrowserDialog())
             {
@@ -75,22 +91,17 @@ namespace EasySaveWPF.Views
                 }
             }
 
-            // Liste des fichiers .aes dans le dossier sélectionné
             string[] files = Directory.GetFiles(selectedPath, "*.aes");
 
-            // Vérifier s'il y a des fichiers .aes dans le dossier
             if (files.Length == 0)
             {
                 System.Windows.MessageBox.Show("Aucun fichier à décrypter trouvé dans ce dossier.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // Démarrer le processus de décryptage
             foreach (var file in files)
             {
                 var decryptResult = Cryptage_ModelsWPF.Instance.DecryptFileWithResult(file);
-
-                // Vérifier le résultat de la décryption
                 if (decryptResult.Item3)
                 {
                     System.Windows.MessageBox.Show($"Décryptage réussi pour le fichier : {decryptResult.Item2}", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -102,17 +113,30 @@ namespace EasySaveWPF.Views
             }
         }
 
-
+        /// <summary>
+        /// Sets the application language.
+        /// </summary>
+        /// <param name="langue">The language code to set.</param>
         public void SetLanguage(string langue)
         {
             SelectedLanguage = langue;
             lang.SetLanguage(langue);
         }
+
+        /// <summary>
+        /// Updates UI labels with the selected language translations.
+        /// </summary>
         public void SetColumnHeaders()
         {
             Boutton_Apply.Content = lang.Translate("Launch");
             PassTextBloc.Text = lang.Translate("MDP");
         }
+
+        /// <summary>
+        /// Closes the window.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
             this.Hide();

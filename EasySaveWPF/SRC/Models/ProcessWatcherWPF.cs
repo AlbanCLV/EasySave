@@ -1,114 +1,87 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Windows.Threading;
+﻿using System.Windows;
+using EasySaveConsole.Models;
+using EasySaveWPF.ViewModelsWPF;
 
-namespace EasySaveWPF.ModelsWPF
+namespace EasySaveWPF.Views
 {
-    public class ProcessWatcherWPF
+    /// <summary>
+    /// Interaction logic for BusinessAppsWindow.
+    /// This window allows users to manage business application settings.
+    /// </summary>
+    public partial class BusinessAppsWindow : Window
     {
-        private static ProcessWatcherWPF _instance;
+        private LangManager lang;
+        private static BusinessAppsWindow _instance;
         private static readonly object _lock = new object();
-        private static readonly string ConfigFilePath = "business_apps.txt";
-        private DispatcherTimer _timer;
-        public event Action<string, bool> BusinessAppStateChanged;
-        private bool _isBusinessAppRunning = false;
-        private string _lastDetectedApp = null; // Stocke la dernière application métier détectée
 
-        public static ProcessWatcherWPF Instance
+        /// <summary>
+        /// Gets the selected language for the application.
+        /// </summary>
+        public static string SelectedLanguage { get; private set; } = "en";
+
+        /// <summary>
+        /// Gets the singleton instance of <see cref="BusinessAppsWindow"/>.
+        /// Ensures that only one instance of the window is created (thread-safe).
+        /// </summary>
+        public static BusinessAppsWindow Instance
         {
             get
             {
-                lock (_lock)
+                if (_instance == null)
                 {
-                    if (_instance == null)
-                        _instance = new ProcessWatcherWPF();
-                    return _instance;
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new BusinessAppsWindow();
+                        }
+                    }
                 }
+                return _instance;
             }
         }
 
-        private ProcessWatcherWPF()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BusinessAppsWindow"/> class.
+        /// Sets up the DataContext and initializes the UI elements.
+        /// </summary>
+        public BusinessAppsWindow()
         {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-            _timer.Tick += (s, e) => CheckBusinessApplications();
-            CheckBusinessApplications(); // Vérification immédiate au démarrage
-            _timer.Start();
+            lang = LangManager.Instance;
+            lang.SetLanguage(SelectedLanguage);
+            InitializeComponent();
+            DataContext = new BusinessApps_ViewModel(SelectedLanguage, true);
+            SetColumnHeaders();
         }
 
-        public void CheckBusinessApplications()
+        /// <summary>
+        /// Closes the window.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void CloseWindow(object sender, RoutedEventArgs e)
         {
-            string runningApp = GetRunningBusinessApps();
-            bool isRunning = !string.IsNullOrEmpty(runningApp);
-
-            Debug.WriteLine($"CheckBusinessApplications called - App: {runningApp}, isRunning: {isRunning}");
-
-            if (isRunning)
-            {
-                if (!_isBusinessAppRunning)
-                {
-                    _isBusinessAppRunning = true;
-                    _lastDetectedApp = runningApp;
-                    Debug.WriteLine($"Raising event for start: {runningApp}");
-                    BusinessAppStateChanged?.Invoke(runningApp, true);
-                }
-            }
-            else if (_isBusinessAppRunning)
-            {
-                _isBusinessAppRunning = false;
-                Debug.WriteLine($"Raising event for stop: {_lastDetectedApp}");
-                BusinessAppStateChanged?.Invoke(_lastDetectedApp, false);
-                _lastDetectedApp = null;
-            }
+            this.Hide();
         }
 
-
-        public string GetRunningBusinessApps()
+        /// <summary>
+        /// Sets the application language.
+        /// </summary>
+        /// <param name="langue">The language code to set.</param>
+        public void SetLangueLog(string langue)
         {
-            if (!File.Exists(ConfigFilePath))
-                return null;
-
-            var businessApps = File.ReadAllLines(ConfigFilePath)
-                                   .Select(line => line.Trim().ToLower())
-                                   .Where(line => !string.IsNullOrWhiteSpace(line))
-                                   .ToList();
-
-            var runningProcess = Process.GetProcesses()
-                                        .FirstOrDefault(p => businessApps.Contains(p.ProcessName.ToLower()));
-
-            return runningProcess?.ProcessName;
+            SelectedLanguage = langue;
+            lang.SetLanguage(langue);
         }
 
-        public List<string> GetBusinessApplications()
+        /// <summary>
+        /// Updates UI labels with the selected language translations.
+        /// </summary>
+        public void SetColumnHeaders()
         {
-            if (!File.Exists(ConfigFilePath)) return new List<string>();
-            return File.ReadAllLines(ConfigFilePath)
-                       .Select(line => line.Trim())
-                       .Where(line => !string.IsNullOrWhiteSpace(line))
-                       .ToList();
-        }
-
-        public void AddBusinessApplication(string appName)
-        {
-            if (string.IsNullOrWhiteSpace(appName)) return;
-
-            var existingApps = GetBusinessApplications();
-            if (!existingApps.Contains(appName.ToLower()))
-            {
-                File.AppendAllText(ConfigFilePath, appName + Environment.NewLine);
-            }
-        }
-
-        public void RemoveBusinessApplication(string appName)
-        {
-            var apps = GetBusinessApplications();
-            if (apps.Contains(appName))
-            {
-                apps.Remove(appName);
-                File.WriteAllLines(ConfigFilePath, apps);
-            }
+            TitreBusinessTexBLox.Text = lang.Translate("TitreBusinessTexBLox");
+            Boutton_ADD.Content = lang.Translate("Create");
+            Boutton_Supprimer.Content = lang.Translate("Delete");
         }
     }
 }

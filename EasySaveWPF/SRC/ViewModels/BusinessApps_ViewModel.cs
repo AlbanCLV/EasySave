@@ -1,136 +1,142 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 using System.ComponentModel;
-using System;
-using EasySaveWPF.ModelsWPF;
-using System.Windows;
-using EasySaveConsole.Models;
+using System.Windows.Input;
 using EasySaveLog;
-using System.Diagnostics;
-using System.Reactive.Concurrency;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+using EasySaveWPF.ModelsWPF;
+using Microsoft.VisualBasic.Logging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EasySaveWPF.ViewModelsWPF
 {
-    public class BusinessApps_ViewModel : INotifyPropertyChanged
+    /// <summary>
+    /// ViewModel for managing priority file extensions in the backup system.
+    /// </summary>
+    public class PriorityExtensionsViewModel : INotifyPropertyChanged
     {
-        private readonly ProcessWatcherWPF _processWatcher;
-        private string _newAppName;
-        private LangManager lang;
-        private Log_ViewModels Log_VM;
-        Stopwatch stopwatch = new Stopwatch();
+        /// <summary>
+        /// Event triggered when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
+        private Log_ViewModels Log_VM;
 
-        public ObservableCollection<string> BusinessApplications { get; private set; }
+        /// <summary>
+        /// Collection of priority file extensions.
+        /// </summary>
+        public ObservableCollection<string> PriorityExtensions { get; set; }
 
-        public string NewAppName
+        private string _newExtension;
+        /// <summary>
+        /// Gets or sets the new extension to be added.
+        /// </summary>
+        public string NewExtension
         {
-            get => _newAppName;
+            get => _newExtension;
             set
             {
-                _newAppName = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NewAppName)));
+                _newExtension = value;
+                OnPropertyChanged("NewExtension");
             }
         }
-        public ICommand AddApplicationCommand { get; }
-        public ICommand RemoveApplicationCommand { get; }
 
-        public BusinessApps_ViewModel(string select, bool e)
+        private string _selectedExtension;
+        /// <summary>
+        /// Gets or sets the selected extension for removal.
+        /// </summary>
+        public string SelectedExtension
         {
-            Debug.WriteLine("BusinessApps_ViewModel instance created");
-
-            _processWatcher = ProcessWatcherWPF.Instance;
-            BusinessApplications = new ObservableCollection<string>(_processWatcher.GetBusinessApplications());
-            lang = LangManager.Instance;
-            lang.SetLanguage(select);
-            if (e)
+            get => _selectedExtension;
+            set
             {
-                _processWatcher.BusinessAppStateChanged -= OnBusinessAppStateChanged; // Désabonne au cas où
-                _processWatcher.BusinessAppStateChanged += OnBusinessAppStateChanged; // Puis abonne
+                _selectedExtension = value;
+                OnPropertyChanged("SelectedExtension");
             }
+        }
 
-            AddApplicationCommand = new RelayCommand(AddApplication);
-            RemoveApplicationCommand = new RelayCommand(RemoveApplication);
+        /// <summary>
+        /// Command for adding a new file extension.
+        /// </summary>
+        public ICommand AddExtensionCommand { get; set; }
+
+        /// <summary>
+        /// Command for removing an existing file extension.
+        /// </summary>
+        public ICommand RemoveExtensionCommand { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityExtensionsViewModel"/> class.
+        /// Loads existing priority extensions and sets up commands.
+        /// </summary>
+        public PriorityExtensionsViewModel()
+        {
+            PriorityExtensions = new ObservableCollection<string>(PriorityManager.PriorityExtensions);
+            AddExtensionCommand = new RelayCommand(AddExtension, CanAddExtension);
+            RemoveExtensionCommand = new RelayCommand(RemoveExtension, CanRemoveExtension);
             Log_VM = Log_ViewModels.Instance;
         }
 
-        private void AddApplication(object param)
+        /// <summary>
+        /// Adds a new extension to the priority list.
+        /// </summary>
+        /// <param name="obj">The command parameter (not used).</param>
+        private void AddExtension(object obj)
         {
-            if (!string.IsNullOrWhiteSpace(NewAppName))
+            if (!string.IsNullOrWhiteSpace(NewExtension))
             {
-                stopwatch.Start();
-                _processWatcher.AddBusinessApplication(NewAppName);
-                BusinessApplications.Add(NewAppName);
-                stopwatch.Stop();
-                string time = stopwatch.ElapsedMilliseconds.ToString();
-                Log_VM.LogBackupAction(NewAppName, "", "", time, "AddBusinessApplication", "");
-                NewAppName = ""; // Réinitialiser le champ
+                string ext = NewExtension.Trim();
+                if (!ext.StartsWith("."))
+                {
+                    ext = "." + ext;
+                }
+                ext = ext.ToLower();
 
-
+                if (!PriorityExtensions.Contains(ext))
+                {
+                    PriorityExtensions.Add(ext);
+                    Log_VM.LogBackupAction(ext, "", "", "", "Add Extension", "");
+                    PriorityManager.PriorityExtensions.Add(ext);
+                    PriorityManager.SaveExtensions();
+                }
+                NewExtension = string.Empty;
             }
         }
-        private void RemoveApplication(object param)
+
+        /// <summary>
+        /// Determines whether the add extension command can execute.
+        /// </summary>
+        /// <param name="obj">The command parameter (not used).</param>
+        /// <returns>True if a new extension is provided, otherwise false.</returns>
+        private bool CanAddExtension(object obj) => !string.IsNullOrWhiteSpace(NewExtension);
+
+        /// <summary>
+        /// Removes the selected extension from the priority list.
+        /// </summary>
+        /// <param name="obj">The command parameter (not used).</param>
+        private void RemoveExtension(object obj)
         {
-            if (param is string appName && BusinessApplications.Contains(appName))
+            if (!string.IsNullOrWhiteSpace(SelectedExtension))
             {
-                stopwatch.Start();
-                _processWatcher.RemoveBusinessApplication(appName);
-                BusinessApplications.Remove(appName);
-                stopwatch.Stop();
-                string time = stopwatch.ElapsedMilliseconds.ToString();
-                Log_VM.LogBackupAction(appName, "", "", time, "RemoveApplication", "");
+                PriorityExtensions.Remove(SelectedExtension);
+                Log_VM.LogBackupAction(SelectedExtension, "", "", "", "Remove Extension", "");
+
+                PriorityManager.PriorityExtensions.Remove(SelectedExtension);
+                PriorityManager.SaveExtensions();
             }
         }
-        private string _lastAppRunning;
-        private bool _lastState;
 
-        private void OnBusinessAppStateChanged(string appName, bool isRunning)
+        /// <summary>
+        /// Determines whether the remove extension command can execute.
+        /// </summary>
+        /// <param name="obj">The command parameter (not used).</param>
+        /// <returns>True if a selected extension exists, otherwise false.</returns>
+        private bool CanRemoveExtension(object obj) => !string.IsNullOrWhiteSpace(SelectedExtension);
+
+        /// <summary>
+        /// Notifies that a property value has changed.
+        /// </summary>
+        /// <param name="propertyName">The name of the changed property.</param>
+        protected void OnPropertyChanged(string propertyName)
         {
-            if (_lastAppRunning == appName && _lastState == isRunning)
-                return;
-
-            _lastAppRunning = appName;
-            _lastState = isRunning;
-
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (isRunning)
-                {
-                    MessageBox.Show(lang.Translate("mettieropen"),
-                                    " ", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Log_VM.LogBackupAction(appName, "", "", "-1", "isRunning", "");
-                }
-                else
-                {
-                    MessageBox.Show(lang.Translate("mettierclose"),
-                                    " ", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Log_VM.LogBackupAction(appName, "", "", "-1", "Is CLose", "");
-                }
-            });
-        }
-
-
-    }
-
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object> _execute;
-        private readonly Predicate<object> _canExecute;
-
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object parameter) => _canExecute?.Invoke(parameter) ?? true;
-
-        public void Execute(object parameter) => _execute(parameter);
-
-        public event EventHandler CanExecuteChanged
-        {
-            add => CommandManager.RequerySuggested += value;
-            remove => CommandManager.RequerySuggested -= value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
