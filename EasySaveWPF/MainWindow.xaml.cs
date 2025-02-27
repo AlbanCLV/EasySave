@@ -35,6 +35,7 @@ namespace EasySaveWPF
         private DeCryptageWPF DeCryptage;
         private SocketServer server;
         private PriorityExtensionsWindow priorityExtensionsWindow;
+        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
 
         public MainWindow()
         {
@@ -155,7 +156,10 @@ namespace EasySaveWPF
                 {
                     try
                     {
-
+                        while (!_pauseEvent.IsSet)
+                        {
+                            await Task.Delay(100);
+                        }
                         (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
                         if (token.IsCancellationRequested)
                         {
@@ -190,7 +194,7 @@ namespace EasySaveWPF
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
-        private void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
+        private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
@@ -230,7 +234,11 @@ namespace EasySaveWPF
                     {
                         while (_isPaused)
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(500); // Met en pause la tâche tant que _isPaused est true
+                        }
+                        if (token.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException();
                         }
                         (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(task, token, this);
 
@@ -251,10 +259,9 @@ namespace EasySaveWPF
                         Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"), lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning));
                     }
                 }, token)).ToArray();
-                Task.WhenAll(backupTasks).ContinueWith(_ =>
-                {
-                    Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
-                });
+                await Task.WhenAll(backupTasks);
+                Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
+
             }
         }
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -389,12 +396,18 @@ namespace EasySaveWPF
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            _isPaused = !_isPaused;
+            if (_pauseEvent.IsSet)
+            {
+                _pauseEvent.Reset(); // Met en pause
+            }
+            else
+            {
+                _pauseEvent.Set(); // Reprend
+            }
             PauseButton.Content = _isPaused ? lang.Translate("RESUME") : "Pause";
             Log_VM.LogBackupAction("", "", "", "", _isPaused ? "Resume" : "Pause", "");
-
-            // Ici, vous pouvez ajouter la logique pour suspendre les tâches pendant la pause
         }
+
         private void Boutton_PriorityExtensions_Click(object sender, RoutedEventArgs e)
         {
             PriorityExtensionsWindow window = new PriorityExtensionsWindow();
