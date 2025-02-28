@@ -251,8 +251,11 @@ namespace EasySaveWPF.ModelsWPF
             foreach (string file in files)
             {
                 if (token.IsCancellationRequested)
+                {
+                    UpdateProgress(task, 0, totalFiles, main);
                     return "KO Canceled";
-
+                }
+                    
                 while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
                 {
                     // Si des applications métiers sont en cours, afficher un message d'erreur
