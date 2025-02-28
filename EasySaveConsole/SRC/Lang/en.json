@@ -18,7 +18,8 @@
   "TitreBusinessTexBLox": "Monitored Business Applications",
   "STOP": "You have stopped all ongoing actions. Some tasks did not complete.",
   "OptionTextBlock": "encryption settings",
-  "RESUME": "Resume",
+  "Resume": "Resume",
+  "Pause":  "Pause",
   "ExtansionTextBlock": "Select extension",
   "ConfirmCryptage": "Would you really like to Encrypt this task?",
   "MDP": "Password",
@@ -95,8 +96,6 @@
   "differential_backup_canceled": "Differential backup canceled.",
   "executing_full_backup": "Executing full backup: {0}",
   "full_backup_completed": "Full backup completed successfully.",
-  "Success": "success",
-  "Error": "Error",
   "EnterExtensions": "Please enter extansion (.txt, .pdf, .docx, .jpg )",
   "InvalidInput": "Invalid input. Please try again.",
   "EmptyInput": "Input cannot be empty.",
@@ -127,5 +126,6 @@
   "destination_no_backup": "The destination directory does not contain a backup of '{0}'.",
   "differential_backup_completed": "Differential backup '{0}' completed successfully.",
   "file_updated_or_added": "File updated or added: {0}",
-  "add_buisness_app": "Add a business app"
+  "add_buisness_app": "Add a business app",
+  "task_canceled": "task_canceled"
 }

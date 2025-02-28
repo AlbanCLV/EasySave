@@ -25,7 +25,8 @@
   "NepasChiffrer": "Ne pas chiffrer",
   "Success": "Succès",
   "Error": "Erreur",
-  "RESUME": "Reprendre",
+  "Resume": "Reprendre",
+  "Pause":  "Pause",
   "PriorityExtensions": "Fichier prioritaire",
   "mettieropen": "L'application métier a été ouverte",
   "mettierclose": "L'application métier a été fermée",
@@ -96,8 +97,6 @@
   "differential_backup_canceled": "Sauvegarde différentielle annulée.",
   "executing_full_backup": "Exécution de la sauvegarde complète : {0}",
   "full_backup_completed": "Sauvegarde complète  effectuée avec succès.",
-  "Success": "succès",
-  "Error": "Erreur",
   "InvalidInput": "Entrée invalide. Veuillez réessayer.",
   "EmptyInput": "L'entrée ne peut pas être vide.",
   "EncryptPrompt": "Voulez-vous chiffrer les sauvegardes ? (O/N)",
@@ -127,5 +126,6 @@
   "destination_no_backup": "Le répertoire de destination ne contient pas de sauvegarde de '{0}'.",
   "differential_backup_completed": "Sauvegarde différentielle '{0}' effectuée avec succès.",
   "file_updated_or_added": "Fichier mis à jour ou ajouté : {0}",
-  "add_buisness_app": "Ajouter une application métier"
+  "add_buisness_app": "Ajouter une application métier",
+  "task_canceled": "Tâche annulée"
 }
