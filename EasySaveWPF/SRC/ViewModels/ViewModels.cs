@@ -11,6 +11,8 @@ using System.Windows.Input;
 using System.ComponentModel;
 using EasySaveWPF.Views;
 using System.Windows;
+using System.Threading.Tasks;
+
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 
@@ -94,12 +96,9 @@ namespace EasySaveWPF.ViewModelsWPF
         }
         public (string, string, string) ExecuteSpecificTasks(Backup_ModelsWPF task, CancellationToken token, MainWindow main)
         {
-            if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+            while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
-                // Si des applications métiers sont en cours, arrêter l'exécution
-                System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
-                                                 "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return ("KO", "KO", "KO");
+                
             }
             stopwatch.Start();
             (string r , string timeencrypt)= backupModel.ExecuteSpecificTasks(task, token, main);

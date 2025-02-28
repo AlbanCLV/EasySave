@@ -250,6 +250,14 @@ namespace EasySaveWPF.ModelsWPF
             // Organiser les fichiers en fonction de leur priorité
             foreach (string file in files)
             {
+                while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+                {
+
+                }
+                while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+                {
+
+                }
                 if (token.IsCancellationRequested)
                 {
                     UpdateProgress(task, 0, totalFiles, main);

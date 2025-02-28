@@ -167,6 +167,14 @@ namespace EasySaveWPF
                         {
                             await Task.Delay(100);
                         }
+                        while (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
+                        {
+                            // Si des applications métiers sont en cours, arrêter l'exécution
+                            System.Windows.MessageBox.Show($"Les applications suivantes sont en cours : {ProcessWatcherWPF.Instance.GetRunningBusinessApps()}. Veuillez fermer ces applications avant de continuer.",
+                                                             "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            await Task.Delay(1000);
+
+                        }
                         (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
 
                         // AJOUT : Vérifier si la méthode a renvoyé "KO Canceled"
@@ -284,7 +292,7 @@ namespace EasySaveWPF
                         else if (reponse == "OK")
                         {
                             Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
-                            Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, time, "execute ALL Task", timeencrypt);
+                            Log_VM.LogBackupAction(task.Name, task.SourceDirectory, task.TargetDirectory, time, "execute ALLgit o Task", timeencrypt);
                         }
                     }
                     catch (OperationCanceledException)
