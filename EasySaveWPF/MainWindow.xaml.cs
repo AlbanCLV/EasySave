@@ -36,6 +36,11 @@ namespace EasySaveWPF
         private SocketServer server;
         private PriorityExtensionsWindow priorityExtensionsWindow;
         private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
+        public ManualResetEventSlim PauseEvent
+        {
+            get { return _pauseEvent; }
+        }
+
 
         public MainWindow()
         {
@@ -135,7 +140,7 @@ namespace EasySaveWPF
         {
             if (!string.IsNullOrEmpty(ProcessWatcherWPF.Instance.GetRunningBusinessApps()))
             {
-                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.",lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"{ProcessWatcherWPF.Instance.GetRunningBusinessApps()} is running.", lang.Translate("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 Log_VM.LogBackupAction(ProcessWatcherWPF.Instance.GetRunningBusinessApps(), "", "", "", "isrunning", "");
                 return;
             }
@@ -161,6 +166,18 @@ namespace EasySaveWPF
                             await Task.Delay(100);
                         }
                         (string reponse, string time, string timeencrypt) = Main.ExecuteSpecificTasks(selectedTask, token, this);
+
+                        // AJOUT : Vérifier si la méthode a renvoyé "KO Canceled"
+                        if (reponse == "KO Canceled")
+                        {
+                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("task_canceled"),
+                                                                                   lang.Translate("Error"),
+                                                                                   MessageBoxButton.OK,
+                                                                                   MessageBoxImage.Warning));
+                            Log_VM.LogBackupErreur(selectedTask.Name, "Execute_Task_attempt", "Task was canceled", timeencrypt);
+                            return; // Sortir de la tâche
+                        }
+
                         if (token.IsCancellationRequested)
                         {
                             // Si l'annulation est demandée, logguez l'annulation
@@ -171,7 +188,15 @@ namespace EasySaveWPF
 
                         if (reponse == "OK")
                         {
-                            Dispatcher.Invoke(() => System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None));
+                            Dispatcher.Invoke(() =>
+                            {
+                                System.Windows.MessageBox.Show(lang.Translate("full_backup_completed"), lang.Translate("Success"), MessageBoxButton.OK, MessageBoxImage.None);
+
+                                // Réinitialiser la ProgressBar à 0 (ajout déjà vu)
+                                selectedTask.Progress = 0;
+                                TasksDataGrid.ItemsSource = null;
+                                TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
+                            });
                             Log_VM.LogBackupAction(selectedTask.Name, selectedTask.SourceDirectory, selectedTask.TargetDirectory, time, "execute specific Task", timeencrypt);
                         }
                         else if (reponse == "KO SOURCE")
@@ -194,6 +219,7 @@ namespace EasySaveWPF
             TasksDataGrid.ItemsSource = null;
             TasksDataGrid.ItemsSource = Main.ViewTasksWPF();
         }
+
         private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             
@@ -396,17 +422,27 @@ namespace EasySaveWPF
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_pauseEvent.IsSet)
+            // Bascule de l'état de pause
+            _isPaused = !_isPaused;
+
+            if (_isPaused)
             {
-                _pauseEvent.Reset(); // Met en pause
+                // Mettre en pause : Reset du ManualResetEventSlim
+                _pauseEvent.Reset();
+                // Modifier le texte du bouton pour indiquer "Resume"
+                PauseButton.Content = lang.Translate("Resume");
+                Log_VM.LogBackupAction("", "", "", "", "Pause", "");
             }
             else
             {
-                _pauseEvent.Set(); // Reprend
+                // Reprendre : Set du ManualResetEventSlim
+                _pauseEvent.Set();
+                // Modifier le texte du bouton pour indiquer "Pause"
+                PauseButton.Content = lang.Translate("Pause");
+                Log_VM.LogBackupAction("", "", "", "", "Resume", "");
             }
-            PauseButton.Content = _isPaused ? lang.Translate("RESUME") : "Pause";
-            Log_VM.LogBackupAction("", "", "", "", _isPaused ? "Resume" : "Pause", "");
         }
+
 
         private void Boutton_PriorityExtensions_Click(object sender, RoutedEventArgs e)
         {

@@ -290,39 +290,56 @@ namespace EasySaveWPF.ModelsWPF
                 }
             };
 
-            // Copier les fichiers prioritaires et appliquer le cryptage si nécessaire
+            // Copier les fichiers prioritaires
             foreach (string file in priorityFiles)
             {
+                if (token.IsCancellationRequested)
+                    return "KO Canceled";
+
+                // Boucle de pause (déjà vue)
+                while (!main.PauseEvent.IsSet)
+                {
+                    Thread.Sleep(100);
+                    if (token.IsCancellationRequested)
+                        return "KO Canceled";
+                }
+
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
 
-                // Copier et mettre à jour la progression
                 copyFileAndUpdateProgress(file, destinationFile);
 
-                // Appliquer le cryptage si activé
                 if (Cryptage_ModelsWPF.EncryptAll || Cryptage_ModelsWPF.SelectedExtensions.Contains(Path.GetExtension(file).ToLower()))
                 {
                     processFileEncryption(destinationFile);
                 }
             }
 
-            // Copier les fichiers non prioritaires et appliquer le cryptage si nécessaire
+            // Copier les fichiers non prioritaires
             foreach (string file in nonPriorityFiles)
             {
+                if (token.IsCancellationRequested)
+                    return "KO Canceled";
+
+                while (!main.PauseEvent.IsSet)
+                {
+                    Thread.Sleep(100);
+                    if (token.IsCancellationRequested)
+                        return "KO Canceled";
+                }
+
                 string fileName = Path.GetFileName(file);
                 string destinationFile = Path.Combine(targetDir, fileName);
 
-                // Copier et mettre à jour la progression
                 copyFileAndUpdateProgress(file, destinationFile);
 
-                // Appliquer le cryptage si activé
                 if (Cryptage_ModelsWPF.EncryptAll || Cryptage_ModelsWPF.SelectedExtensions.Contains(Path.GetExtension(file).ToLower()))
                 {
                     processFileEncryption(destinationFile);
                 }
             }
 
-            // Traiter les sous-dossiers de manière récursive
+            // Traiter les sous-dossiers
             foreach (string directory in Directory.GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
             {
                 if (token.IsCancellationRequested)
@@ -336,13 +353,16 @@ namespace EasySaveWPF.ModelsWPF
                 currentFile++;
                 UpdateProgress(task, currentFile, totalFiles, main);
 
-                // Appel récursif pour copier le contenu du sous-dossier
-                totalEncryptionTime += Convert.ToInt64(CopyDirectoryContent(directory, destinationSubDir, task, token, main, false, currentFile, totalFiles));
+                totalEncryptionTime += Convert.ToInt64(
+                    CopyDirectoryContent(directory, destinationSubDir, task, token, main, false, currentFile, totalFiles)
+                );
             }
 
             state.SatetEnd(task, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), targetDir);
             return totalEncryptionTime.ToString();
         }
+
+
 
         private void UpdateProgress(Backup_ModelsWPF task, int currentFile, int totalFiles, MainWindow main)
         {
